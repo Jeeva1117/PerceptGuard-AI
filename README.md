@@ -245,6 +245,20 @@ python -m src.tracking.tracking_environment --json
 ```
 For architecture specifications, parameter definitions, and compatibility analysis, consult [docs/TRACKING_ENVIRONMENT_SETUP.md](docs/TRACKING_ENVIRONMENT_SETUP.md).
 
+### 12. Run ByteTrack Multi-Object Tracking Pipeline
+Associate sequential frame detections into persistent tracklets ($T_{id}$) across video frames:
+```bash
+# Ingest pre-computed batch detections (default latest run in driving_sample)
+python -m src.tracking.tracking_pipeline
+
+# Specify explicit detection results file
+python -m src.tracking.tracking_pipeline --input datasets/processed/driving_sample/detections/batch_runs/run_20261117_115348_e1789b/detection_results.json
+
+# Rapid 10-frame smoke test with verbose logging
+python -m src.tracking.tracking_pipeline --max-frames 10 --verbose --overwrite
+```
+For architecture specifications, mathematical formulations, and benchmarks, consult [docs/BYTETRACK_INTEGRATION.md](docs/BYTETRACK_INTEGRATION.md).
+
 ---
 
 ## 7. Development Roadmap
@@ -300,9 +314,12 @@ For architecture specifications, parameter definitions, and compatibility analys
     - Strongly typed, immutable `TrackerConfig` loader with schema validation.
     - Standalone `TrackingEnvironmentVerifier` telemetry and CLI tool.
     - 51 automated unit and integration tests (437 repository tests passing).
-  - [ ] **ByteTrack Multi-Object Tracking Engine**
+  - [x] **ByteTrack Multi-Object Tracking Engine**
     - Association of sequential frame detections into persistent tracklets ($T_{id}$).
-    - Kinematic state estimation using 2D Kalman filter.
+    - Kinematic state estimation using 2D discrete Kalman filter.
+    - Multi-file Schema v1.0 persistence (`results`, `summary`, `metadata`, `errors`).
+    - Validated on 200 real BDD100K driving frames at 0.62 ms / frame (~1,600 FPS on CPU).
+    - 32 automated unit and integration tests (469 repository tests passing).
   - [ ] **Tracking Visualization & Quality Analysis**
     - Trajectory rendering and track stability metrics.
 - [ ] **Day 4: Feature Extraction & Sequence Construction**

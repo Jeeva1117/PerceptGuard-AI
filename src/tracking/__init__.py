@@ -1,13 +1,19 @@
 """PerceptGuard AI: Multi-Object Tracking Architecture.
 
 This package provides multi-object tracking configurations, environment verification,
-and upcoming tracking engines (ByteTrack) to maintain persistent object identities,
+and production ByteTrack integration to maintain persistent object identities,
 compute kinematic motion features, and establish reliability metrics.
 """
 
 import warnings
 warnings.filterwarnings("ignore", category=RuntimeWarning, message=".*found in sys.modules.*")
 
+from src.tracking.bytetrack_engine import (
+    ByteTrackEngine,
+    InvalidDetectionInputError,
+    TrackRecord,
+    TrackingEngineError,
+)
 from src.tracking.tracker_config import (
     DEFAULT_CONFIG_RELATIVE_PATH,
     REQUIRED_TRACKER_FIELDS,
@@ -24,8 +30,17 @@ from src.tracking.tracking_environment import (
     format_report,
     verify_tracking_environment,
 )
+from src.tracking.tracking_pipeline import (
+    FrameTrackingRecord,
+    TrackingInputNotFoundError,
+    TrackingOutputExistsError,
+    TrackingPipeline,
+    TrackingPipelineError,
+    TrackingSummary,
+)
 
 __all__ = [
+    # Configuration Architecture
     "TrackerConfig",
     "TrackingEnvironmentError",
     "TrackerConfigError",
@@ -34,8 +49,21 @@ __all__ = [
     "REQUIRED_TRACKER_FIELDS",
     "TRACKER_PRESETS",
     "DEFAULT_CONFIG_RELATIVE_PATH",
+    # Environment Verification
     "EnvironmentReport",
     "TrackingEnvironmentVerifier",
     "verify_tracking_environment",
     "format_report",
+    # ByteTrack Engine & Data Contracts
+    "ByteTrackEngine",
+    "TrackRecord",
+    "TrackingEngineError",
+    "InvalidDetectionInputError",
+    # Tracking Pipeline & Multi-File Persistence
+    "TrackingPipeline",
+    "FrameTrackingRecord",
+    "TrackingSummary",
+    "TrackingPipelineError",
+    "TrackingInputNotFoundError",
+    "TrackingOutputExistsError",
 ]
