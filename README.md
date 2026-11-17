@@ -177,6 +177,13 @@ python tests/verify_environment.py
 python main.py --info
 ```
 
+### 6. Verify YOLO Perception Environment
+Run the CPU-compatible YOLO detection verification tool:
+```bash
+python -m src.detection.yolo_model_loader --verify
+```
+For deep-dive configuration, hardware tuning, and architecture benchmarks, see [docs/YOLO_ENVIRONMENT_SETUP.md](docs/YOLO_ENVIRONMENT_SETUP.md).
+
 ---
 
 ## 7. Development Roadmap
@@ -187,13 +194,18 @@ python main.py --info
   - Dependencies installed and verified (PyTorch CPU, OpenCV, Ultralytics, NumPy, Pandas, Scikit-learn, Streamlit).
   - Modular project structure, configuration separation, and validation scripts created.
   - GitHub repository readiness achieved.
-- [ ] **Day 2: Video Ingestion & Detection Pipeline**
-  - Implement `VideoFrameExtractor` with OpenCV.
-  - Integrate `YOLODetector` (YOLOv8n) with configurable confidence/NMS thresholds.
-  - Standardize detection output dataclasses and logging.
-- [ ] **Day 3: Multi-Object Tracking & Kinematics**
-  - Implement `ByteTracker` integration with persistent track IDs.
-  - Compute track velocity vectors, age, and Kalman motion states.
+- [x] **Day 2: Dataset Collection & Video Processing Pipeline**
+  - Acquired real-world BDD100K driving sequence (`converted_026c7465-309f6d33.mp4`).
+  - Implemented `VideoLoader`, `FrameExtractor`, and letterboxed `FramePreprocessor` ($640 \times 360$).
+  - Implemented `MetadataGenerator`, `DatasetOrganizer`, and multi-tier `DatasetValidator`.
+  - Audited 200 extracted and preprocessed frames with 100% quality gate approval.
+- [ ] **Day 3: Object Detection & Multi-Object Tracking**
+  - [x] **Task 1: Advanced YOLO Environment & Pretrained Model Setup**
+    - Configured CPU-optimized YOLO11n (`yolo11n.pt`) with lazy-loaded inference engine.
+    - Verified sub-50ms CPU inference (~20.6 FPS) on real driving frames.
+    - Implemented `YOLOModelLoader`, configuration schema, and 18-test test suite.
+  - [ ] **Task 2: Batch Frame Detection & Bounding Box Extraction**
+  - [ ] **Task 3: Multi-Object Tracking (ByteTrack)**
 - [ ] **Day 4: Feature Extraction & Sequence Construction**
   - Implement 16-dimensional per-track feature vector extraction.
   - Build sliding historical temporal sequence windows ($W=10$).

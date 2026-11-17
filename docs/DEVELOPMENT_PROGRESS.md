@@ -400,3 +400,67 @@ This document maintains an auditable, day-by-day record of technical milestones,
 - **Commit Hash:** `e3c27f8`
 - **GitHub Push Status:** Succeeded (`origin/main` synchronized at `e3c27f8`)
 
+---
+
+## Day 3: Object Detection & Multi-Object Tracking Pipeline
+
+### Task 1: Advanced YOLO Environment & Pretrained Model Setup
+- **Date:** 2026-11-17
+- **Milestone:** CPU-Compatible YOLO11 Environment, Pretrained Weight Verification, Config Schema & Model Loader Architecture
+- **Lead Engineer:** Staff Computer Vision Engineer, Senior YOLO Engineer & Autonomous Driving Perception Systems Engineer
+- **Status:** **Task 1 Complete & Verified (Awaiting Day 3 Task 2)**
+
+#### Completed Tasks
+1. **Host Environment & Dependency Audit:** Audited system configuration: Windows 11 AMD64, Intel Core i3 (8 logical cores), 8 GB RAM, Python 3.13.3, PyTorch 2.15.0+cpu (CUDA: False), Ultralytics 8.4.215, OpenCV 5.0.0, NumPy 2.5.4.
+2. **CPU-First Architecture & Precision Governance:** Configured deterministic CPU inference pipeline with FP32 single precision (`half_precision: false`), eliminating CPU half-precision convolution crashes and deprecation warnings.
+3. **Pretrained Model Selection & Acquisition:** Evaluated edge perception architectures and selected official Ultralytics YOLO11n (`yolo11n.pt`, 2.6M parameters, 11.6 GFLOPs, 5.35 MB disk footprint, SHA-256: `0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1`). Acquired weights into `models/yolo/yolo11n.pt`.
+4. **Data Governance & Weight Exclusion:** Updated `.gitignore` to strictly exclude binary weight checkpoints (`*.pt`, `*.pth`, `*.onnx`) while preserving directory structure via tracked `models/yolo/.gitkeep`.
+5. **Decoupled Configuration Schema:** Authored `config/yolo_config.yaml` specifying model identity, local weight path, task type, device, precision, letterbox size ($640\text{ px}$), confidence threshold ($0.25$), IoU threshold ($0.45$), max detections ($100$), and latency timeout ($500.0\text{ ms}$).
+6. **Robust Model Loader Engine:** Implemented `YOLOModelLoader` in `src/detection/yolo_model_loader.py` featuring:
+   - Data contract `YOLOModelInfo`.
+   - Domain-specific exceptions (`YOLOEnvironmentError`, `YOLOConfigError`, `YOLOModelNotFoundError`, `YOLOModelLoadError`, `YOLOInferenceError`).
+   - Lazy model initialization and thread-safe caching.
+   - Strict configuration validation and boundary assertions.
+   - Robust image decoding from file paths (`cv2.imread`).
+   - Single-frame inference method `predict_single_frame()` with clean parameter propagation.
+7. **CLI Verification Utility:** Implemented `verify_yolo_environment()` runnable directly via `python -m src.detection.yolo_model_loader --verify`, emitting structured environment telemetry and live inference performance.
+8. **Real Driving Frame Smoke Test:** Executed live inference test on `datasets/processed/driving_sample/preprocessed_frames/frame_000001.jpg` ($640 \times 360$):
+   - Cold model load time: $84.78\text{ ms}$
+   - Warm inference latency: $48.51\text{ ms}$ ($\approx 20.6\text{ FPS}$)
+   - Detected objects: 2 (`traffic light` at conf=0.438, `truck` at conf=0.296)
+9. **Automated Test Suite:** Created 18 comprehensive tests in `tests/test_yolo_model_loader.py` (15 unit tests + 3 integration tests). Confirmed 100% pass rate. Verified full repository pytest suite passing 112/112 tests.
+10. **Technical Documentation:** Authored comprehensive architectural specification in `docs/YOLO_ENVIRONMENT_SETUP.md` and updated `README.md`.
+
+#### Files Created or Modified
+- `src/detection/yolo_model_loader.py`: Production-grade YOLO model loading and verification engine.
+- `src/detection/__init__.py`: Package export declarations for `YOLOModelLoader`, `YOLOModelInfo`, and exceptions.
+- `config/yolo_config.yaml`: Decoupled YOLO perception and inference configuration.
+- `models/yolo/.gitkeep`: Empty directory anchor tracked in Git.
+- `models/yolo/yolo11n.pt`: Local pretrained model weights (5.35 MB, uncommitted, excluded by `.gitignore`).
+- `.gitignore`: Updated to enforce exclusion of `*.pt` files while tracking `!models/yolo/.gitkeep`.
+- `tests/test_yolo_model_loader.py`: 18 automated unit and integration tests.
+- `docs/YOLO_ENVIRONMENT_SETUP.md`: Comprehensive YOLO environment and model documentation.
+- `README.md`: Updated with YOLO environment verification instructions and Day 3 roadmap progression.
+- `docs/DEVELOPMENT_PROGRESS.md`: Updated with Day 3 Task 1 milestone record.
+
+#### Verified Model Telemetry & Benchmarks
+- **Model Selected:** `yolo11n` (YOLO11 Nano)
+- **Model Parameters:** $\approx 2.6\text{M}$
+- **Computational FLOPs:** $11.6\text{ GFLOPs}$
+- **Weights Checksum (SHA-256):** `0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1`
+- **Device In Use:** `cpu`
+- **Cold Model Load Time:** $84.78\text{ ms}$
+- **Warm Inference Latency:** $48.51\text{ ms}$ ($\approx 20.6\text{ FPS}$)
+- **Inference Memory Overhead:** $< 300\text{ MB}$ RSS
+- **Smoke Test Frame:** `frame_000001.jpg` ($640 \times 360$)
+- **Detections Returned:** 2 (`traffic light`, `truck`)
+- **Pytest Suite Results:** `112 passed in 21.06s` (100% pass rate)
+
+#### Git Version Control
+- **Branch:** `main`
+- **Remote:** `https://github.com/Jeeva1117/PerceptGuard-AI.git`
+- **Commit Message:** `feat: establish CPU-compatible YOLO model environment`
+- **Commit Hash:** `78b6d87`
+- **GitHub Push Status:** Succeeded (`origin/main` synchronized at `78b6d87`)
+
+

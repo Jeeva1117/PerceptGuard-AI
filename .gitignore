@@ -29,6 +29,8 @@ datasets/processed/*
 # Model checkpoints and weights
 models/*
 !models/.gitkeep
+!models/yolo/
+!models/yolo/.gitkeep
 *.pt
 *.pth
 *.onnx
