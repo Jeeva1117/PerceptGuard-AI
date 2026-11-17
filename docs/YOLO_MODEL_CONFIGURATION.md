@@ -210,3 +210,4 @@ python -m pytest tests/detection/test_yolo_config.py -v
 
 1. **Hardware Specificity:** Real-time throughput (>30 FPS) at 640px requires GPU acceleration; CPU throughput achieves ~20.6 FPS on 640px and ~43.3 FPS on 320px (`cpu_lightweight`).
 2. **COCO Class Mapping:** Pretrained classes are restricted to the 80 COCO categories; domain-specific autonomous driving classes (e.g., emergency vehicles, construction barriers) will be addressed in future fine-tuning stages.
+

@@ -517,8 +517,70 @@ This document maintains an auditable, day-by-day record of technical milestones,
 - **Branch:** `main`
 - **Remote:** `https://github.com/Jeeva1117/PerceptGuard-AI.git`
 - **Commit Message:** `feat: implement advanced YOLO model configuration`
-- **Commit Hash:** `8565ce8`
-- **GitHub Push Status:** Succeeded (`origin/main` synchronized at `8565ce8`)
+- **Commit Hash:** `487c47b`
+- **GitHub Push Status:** Succeeded (`origin/main` synchronized at `487c47b`)
+
+---
+
+### Task 3: Advanced Single Image Object Detection Engine
+- **Date:** 2026-11-17
+- **Milestone:** SingleImageDetector Implementation, Input Validation & Normalization, Monotonic Timing Instrumentation, Schema v1.0 Serialization & Day 3 Task 3 Certification
+- **Lead Engineer:** Senior Staff Computer Vision Engineer & Senior Machine Learning Engineer
+- **Status:** **Task 3 Complete & Verified (Awaiting Day 3 Task 4)**
+
+#### Completed Tasks
+1. **Existing Architecture Inspection:** Reused existing `YOLOModelLoader` and `YOLOConfig` without redundant instantiation. Verified availability of Day 2 preprocessed driving frames and `yolo11n.pt` local weights.
+2. **Robust SingleImageDetector Engine:** Implemented `src/detection/single_image_detector.py` providing:
+   - Input image validation: existence, file type, supported extensions (`.jpg`, `.jpeg`, `.png`), 0-byte detection, in-memory decoding via `cv2.imdecode` avoiding OS handle collisions.
+   - Color space normalization: automatic conversion of grayscale (1-channel) and transparent (4-channel BGRA) images to standardized 3-channel BGR.
+   - Bounding box extraction & calibration: coordinate finiteness assertions, strict clamping within $[0, \text{width}]$ and $[0, \text{height}]$, degenerate box rejection, confidence validation ($(0, 1]$), and model class catalog mapping.
+   - Honest zero-detection handling: returns `processing_status="success"` with `detection_count=0` and `detections=[]`.
+3. **Structured Response Schema (v1.0) & Atomic Persistence:**
+   - Designed immutable `DetectedObject` and extensible `SingleImageDetectionResult`.
+   - Structured JSON response complying with RFC 8259 syntax across `image`, `model`, `inference`, `performance`, and `result` sections.
+   - Implemented atomic write mechanism using temporary files to prevent corrupted or partial writes.
+   - Added destination file protection requiring explicit `overwrite=True` to replace existing results.
+4. **Monotonic Latency Instrumentation:** Captured microsecond-accurate timings using `time.perf_counter()` broken down into:
+   - `image_decode_time_ms`
+   - `inference_time_ms`
+   - `serialization_time_ms`
+   - `total_time_ms`
+5. **CLI Utility:** Implemented rich command-line tool with `--image`, `--save-json`, `--output-dir`, `--output-file`, `--overwrite`, and `--preset` options.
+6. **Real-World End-to-End Validation:** Executed detection on genuine driving sequence frame `frame_000001.jpg` ($640 \times 360$ px):
+   - Confirmed 2 real detections: `traffic light` (ID 9, conf: 0.4381, box: `[219.5, 238.1, 276.4, 359.1]`) and `truck` (ID 7, conf: 0.2961, box: `[219.5, 1.2, 350.9, 355.9]`).
+   - Profiled warm single-frame inference latency: **$45.50\text{ ms}$** (~$22.0\text{ FPS}$) on Intel Core i3 CPU.
+   - Verified persisted JSON output at `datasets/processed/driving_sample/detections/single_image/frame_000001_detections.json`.
+7. **Automated Testing Suite:** Implemented 26 unit and integration tests in `tests/detection/test_single_image_detector.py` and root wrapper `tests/test_single_image_detector.py`. 100% pass rate achieved.
+8. **Full Repository Regression Suite:** Executed full test suite across Day 1, Day 2, Day 3 Tasks 1–3: **210 passed in 23.88s** (0 failures, 0 regressions).
+9. **Technical Documentation:** Authored `docs/SINGLE_IMAGE_DETECTION.md`, updated `README.md`, and updated `docs/DEVELOPMENT_PROGRESS.md`.
+
+#### Files Created or Modified
+- `src/detection/single_image_detector.py`: Production-grade single-image object detection engine and CLI runner.
+- `src/detection/__init__.py`: Package export declarations for `SingleImageDetector`, `SingleImageDetectionResult`, `DetectedObject`, and exceptions.
+- `tests/detection/test_single_image_detector.py`: 26 automated unit and integration tests.
+- `tests/test_single_image_detector.py`: Root test suite discoverability entrypoint.
+- `docs/SINGLE_IMAGE_DETECTION.md`: Architectural specification, schema guide, and API reference.
+- `README.md`: Updated with single-image detection CLI instructions and roadmap progression.
+- `docs/DEVELOPMENT_PROGRESS.md`: Updated with Day 3 Task 3 milestone record.
+- `datasets/processed/driving_sample/detections/single_image/frame_000001_detections.json`: Persisted real driving frame detection JSON (governed by `.gitignore`).
+
+#### Verified Telemetry & Benchmarks
+- **Target Driving Frame:** `datasets/processed/driving_sample/preprocessed_frames/frame_000001.jpg` ($640 \times 360$)
+- **Actual Objects Detected:** 2 (`traffic light`, `truck`)
+- **Image Decode Time:** $2.55\text{ ms}$
+- **Warm CPU Inference Latency:** $45.50\text{ ms}$ (~$22.0\text{ FPS}$)
+- **Total Warm Pipeline Execution:** $48.68\text{ ms}$
+- **Output JSON Verification:** Valid Schema v1.0, 58 lines, UTF-8 encoded
+- **Automated Detector Tests:** 26 / 26 Passed
+- **Repository Full Pytest Suite:** 210 / 210 Passed (100% Pass Rate)
+
+#### Git Version Control
+- **Branch:** `main`
+- **Remote:** `https://github.com/Jeeva1117/PerceptGuard-AI.git`
+- **Commit Message:** `feat: implement single image YOLO detection engine`
+- **Commit Hash:** `ffae091`
+- **GitHub Push Status:** Succeeded (`origin/main` synchronized at `ffae091`)
+
 
 
 

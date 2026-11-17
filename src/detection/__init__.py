@@ -8,6 +8,18 @@ Extracts bounding boxes, detection confidences, and object classes.
 import warnings
 warnings.filterwarnings("ignore", category=RuntimeWarning, message=".*found in sys.modules.*")
 
+from src.detection.single_image_detector import (
+    DetectedObject,
+    DetectionInferenceError,
+    DetectionSerializationError,
+    ImageDecodeError,
+    ImageNotFoundError,
+    ImageValidationError,
+    SingleImageDetectionError,
+    SingleImageDetectionResult,
+    SingleImageDetector,
+    UnsupportedImageFormatError,
+)
 from src.detection.yolo_config import (
     PRESETS,
     InferenceConfig,
@@ -30,6 +42,10 @@ from src.detection.yolo_model_loader import (
 )
 
 __all__ = [
+    # Single Image Detection Engine & Contracts
+    "SingleImageDetector",
+    "SingleImageDetectionResult",
+    "DetectedObject",
     # Model Loading Engine & Contracts
     "YOLOModelLoader",
     "YOLOModelInfo",
@@ -49,4 +65,11 @@ __all__ = [
     "YOLOModelNotFoundError",
     "YOLOModelLoadError",
     "YOLOInferenceError",
+    "SingleImageDetectionError",
+    "ImageValidationError",
+    "ImageNotFoundError",
+    "UnsupportedImageFormatError",
+    "ImageDecodeError",
+    "DetectionInferenceError",
+    "DetectionSerializationError",
 ]

@@ -187,7 +187,13 @@ python -m src.detection.yolo_model_loader --verify
 python -m src.detection.yolo_model_loader --verify --preset high_precision
 python -m src.detection.yolo_model_loader --verify --preset cpu_lightweight
 ```
-For deep-dive configuration architecture, schema parameters, and hardware tuning, see [docs/YOLO_MODEL_CONFIGURATION.md](docs/YOLO_MODEL_CONFIGURATION.md) and [docs/YOLO_ENVIRONMENT_SETUP.md](docs/YOLO_ENVIRONMENT_SETUP.md).
+
+### 7. Run Single Image Object Detection Engine
+Execute object detection on a single camera frame and persist machine-readable JSON:
+```bash
+python -m src.detection.single_image_detector --image datasets/processed/driving_sample/preprocessed_frames/frame_000001.jpg --save-json --overwrite
+```
+For architecture specifications, schema documentation, and benchmarks, consult [docs/SINGLE_IMAGE_DETECTION.md](docs/SINGLE_IMAGE_DETECTION.md) and [docs/YOLO_MODEL_CONFIGURATION.md](docs/YOLO_MODEL_CONFIGURATION.md).
 
 ---
 
@@ -214,7 +220,11 @@ For deep-dive configuration architecture, schema parameters, and hardware tuning
     - Stride conformity checks (multiples of 32), boundary validations, and COCO class filtering.
     - Documented perception presets (`balanced`, `high_precision`, `high_recall`, `cpu_lightweight`).
     - Automated test suite (23 configuration tests, 158 repository tests passing).
-  - [ ] **Task 3: Single Image Object Detection**
+  - [x] **Task 3: Single Image Object Detection Engine**
+    - Production-grade `SingleImageDetector` with image validation and channel standardization.
+    - Sub-50ms warm inference on CPU; calibrated bounding box coordinates and COCO class mapping.
+    - Versioned Schema v1.0 JSON output and atomic persistence.
+    - Automated test suite (26 detection tests, 210 repository tests passing).
   - [ ] **Task 4: Batch Frame Detection & Bounding Box Extraction**
   - [ ] **Task 5: Multi-Object Tracking (ByteTrack)**
 - [ ] **Day 4: Feature Extraction & Sequence Construction**
