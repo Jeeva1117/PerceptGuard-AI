@@ -42,3 +42,14 @@ preprocessing:
   brightness_threshold_low: 40.0
   brightness_threshold_high: 220.0
   overwrite: true
+
+dataset:
+  dataset_id: driving_sample
+  root_directory: datasets
+  raw_directory: datasets/raw
+  processed_directory: datasets/processed/driving_sample
+  extracted_frames_directory: datasets/processed/driving_sample/frames
+  preprocessed_frames_directory: datasets/processed/driving_sample/preprocessed_frames
+  metadata_csv: datasets/processed/driving_sample/metadata.csv
+  summary_json: datasets/processed/driving_sample/summary.json
+  manifest_json: datasets/processed/driving_sample/dataset_manifest.json
