@@ -804,3 +804,4 @@ class FramePreprocessor:
     def get_processing_summary(self) -> Optional[PreprocessingSummary]:
         """Retrieve audit summary of most recent batch preprocessing execution."""
         return self._summary
+
