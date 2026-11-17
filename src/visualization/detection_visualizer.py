@@ -32,6 +32,8 @@ import tempfile
 import time
 from typing import Any, Dict, List, Optional, Sequence, Set, Tuple, Union
 import uuid
+import warnings
+warnings.filterwarnings("ignore", category=RuntimeWarning, message=".*found in sys.modules.*")
 
 # Ensure project root is in sys.path
 _project_root = Path(__file__).resolve().parents[2]

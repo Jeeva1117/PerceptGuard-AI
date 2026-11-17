@@ -4,6 +4,9 @@ Provides production-grade visualization engines for object detection,
 multi-object tracking, and reliability forecasting telemetry.
 """
 
+import warnings
+warnings.filterwarnings("ignore", category=RuntimeWarning, message=".*found in sys.modules.*")
+
 from src.visualization.detection_visualizer import (
     DetectionJSONValidationError,
     DetectionVisualizer,
