@@ -1,0 +1,62 @@
+# Python virtual environment
+venv/
+env/
+ENV/
+.venv/
+
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environment variables and secrets
+.env
+.env.local
+*.key
+*.pem
+
+# Datasets (Autonomous driving datasets are multi-gigabyte / private)
+datasets/raw/*
+!datasets/raw/.gitkeep
+datasets/processed/*
+!datasets/processed/.gitkeep
+*.bag
+*.pcap
+*.tar.gz
+*.zip
+
+# Model checkpoints and weights
+models/*
+!models/.gitkeep
+*.pt
+*.pth
+*.onnx
+*.engine
+*.tflite
+*.safetensors
+
+# Generated outputs and artifacts
+outputs/*
+!outputs/.gitkeep
+runs/
+*.log
+experiments/
+.yolo/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# IDE and OS specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Testing & coverage
+.pytest_cache/
+.coverage
+htmlcov/

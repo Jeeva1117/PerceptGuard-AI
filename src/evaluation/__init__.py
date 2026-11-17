@@ -1,0 +1,8 @@
+"""Evaluation & Reliability Ground-Truth Labeling Module.
+
+Generates ground-truth reliability targets using bounding box Intersection over
+Union (IoU) with annotated ground-truth labels and evaluates model predictions
+using regression (MSE, MAE) and classification reliability degradation metrics
+(Precision, Recall, ROC-AUC, Reliability Drop Early Warning F1).
+"""
+
