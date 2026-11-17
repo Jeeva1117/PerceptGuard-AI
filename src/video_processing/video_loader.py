@@ -226,6 +226,35 @@ class VideoLoader:
         """Check if OpenCV VideoCapture is currently active and open."""
         return self._capture is not None and self._capture.isOpened()
 
+    @property
+    def capture(self) -> Optional[cv2.VideoCapture]:
+        """Expose the underlying OpenCV VideoCapture object."""
+        return self._capture
+
+    def read_frame(self) -> tuple[bool, Optional[Any]]:
+        """Read the next sequential frame from the video stream."""
+        if not self.is_opened() or self._capture is None:
+            raise VideoOpenError(f"Video stream '{self.video_path.name}' is not currently opened.")
+        return self._capture.read()
+
+    def grab_frame(self) -> bool:
+        """Advance the video stream by one frame without decoding image pixels."""
+        if not self.is_opened() or self._capture is None:
+            raise VideoOpenError(f"Video stream '{self.video_path.name}' is not currently opened.")
+        return self._capture.grab()
+
+    def retrieve_frame(self) -> tuple[bool, Optional[Any]]:
+        """Decode and return the frame grabbed by the most recent grab_frame() call."""
+        if not self.is_opened() or self._capture is None:
+            raise VideoOpenError(f"Video stream '{self.video_path.name}' is not currently opened.")
+        return self._capture.retrieve()
+
+    def set_frame_position(self, frame_index: int) -> bool:
+        """Seek to a specific 0-indexed source frame position."""
+        if not self.is_opened() or self._capture is None:
+            raise VideoOpenError(f"Video stream '{self.video_path.name}' is not currently opened.")
+        return self._capture.set(cv2.CAP_PROP_POS_FRAMES, float(frame_index))
+
     def get_metadata(self) -> VideoMetadata:
         """Extract and validate video stream parameters from OpenCV capture.
 

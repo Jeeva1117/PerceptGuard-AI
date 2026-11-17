@@ -1,4 +1,4 @@
-# PerceptGuard-AI: Video Ingestion Configuration
+# PerceptGuard-AI: Video Ingestion and Processing Configuration
 
 video:
   input_directory: datasets/raw
@@ -7,7 +7,7 @@ video:
     - .avi
     - .mov
     - .mkv
-  default_video: null
+  default_video: datasets/raw/converted_026c7465-309f6d33.mp4
   validation:
     min_fps: 1.0
     max_fps: 120.0
@@ -15,3 +15,12 @@ video:
     min_width: 64
     min_height: 64
 
+frame_extraction:
+  output_directory: datasets/processed/driving_sample/frames
+  extraction_fps: 5.0
+  max_frames: 300
+  image_format: jpg
+  filename_prefix: frame_
+  filename_padding: 6
+  jpeg_quality: 95
+  overwrite: true
