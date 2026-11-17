@@ -10,8 +10,10 @@ Key Guarantees:
 - Lazy model loading (avoids overhead during module import)
 - Strict parameter boundary validation (rejects uncalibrated thresholds)
 - Guaranteed non-destructive operations (never mutates weights or datasets)
+- Full integration with structured YOLOConfig architecture
 """
 
+from copy import deepcopy
 from dataclasses import asdict, dataclass
 import hashlib
 import logging
@@ -34,27 +36,21 @@ import ultralytics
 from ultralytics import YOLO
 import yaml
 
+from src.detection.yolo_config import (
+    PRESETS,
+    YOLOConfig,
+    YOLOConfigError,
+    YOLOEnvironmentError,
+    YOLOModelNotFoundError,
+    load_yolo_config,
+)
+
 logger = logging.getLogger("PerceptGuard.YOLOModelLoader")
 
 
 # ==============================================================================
 # Domain Exceptions
 # ==============================================================================
-
-class YOLOEnvironmentError(Exception):
-    """Base exception for all YOLO environment and model loading failures."""
-    pass
-
-
-class YOLOConfigError(YOLOEnvironmentError):
-    """Raised when YOLO configuration parameters are missing or invalid."""
-    pass
-
-
-class YOLOModelNotFoundError(YOLOEnvironmentError):
-    """Raised when model weights file does not exist at the specified path."""
-    pass
-
 
 class YOLOModelLoadError(YOLOEnvironmentError):
     """Raised when Ultralytics fails to load, parse, or validate model weights."""
@@ -118,24 +114,28 @@ class YOLOModelLoader:
 
     def __init__(
         self,
-        config_path: Optional[Union[str, Path]] = None,
+        config_path: Optional[Union[str, Path, YOLOConfig]] = None,
         weights_path: Optional[Union[str, Path]] = None,
         device: Optional[str] = None,
         conf_threshold: Optional[float] = None,
         iou_threshold: Optional[float] = None,
         image_size: Optional[int] = None,
         project_root: Optional[Union[str, Path]] = None,
+        config: Optional[YOLOConfig] = None,
+        preset: Optional[str] = None,
     ) -> None:
         """Initialize YOLOModelLoader with configuration and parameter overrides.
 
         Args:
-            config_path: Path to YAML configuration file.
+            config_path: Path to YAML configuration file or YOLOConfig instance.
             weights_path: Explicit override for model weights path.
             device: Explicit inference device override (e.g. 'cpu').
             conf_threshold: Confidence score threshold in (0.0, 1.0].
             iou_threshold: NMS IoU threshold in (0.0, 1.0].
             image_size: Input image dimension (e.g. 640).
             project_root: Base repository directory for relative path resolution.
+            config: Explicit YOLOConfig instance.
+            preset: Optional perception preset name ('balanced', 'high_precision', etc.).
         """
         self.project_root = (
             Path(project_root).resolve()
@@ -143,46 +143,46 @@ class YOLOModelLoader:
             else Path(__file__).resolve().parents[2]
         )
 
-        # Default configuration settings
-        self.model_name = "yolo11n"
-        self._weights_rel_path = "models/yolo/yolo11n.pt"
-        self.task = "detect"
-        self.device = "cpu"
-        self.image_size = 640
-        self.confidence_threshold = 0.25
-        self.iou_threshold = 0.45
-        self.max_detections = 100
-        self.half_precision = False
-        self.verbose = False
+        # 1. Resolve base configuration
+        if config is not None:
+            self.config = deepcopy(config)
+            if preset is not None:
+                self.config = self.config.with_preset(preset)
+        elif isinstance(config_path, YOLOConfig):
+            self.config = deepcopy(config_path)
+            if preset is not None:
+                self.config = self.config.with_preset(preset)
+        else:
+            self.config = self._load_config(config_path, preset=preset)
 
-        # Load values from configuration file if present
-        self._load_config(config_path)
-
-        # Explicit parameter overrides
+        # 2. Explicit parameter overrides
         if weights_path is not None:
-            self._weights_rel_path = str(weights_path)
+            self.config.model.weights_path = str(weights_path)
         if device is not None:
-            self.device = str(device).lower()
+            self.config.runtime.device = str(device).lower()
         if conf_threshold is not None:
-            self.confidence_threshold = float(conf_threshold)
+            self.config.inference.confidence_threshold = float(conf_threshold)
         if iou_threshold is not None:
-            self.iou_threshold = float(iou_threshold)
+            self.config.inference.iou_threshold = float(iou_threshold)
         if image_size is not None:
-            self.image_size = int(image_size)
+            self.config.inference.image_size = int(image_size)
 
-        # Resolve weights path
-        raw_p = Path(self._weights_rel_path)
-        self.weights_path = raw_p if raw_p.is_absolute() else (self.project_root / raw_p).resolve()
+        # 3. Validate configuration (weights existence verified lazily at load_model)
+        self.config.validate(project_root=self.project_root, validate_weights=False)
 
-        # Validate configuration values
-        self._validate_config()
+        # 4. Resolve absolute weights path
+        self.weights_path = self.config.resolve_weights_path(self.project_root)
 
-        # Internal model cache
+        # 5. Internal model cache
         self._model: Optional[YOLO] = None
         self._model_info: Optional[YOLOModelInfo] = None
 
-    def _load_config(self, config_path: Optional[Union[str, Path]]) -> None:
-        """Parse configuration parameters from YAML file."""
+    def _load_config(
+        self,
+        config_path: Optional[Union[str, Path]],
+        preset: Optional[str] = None,
+    ) -> YOLOConfig:
+        """Parse configuration parameters from YAML file or defaults."""
         target_cfg: Path
         if config_path:
             p = Path(config_path)
@@ -192,74 +192,127 @@ class YOLOModelLoader:
 
         if target_cfg.is_file():
             try:
-                with open(target_cfg, "r", encoding="utf-8") as f:
-                    cfg = yaml.safe_load(f) or {}
-
-                yolo_cfg = cfg.get("yolo", {})
-                if "model_name" in yolo_cfg:
-                    self.model_name = str(yolo_cfg["model_name"])
-                if "model_weights_path" in yolo_cfg:
-                    self._weights_rel_path = str(yolo_cfg["model_weights_path"])
-                if "task" in yolo_cfg:
-                    self.task = str(yolo_cfg["task"])
-                if "device" in yolo_cfg:
-                    self.device = str(yolo_cfg["device"]).lower()
-                if "image_size" in yolo_cfg:
-                    self.image_size = int(yolo_cfg["image_size"])
-                if "confidence_threshold" in yolo_cfg:
-                    self.confidence_threshold = float(yolo_cfg["confidence_threshold"])
-                if "iou_threshold" in yolo_cfg:
-                    self.iou_threshold = float(yolo_cfg["iou_threshold"])
-                if "max_detections" in yolo_cfg:
-                    self.max_detections = int(yolo_cfg["max_detections"])
-                if "half_precision" in yolo_cfg:
-                    self.half_precision = bool(yolo_cfg["half_precision"])
-                if "verbose" in yolo_cfg:
-                    self.verbose = bool(yolo_cfg["verbose"])
-
-            except Exception as e:
-                logger.warning("Failed to parse config %s: %s. Using defaults.", target_cfg, e)
-
-    def _validate_config(self) -> None:
-        """Validate configuration parameters against physical and framework constraints."""
-        if not (0.0 < self.confidence_threshold <= 1.0):
-            raise YOLOConfigError(
-                f"confidence_threshold must be in (0.0, 1.0], got: {self.confidence_threshold}"
-            )
-
-        if not (0.0 < self.iou_threshold <= 1.0):
-            raise YOLOConfigError(
-                f"iou_threshold must be in (0.0, 1.0], got: {self.iou_threshold}"
-            )
-
-        if not (32 <= self.image_size <= 1920):
-            raise YOLOConfigError(
-                f"image_size must be between 32 and 1920, got: {self.image_size}"
-            )
-
-        if self.task not in self.SUPPORTED_TASKS:
-            raise YOLOConfigError(
-                f"Unsupported task '{self.task}'. Supported tasks: {self.SUPPORTED_TASKS}"
-            )
-
-        if self.device != "cpu":
-            if not torch.cuda.is_available():
-                raise YOLOConfigError(
-                    f"Requested device '{self.device}', but CUDA is not available on this host. "
-                    "PerceptGuard AI operates on CPU mode."
+                return load_yolo_config(
+                    config_path=target_cfg,
+                    preset=preset,
+                    project_root=self.project_root,
+                    validate=False,
                 )
+            except YOLOConfigError:
+                raise
+            except Exception as e:
+                logger.warning("Failed to parse config %s: %s. Using default config.", target_cfg, e)
+                cfg = YOLOConfig()
+                if preset is not None:
+                    cfg = cfg.with_preset(preset)
+                return cfg
+        elif config_path is not None:
+            raise YOLOConfigError(f"Specified configuration file does not exist: '{target_cfg}'")
+        else:
+            cfg = YOLOConfig()
+            if preset is not None:
+                cfg = cfg.with_preset(preset)
+            return cfg
 
-        if self.device == "cpu" and self.half_precision:
-            raise YOLOConfigError(
-                "half_precision=True (FP16) is not supported for CPU inference in PyTorch. "
-                "Set half_precision=False for CPU inference."
-            )
+    # --------------------------------------------------------------------------
+    # Backward Compatibility Attribute Properties
+    # --------------------------------------------------------------------------
+    @property
+    def model_name(self) -> str:
+        return self.config.model.name
+
+    @model_name.setter
+    def model_name(self, value: str) -> None:
+        self.config.model.name = value
+
+    @property
+    def task(self) -> str:
+        return self.config.model.task
+
+    @task.setter
+    def task(self, value: str) -> None:
+        self.config.model.task = value
+
+    @property
+    def device(self) -> str:
+        return self.config.runtime.device
+
+    @device.setter
+    def device(self, value: str) -> None:
+        self.config.runtime.device = value
+
+    @property
+    def half_precision(self) -> bool:
+        return self.config.runtime.half_precision
+
+    @half_precision.setter
+    def half_precision(self, value: bool) -> None:
+        self.config.runtime.half_precision = value
+
+    @property
+    def image_size(self) -> int:
+        return self.config.inference.image_size
+
+    @image_size.setter
+    def image_size(self, value: int) -> None:
+        self.config.inference.image_size = value
+
+    @property
+    def confidence_threshold(self) -> float:
+        return self.config.inference.confidence_threshold
+
+    @confidence_threshold.setter
+    def confidence_threshold(self, value: float) -> None:
+        self.config.inference.confidence_threshold = value
+
+    @property
+    def iou_threshold(self) -> float:
+        return self.config.inference.iou_threshold
+
+    @iou_threshold.setter
+    def iou_threshold(self, value: float) -> None:
+        self.config.inference.iou_threshold = value
+
+    @property
+    def max_detections(self) -> int:
+        return self.config.inference.max_detections
+
+    @max_detections.setter
+    def max_detections(self, value: int) -> None:
+        self.config.inference.max_detections = value
+
+    @property
+    def agnostic_nms(self) -> bool:
+        return self.config.inference.agnostic_nms
+
+    @agnostic_nms.setter
+    def agnostic_nms(self, value: bool) -> None:
+        self.config.inference.agnostic_nms = value
+
+    @property
+    def classes(self) -> Optional[List[int]]:
+        return self.config.inference.classes
+
+    @classes.setter
+    def classes(self, value: Optional[List[int]]) -> None:
+        self.config.inference.classes = value
+
+    @property
+    def verbose(self) -> bool:
+        return self.config.inference.verbose
+
+    @verbose.setter
+    def verbose(self, value: bool) -> None:
+        self.config.inference.verbose = value
 
     @property
     def is_loaded(self) -> bool:
         """Check if the YOLO model is currently loaded in memory."""
         return self._model is not None
 
+    # --------------------------------------------------------------------------
+    # Model Loading & Caching Lifecycle
+    # --------------------------------------------------------------------------
     def load_model(self, force_reload: bool = False) -> YOLO:
         """Load and cache the Ultralytics YOLO model from weights on disk.
 
@@ -277,6 +330,7 @@ class YOLOModelLoader:
             return self._model
 
         # 1. Verify weights file existence
+        self.weights_path = self.config.resolve_weights_path(self.project_root)
         if not self.weights_path.exists():
             raise YOLOModelNotFoundError(
                 f"YOLO model weights file not found at: '{self.weights_path}'. "
@@ -301,10 +355,13 @@ class YOLOModelLoader:
                 while chunk := f.read(1024 * 1024):
                     h.update(chunk)
             sha256 = h.hexdigest()
-        except Exception as e:
+        except Exception:
             sha256 = "UNKNOWN"
 
-        # 3. Instantiate model via Ultralytics
+        # 3. Apply runtime hardware optimizations (CPU threads, seed)
+        self.config.apply_runtime_optimizations()
+
+        # 4. Instantiate model via Ultralytics
         logger.info("Loading YOLO model from: %s on device: %s", self.weights_path.name, self.device)
         try:
             model = YOLO(str(self.weights_path), task=self.task)
@@ -313,7 +370,7 @@ class YOLOModelLoader:
             logger.error(msg)
             raise YOLOModelLoadError(msg) from e
 
-        # 4. Verify task compatibility
+        # 5. Verify task compatibility
         detected_task = getattr(model, "task", self.task)
         if detected_task != "detect":
             raise YOLOModelLoadError(
@@ -321,7 +378,7 @@ class YOLOModelLoader:
                 "PerceptGuard AI requires a 2D bounding-box object detection model."
             )
 
-        # 5. Extract class catalog
+        # 6. Extract class catalog
         class_names = getattr(model, "names", {})
         if isinstance(class_names, list):
             class_names = {i: name for i, name in enumerate(class_names)}
@@ -366,6 +423,7 @@ class YOLOModelLoader:
         conf: Optional[float] = None,
         iou: Optional[float] = None,
         imgsz: Optional[int] = None,
+        classes: Optional[List[int]] = None,
     ) -> Any:
         """Run single-frame inference on CPU using the loaded YOLO model.
 
@@ -374,6 +432,7 @@ class YOLOModelLoader:
             conf: Optional confidence threshold override.
             iou: Optional IoU threshold override.
             imgsz: Optional image size override.
+            classes: Optional class IDs filter override.
 
         Returns:
             ultralytics.engine.results.Results: Ultralytics detection results container.
@@ -403,6 +462,9 @@ class YOLOModelLoader:
         conf_val = conf if conf is not None else self.confidence_threshold
         iou_val = iou if iou is not None else self.iou_threshold
         imgsz_val = imgsz if imgsz is not None else self.image_size
+        classes_val = classes if classes is not None else self.classes
+        max_det_val = self.max_detections
+        agnostic_nms_val = self.agnostic_nms
 
         try:
             results = model.predict(
@@ -412,7 +474,9 @@ class YOLOModelLoader:
                 iou=iou_val,
                 imgsz=imgsz_val,
                 verbose=self.verbose,
-                max_det=self.max_detections,
+                max_det=max_det_val,
+                agnostic_nms=agnostic_nms_val,
+                classes=classes_val,
             )
             return results[0]
         except Exception as e:
@@ -428,12 +492,14 @@ class YOLOModelLoader:
 def verify_yolo_environment(
     config_path: Optional[Union[str, Path]] = None,
     frame_path: Optional[Union[str, Path]] = None,
+    preset: Optional[str] = None,
 ) -> bool:
     """Execute end-to-end YOLO environment, model loading, and smoke inference check.
 
     Args:
         config_path: Path to yolo_config.yaml.
         frame_path: Path to test image frame (defaults to real preprocessed frame 1).
+        preset: Optional perception preset name to apply.
 
     Returns:
         bool: True if all checks pass, False otherwise.
@@ -474,10 +540,20 @@ def verify_yolo_environment(
     print(f"Selected device: {selected_device}")
 
     # 3. Model loading
-    loader = YOLOModelLoader(config_path=config_path, project_root=project_root)
+    loader = YOLOModelLoader(
+        config_path=config_path,
+        project_root=project_root,
+        preset=preset,
+    )
     print(f"YOLO model: {loader.model_name}")
     print(f"Model weights: {loader.weights_path.name}")
     print(f"Model task: {loader.task}")
+    print(f"Confidence threshold: {loader.confidence_threshold}")
+    print(f"IoU threshold: {loader.iou_threshold}")
+    print(f"Image size: {loader.image_size}")
+    print(f"Max detections: {loader.max_detections}")
+    print(f"Agnostic NMS: {loader.agnostic_nms}")
+    print(f"Class filter: {loader.classes}")
 
     model_loading_status = "FAILED"
     inference_status = "FAILED"
@@ -561,6 +637,13 @@ def main() -> None:
         help="Path to yolo_config.yaml (default: config/yolo_config.yaml)",
     )
     parser.add_argument(
+        "--preset",
+        type=str,
+        default=None,
+        choices=["balanced", "high_precision", "high_recall", "cpu_lightweight"],
+        help="Apply perception preset overrides.",
+    )
+    parser.add_argument(
         "--frame-path",
         type=str,
         default=None,
@@ -569,7 +652,11 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.verify or len(sys.argv) == 1:
-        success = verify_yolo_environment(config_path=args.config, frame_path=args.frame_path)
+        success = verify_yolo_environment(
+            config_path=args.config,
+            frame_path=args.frame_path,
+            preset=args.preset,
+        )
         sys.exit(0 if success else 1)
     else:
         parser.print_help()
