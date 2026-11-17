@@ -381,3 +381,4 @@ The `BatchDetector` artifacts directly feed upcoming project milestones:
 1. **Day 3 Task 5 (Multi-Object Tracking):** The sorted sequence in `detection_results.json` provides bounding boxes, confidences, and timestamps directly to the ByteTrack / SORT tracking engine to link frame-to-frame bounding boxes into persistent spatial-temporal tracklets.
 2. **Day 4 (Feature Engineering):** Sequential bounding box dynamics ($\Delta x, \Delta y, \Delta \text{area}$), detection frequencies, and confidence fluctuations are extracted across rolling temporal windows.
 3. **Day 4 Task 4+ (LSTM Reliability Forecasting):** Tracklet histories and confidence trajectories serve as input sequences to predict future detection reliability ($R_{t+h}$).
+
