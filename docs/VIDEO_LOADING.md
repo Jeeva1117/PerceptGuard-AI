@@ -180,3 +180,4 @@ tests/test_video_loader.py::TestVideoLoader::test_08_real_bdd100k_video_integrat
 ## 8. Next Milestones (Strict Boundaries)
 
 Per development phase boundaries, frame decoding, frame extraction, image resizing, blur/sharpness calculation, YOLO inference, and multi-object tracking are deferred to subsequent tasks (Day 2 Task 3 & Day 3).
+

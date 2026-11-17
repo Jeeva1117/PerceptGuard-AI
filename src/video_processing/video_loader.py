@@ -314,3 +314,4 @@ class VideoLoader:
     def __del__(self) -> None:
         """Finalizer fallback to ensure OS file handles are never leaked."""
         self.release()
+
