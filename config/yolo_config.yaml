@@ -1,20 +1,58 @@
 # ==============================================================================
-# PerceptGuard-AI: YOLO Object Detection Environment & Model Configuration
+# PerceptGuard-AI: Advanced YOLO Model Configuration
 # ==============================================================================
+# High-assurance, CPU-optimized perception configuration for autonomous driving.
+# Governing model weights, runtime precision, inference bounds, and presets.
 
-yolo:
-  model_name: "yolo11n"
-  model_weights_path: "models/yolo/yolo11n.pt"
+version: "1.0.0"
+
+# ------------------------------------------------------------------------------
+# Model Architecture & Checkpoint Management
+# ------------------------------------------------------------------------------
+model:
+  name: "yolo11n"
+  architecture: "yolo11"
+  weights_path: "models/yolo/yolo11n.pt"
   task: "detect"
+  pretrained: true
+
+# ------------------------------------------------------------------------------
+# Runtime & Compute Resource Environment
+# ------------------------------------------------------------------------------
+runtime:
   device: "cpu"
+  half_precision: false
+  deterministic: true
+  seed: 42
+
+# ------------------------------------------------------------------------------
+# Perception & Inference Hyperparameters
+# ------------------------------------------------------------------------------
+inference:
   image_size: 640
   confidence_threshold: 0.25
   iou_threshold: 0.45
   max_detections: 100
-  half_precision: false
+  agnostic_nms: false
+  classes: null
   verbose: false
 
+# ------------------------------------------------------------------------------
+# Performance Constraints & CPU Optimization
+# ------------------------------------------------------------------------------
+performance:
+  warmup_iterations: 1
+  max_allowed_latency_ms: 500.0
+  batch_size: 1
+  cpu_threads: null
+
+# ------------------------------------------------------------------------------
+# Validation Boundaries & Platform Constraints
+# ------------------------------------------------------------------------------
 validation:
+  strict_mode: true
+  validate_weights: true
+  validate_parameters: true
   min_confidence: 0.01
   max_confidence: 1.0
   min_iou: 0.01
@@ -28,6 +66,46 @@ validation:
   supported_models:
     - "yolo11n"
     - "yolo11s"
+    - "yolo11m"
     - "yolov8n"
     - "yolov8s"
 
+# ------------------------------------------------------------------------------
+# Operational Perception Presets
+# ------------------------------------------------------------------------------
+presets:
+  balanced:
+    confidence_threshold: 0.25
+    iou_threshold: 0.45
+    image_size: 640
+    max_detections: 100
+  high_precision:
+    confidence_threshold: 0.50
+    iou_threshold: 0.50
+    image_size: 640
+    max_detections: 50
+  high_recall:
+    confidence_threshold: 0.10
+    iou_threshold: 0.40
+    image_size: 640
+    max_detections: 200
+  cpu_lightweight:
+    confidence_threshold: 0.30
+    iou_threshold: 0.50
+    image_size: 320
+    max_detections: 50
+
+# ------------------------------------------------------------------------------
+# Backward Compatibility Section (Task 1 Direct Reference)
+# ------------------------------------------------------------------------------
+yolo:
+  model_name: "yolo11n"
+  model_weights_path: "models/yolo/yolo11n.pt"
+  task: "detect"
+  device: "cpu"
+  image_size: 640
+  confidence_threshold: 0.25
+  iou_threshold: 0.45
+  max_detections: 100
+  half_precision: false
+  verbose: false
