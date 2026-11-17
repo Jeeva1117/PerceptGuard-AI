@@ -172,3 +172,4 @@ Benchmarked on host hardware (Intel Core i3 with 8 logical threads, 8 GB RAM, CP
 All implemented modules—from video loading and frame preprocessing through single-image detection, batch processing, visualization, and metrics analysis—are fully implemented, structurally decoupled, memory-bounded on CPU, and verified with **386 passing automated tests (100% pass rate)**. The limitation reflects the honest, transparent absence of ground-truth bounding box labels for the raw BDD100K driving video, which appropriately marks ground-truth accuracy metrics as `NOT AVAILABLE` rather than fabricating synthetic evaluation claims.
 
 The PerceptGuard AI computer vision foundation is verified, sound, reproducible, and ready for multi-object tracking and recurrent reliability forecasting.
+
