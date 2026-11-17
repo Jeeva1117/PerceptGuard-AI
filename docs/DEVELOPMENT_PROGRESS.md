@@ -71,3 +71,34 @@ This document maintains an auditable, day-by-day record of technical milestones,
 
 ### Remaining Issues / Notes
 - None. Day 1 is fully completed, tested, and synchronized. Awaiting explicit user approval before starting Day 2.
+
+
+---
+
+## Day 2: Dataset Acquisition & Video Processing Pipeline
+
+### Task 1: Dataset Collection & Acquisition
+- **Date:** 2026-11-17
+- **Milestone:** Autonomous Driving Dataset Research, Governance & Genuine Sample Acquisition
+- **Lead Engineer:** Staff Machine Learning & Autonomous Driving Research Engineer
+- **Status:** **Task 1 Complete & Verified**
+
+#### Completed Tasks
+1. **BDD100K Dataset Research:** Researched official documentation at `https://bdd-data.berkeley.edu/`, identifying dataset taxonomy (100K raw videos, 10K MOT tracking sequences, 100K keyframe detection sets, drivable area and lane marking annotations).
+2. **Access & Licensing Auditing:** Documented UC Berkeley's BDD100K license terms (educational/research permissive, non-commercial, copyright retention, mandatory CVPR 2020 citation). Researched AWS Cognito portal registration procedures.
+3. **Hardware Constraint Adherence:** Prevented large multi-gigabyte/terabyte downloads on the host Intel Core i3 development machine.
+4. **Legitimate Sample Video Acquisition:** Acquired genuine reference urban driving sequence `026c7465-309f6d33` from BDD100K training split (`49,774,590 bytes / 47.47 MB`, SHA-256: `12c6965c1ace511721e9ac2fbbb36d2723c5888d1dba698d5b8458adba08ad4b`).
+5. **Local Storage & Source Tracking:** Stored original, unmodified video in `datasets/raw/converted_026c7465-309f6d33.mp4` retaining original hash identity.
+6. **Data Governance & Git Security:** Verified that `.gitignore` strictly excludes `datasets/raw/*`, keeping raw driving video locally stored and prevented from leaking to public GitHub repository.
+7. **Source Documentation:** Created `docs/DATASET_SOURCES.md` specifying provider, licensing, technical specifications, and acquisition audit trail.
+
+#### Files Created or Modified
+- `docs/DATASET_SOURCES.md`: Comprehensive dataset source, licensing, and video specifications documentation.
+- `datasets/raw/converted_026c7465-309f6d33.mp4`: Local uncommitted genuine BDD100K driving sample (47.47 MB).
+- `docs/DEVELOPMENT_PROGRESS.md`: Updated with Day 2 Task 1 milestone record.
+
+#### Git Version Control
+- **Branch:** `main`
+- **Remote:** `https://github.com/Jeeva1117/PerceptGuard-AI.git`
+- **Commit Message:** `data: document autonomous driving dataset source and acquisition`
+- **GitHub Push Status:** In Progress
