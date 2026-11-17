@@ -209,6 +209,17 @@ python -m src.detection.batch_detector --dataset driving_sample --start-index 50
 ```
 For architecture specifications, schema v1.0 contracts, and benchmarks, consult [docs/BATCH_OBJECT_DETECTION.md](docs/BATCH_OBJECT_DETECTION.md).
 
+### 9. Run Object Detection Visualization Engine
+Render deterministic, high-contrast bounding boxes, class labels, and confidence scores directly from Task 4 detection JSON without re-running inference:
+```bash
+# Full dataset visualization on actual Task 4 detection output
+python -m src.visualization.detection_visualizer --detection-file datasets/processed/driving_sample/detections/batch_runs/run_20261117_115348_e1789b/detection_results.json --overwrite
+
+# Rapid 10-frame smoke visualization test
+python -m src.visualization.detection_visualizer --detection-file datasets/processed/driving_sample/detections/batch_runs/run_20261117_115348_e1789b/detection_results.json --max-frames 10 --overwrite --verbose
+```
+For architecture specifications, schema v1.0 visual contracts, and benchmarks, consult [docs/DETECTION_VISUALIZATION.md](docs/DETECTION_VISUALIZATION.md).
+
 ---
 
 ## 7. Development Roadmap
@@ -224,7 +235,7 @@ For architecture specifications, schema v1.0 contracts, and benchmarks, consult 
   - Implemented `VideoLoader`, `FrameExtractor`, and letterboxed `FramePreprocessor` ($640 \times 360$).
   - Implemented `MetadataGenerator`, `DatasetOrganizer`, and multi-tier `DatasetValidator`.
   - Audited 200 extracted and preprocessed frames with 100% quality gate approval.
-- [ ] **Day 3: Object Detection & Multi-Object Tracking**
+- [ ] **Day 3: Object Detection & Perception Pipeline**
   - [x] **Task 1: Advanced YOLO Environment & Pretrained Model Setup**
     - Configured CPU-optimized YOLO11n (`yolo11n.pt`) with lazy-loaded inference engine.
     - Verified sub-50ms CPU inference (~20.6 FPS) on real driving frames.
@@ -244,7 +255,13 @@ For architecture specifications, schema v1.0 contracts, and benchmarks, consult 
     - Single-pass model load invariant; memory-bounded sequential CPU inference loop (< 300 MB RSS).
     - Per-frame fault containment; 4 versioned (v1.0) output artifacts (`results`, `summary`, `errors`, `metadata`).
     - Automated test suite (29 batch detector tests, 268 repository tests passing).
-  - [ ] **Task 5: Multi-Object Tracking (ByteTrack)**
+  - [x] **Task 5: Advanced Object Detection Visualization Engine**
+    - High-contrast bounding box and label rendering decoupled from inference (zero YOLO reload).
+    - Mathematically deterministic class color system; boundary clamping and non-clipping label positioning.
+    - Pristine zero-detection frame handling; atomic multi-file persistence (`annotated_frames/`, summary, errors, metadata).
+    - Automated test suite (29 visualization tests, 297+ repository tests passing).
+  - [ ] **Task 6: Detection Metrics & Reliability Analysis**
+  - [ ] **Task 7: Final Perception Audit & Verification**
 - [ ] **Day 4: Feature Extraction & Sequence Construction**
   - Implement 16-dimensional per-track feature vector extraction.
   - Build sliding historical temporal sequence windows ($W=10$).
