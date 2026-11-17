@@ -459,7 +459,8 @@ class TestDetectionMetrics(unittest.TestCase):
         mock_file = self._create_mock_json([
             {"image_filename": "f1.jpg", "processing_status": "success", "detection_count": 0, "detections": []}
         ])
-        exit_code = main(["--input", str(mock_file), "--overwrite"])
+        out_dir = self.temp_path / "cli_out"
+        exit_code = main(["--input", str(mock_file), "--output-dir", str(out_dir), "--overwrite"])
         self.assertEqual(exit_code, 0)
 
     def test_22_partial_analysis(self) -> None:
