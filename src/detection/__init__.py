@@ -8,6 +8,17 @@ Extracts bounding boxes, detection confidences, and object classes.
 import warnings
 warnings.filterwarnings("ignore", category=RuntimeWarning, message=".*found in sys.modules.*")
 
+from src.detection.batch_detector import (
+    BatchDetectionError,
+    BatchDetector,
+    BatchErrorRecord,
+    BatchExecutionError,
+    BatchSummary,
+    DatasetEmptyError,
+    DatasetNotFoundError,
+    FrameDetectionRecord,
+    MetadataParsingError,
+)
 from src.detection.single_image_detector import (
     DetectedObject,
     DetectionInferenceError,
@@ -42,6 +53,11 @@ from src.detection.yolo_model_loader import (
 )
 
 __all__ = [
+    # Batch Object Detection Engine & Contracts
+    "BatchDetector",
+    "BatchSummary",
+    "FrameDetectionRecord",
+    "BatchErrorRecord",
     # Single Image Detection Engine & Contracts
     "SingleImageDetector",
     "SingleImageDetectionResult",
@@ -72,4 +88,9 @@ __all__ = [
     "ImageDecodeError",
     "DetectionInferenceError",
     "DetectionSerializationError",
+    "BatchDetectionError",
+    "DatasetNotFoundError",
+    "DatasetEmptyError",
+    "MetadataParsingError",
+    "BatchExecutionError",
 ]

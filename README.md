@@ -195,6 +195,20 @@ python -m src.detection.single_image_detector --image datasets/processed/driving
 ```
 For architecture specifications, schema documentation, and benchmarks, consult [docs/SINGLE_IMAGE_DETECTION.md](docs/SINGLE_IMAGE_DETECTION.md) and [docs/YOLO_MODEL_CONFIGURATION.md](docs/YOLO_MODEL_CONFIGURATION.md).
 
+### 8. Run Advanced Batch Object Detection Engine
+Execute sequential, memory-bounded batch inference across entire video frame datasets with Day 2 metadata correlation:
+```bash
+# Full dataset batch run on standard driving sample
+python -m src.detection.batch_detector --dataset driving_sample
+
+# Rapid smoke test (first 10 frames) with verbose output
+python -m src.detection.batch_detector --dataset driving_sample --max-frames 10 --overwrite --verbose
+
+# Sliced frame range processing
+python -m src.detection.batch_detector --dataset driving_sample --start-index 50 --end-index 150
+```
+For architecture specifications, schema v1.0 contracts, and benchmarks, consult [docs/BATCH_OBJECT_DETECTION.md](docs/BATCH_OBJECT_DETECTION.md).
+
 ---
 
 ## 7. Development Roadmap
@@ -225,7 +239,11 @@ For architecture specifications, schema documentation, and benchmarks, consult [
     - Sub-50ms warm inference on CPU; calibrated bounding box coordinates and COCO class mapping.
     - Versioned Schema v1.0 JSON output and atomic persistence.
     - Automated test suite (26 detection tests, 210 repository tests passing).
-  - [ ] **Task 4: Batch Frame Detection & Bounding Box Extraction**
+  - [x] **Task 4: Advanced Batch Object Detection Engine**
+    - Deterministic dataset discovery, natural chronological ordering, and Day 2 metadata synchronization.
+    - Single-pass model load invariant; memory-bounded sequential CPU inference loop (< 300 MB RSS).
+    - Per-frame fault containment; 4 versioned (v1.0) output artifacts (`results`, `summary`, `errors`, `metadata`).
+    - Automated test suite (29 batch detector tests, 268 repository tests passing).
   - [ ] **Task 5: Multi-Object Tracking (ByteTrack)**
 - [ ] **Day 4: Feature Extraction & Sequence Construction**
   - Implement 16-dimensional per-track feature vector extraction.

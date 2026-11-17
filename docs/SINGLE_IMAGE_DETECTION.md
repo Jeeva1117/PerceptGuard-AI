@@ -222,3 +222,4 @@ Implemented in [tests/detection/test_single_image_detector.py](file:///c:/Users/
 
 1. **Static 2D Boxes:** Single image detection produces instantaneous spatial bounding boxes; temporal associations and velocity vectors require multi-object tracking (ByteTrack in Day 3 Task 5).
 2. **Confidence Calibration:** Detector confidence reflects categorical softmax probability, not future localization reliability ($R_{t+h}$). Future tasks will train an LSTM meta-forecaster on extracted feature sequences.
+
