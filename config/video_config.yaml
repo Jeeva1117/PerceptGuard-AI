@@ -1,4 +1,4 @@
-# PerceptGuard-AI: Video Ingestion and Processing Configuration
+# PerceptGuard-AI: Video Ingestion, Extraction, and Preprocessing Configuration
 
 video:
   input_directory: datasets/raw
@@ -23,4 +23,22 @@ frame_extraction:
   filename_prefix: frame_
   filename_padding: 6
   jpeg_quality: 95
+  overwrite: true
+
+preprocessing:
+  input_directory: datasets/processed/driving_sample/frames
+  output_directory: datasets/processed/driving_sample/preprocessed_frames
+  target_width: 640
+  target_height: 360
+  preserve_aspect_ratio: true
+  padding_color: [0, 0, 0]
+  color_mode: BGR
+  image_format: jpg
+  jpeg_quality: 95
+  calculate_blur: true
+  calculate_brightness: true
+  calculate_contrast: true
+  blur_threshold: null
+  brightness_threshold_low: 40.0
+  brightness_threshold_high: 220.0
   overwrite: true
