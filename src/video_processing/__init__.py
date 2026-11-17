@@ -1,7 +1,7 @@
 """PerceptGuard-AI: Video Processing Package.
 
 Provides production modules for video ingestion, validation, frame decoding,
-and metadata extraction for autonomous driving computer vision pipelines.
+temporal sampling, and frame extraction for autonomous driving computer vision pipelines.
 """
 
 from src.video_processing.video_loader import (
@@ -15,7 +15,18 @@ from src.video_processing.video_loader import (
     InvalidVideoMetadataError,
 )
 
+from src.video_processing.frame_extractor import (
+    ExtractedFrameInfo,
+    ExtractionSummary,
+    FrameExtractionError,
+    FrameExtractor,
+    FrameSaveError,
+    InvalidExtractionConfigError,
+    VideoReadError,
+)
+
 __all__ = [
+    # Video Ingestion & Metadata
     "VideoLoader",
     "VideoMetadata",
     "VideoProcessingError",
@@ -24,5 +35,12 @@ __all__ = [
     "VideoOpenError",
     "CorruptedVideoError",
     "InvalidVideoMetadataError",
+    # Frame Extraction & Sampling
+    "FrameExtractor",
+    "ExtractedFrameInfo",
+    "ExtractionSummary",
+    "FrameExtractionError",
+    "InvalidExtractionConfigError",
+    "FrameSaveError",
+    "VideoReadError",
 ]
-
