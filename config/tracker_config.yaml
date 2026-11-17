@@ -1,0 +1,56 @@
+# ==============================================================================
+# PerceptGuard AI: Production Multi-Object Tracking Configuration
+# ==============================================================================
+# Tracker Architecture: ByteTrack (Zhang et al., ECCV 2022)
+# Integration: Ultralytics-compatible configuration for CPU-first perception pipelines
+#
+# ByteTrack associates detections across frames in two stages:
+# 1. High-confidence detections are matched against existing active tracks using
+#    Kalman-predicted motion and spatial overlap (IoU distance).
+# 2. Unmatched tracks from Stage 1 are associated with low-confidence detections
+#    to maintain trajectory continuity through occlusion, motion blur, and scale changes.
+# ==============================================================================
+
+# Tracker Backend Architecture
+# Must be 'bytetrack' for ByteTrack multi-object tracking.
+tracker_type: bytetrack
+
+# First-Stage Association Threshold (High Confidence)
+# Minimum detection confidence score to qualify for first-stage bipartite matching.
+# Detections with conf >= track_high_thresh are treated as reliable observations.
+# Range: (0.0, 1.0], Default: 0.25 (CPU-balanced)
+track_high_thresh: 0.25
+
+# Second-Stage Association Threshold (Low Confidence)
+# Detection confidence floor for recovering occluded or degraded objects.
+# Detections with track_low_thresh <= conf < track_high_thresh are passed to Stage 2.
+# Must satisfy: 0.0 <= track_low_thresh < track_high_thresh
+# Range: [0.0, 1.0), Default: 0.10
+track_low_thresh: 0.10
+
+# New Track Initialization Threshold
+# Minimum detection confidence required to spawn a new tracklet.
+# Unmatched high-confidence detections with conf >= new_track_thresh become new tracks.
+# Prevents spurious background noise or false detections from instantiating tracks.
+# Range: (0.0, 1.0], Default: 0.25
+new_track_thresh: 0.25
+
+# Track Memory Retention Buffer (Frames)
+# Maximum number of consecutive frames a lost track is retained in memory before deletion.
+# In a 30 FPS video, track_buffer: 30 preserves tracks across ~1.0 second of occlusion.
+# Higher values handle longer occlusions but increase memory and risk ID switches.
+# Range: [1, 300], Default: 30
+track_buffer: 30
+
+# Association Distance Threshold (IoU Cost Gate)
+# Cost threshold for bipartite assignment. In IoU cost space (1.0 - IoU), an association
+# is rejected if cost > match_thresh. Equivalently, requires spatial IoU >= (1.0 - match_thresh).
+# Lower values enforce stricter spatial proximity; higher values tolerate larger inter-frame motion.
+# Range: (0.0, 1.0], Default: 0.80 (corresponds to minimum 0.20 IoU overlap)
+match_thresh: 0.80
+
+# Detection Score and Motion Fusion
+# If True, fuses detection confidence score with spatial IoU similarity during association.
+# Helps stabilize identity assignment when detections are temporarily degraded.
+# Type: bool, Default: true
+fuse_score: true
