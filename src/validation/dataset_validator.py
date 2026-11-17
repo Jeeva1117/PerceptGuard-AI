@@ -730,3 +730,64 @@ class DatasetValidator:
 
         logger.info("Successfully persisted validation report at: %s", target_file)
         return target_file
+
+
+def main() -> None:
+    """CLI Entry point for dataset validation pipeline."""
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="PerceptGuard AI - Dataset Quality Assurance & Validation Pipeline"
+    )
+    parser.add_argument(
+        "--dataset-id",
+        type=str,
+        default="driving_sample",
+        help="Target dataset ID to validate (default: 'driving_sample')",
+    )
+    parser.add_argument(
+        "--config",
+        type=str,
+        default=None,
+        help="Path to video_config.yaml (default: config/video_config.yaml)",
+    )
+    parser.add_argument(
+        "--output-report",
+        type=str,
+        default=None,
+        help="Additional destination path for validation report JSON",
+    )
+    args = parser.parse_args()
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    )
+
+    validator = DatasetValidator(dataset_id=args.dataset_id, config_path=args.config)
+    report = validator.validate_dataset()
+
+    # Save to default dataset directory
+    default_saved = validator.save_validation_report()
+    print(f"Validation report saved to: {default_saved}")
+
+    # Save to additional output destination if specified
+    if args.output_report:
+        extra_saved = validator.save_validation_report(output_path=args.output_report)
+        print(f"Validation report saved to: {extra_saved}")
+
+    print("=" * 60)
+    print(f"Dataset Validation Summary: {args.dataset_id}")
+    print(f"Overall Status: {report.overall_status}")
+    print(f"Ready for Day 3 Perception: {report.is_ready_for_day_3}")
+    print(f"Total Issues: {len(report.issues)}")
+    for check_name, check_data in report.checks.items():
+        print(f"  - {check_name}: {check_data['status']}")
+    print("=" * 60)
+
+    if report.overall_status == "FAIL":
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
