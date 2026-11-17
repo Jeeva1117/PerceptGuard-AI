@@ -105,39 +105,44 @@ This document maintains an auditable, day-by-day record of technical milestones,
 - **GitHub Push Status:** Succeeded (`origin/main` synchronized)
 
 
-### Task 2: Video Loading Module
+### Task 2: Video Loading Module & Ingestion Diagnostics
 - **Date:** 2026-11-17
-- **Milestone:** Reusable OpenCV VideoLoader Implementation, Metadata Validation & Integration Testing
+- **Milestone:** Reusable OpenCV VideoLoader Implementation, IDE Preview Diagnosis, Metadata Validation, CLI Verification & Integration Testing
 - **Lead Engineer:** Staff Computer Vision & Autonomous Driving ML Systems Engineer
-- **Status:** **Task 2 Complete & Verified**
+- **Status:** **Task 2 Complete, Diagnosed & Verified**
 
 #### Completed Tasks
 1. **VideoLoader Architecture:** Implemented modular, object-oriented `VideoLoader` class and immutable `VideoMetadata` dataclass in `src/video_processing/video_loader.py`.
 2. **Context Manager Support:** Engineered full Python context manager lifecycle (`__enter__`, `__exit__`), guaranteeing automatic and idempotent release of OpenCV `VideoCapture` OS file descriptors.
-3. **Structured Domain Exceptions:** Implemented custom exception hierarchy: `VideoNotFoundError`, `InvalidVideoPathError`, `VideoOpenError`, `CorruptedVideoError`, and `InvalidVideoMetadataError`.
-4. **Physical Sanity Validation:** Enforced physical parameter boundary checks on extracted FPS, frame count, spatial resolution, and duration calculation (`total_frames / fps`).
-5. **Configurable Thresholds:** Established `config/video_config.yaml` defining supported extensions (`.mp4`, `.avi`, `.mov`, `.mkv`) and validation constraints.
-6. **Automated Unit & Integration Testing:** Created comprehensive 8-test suite in `tests/test_video_loader.py` covering synthetic video generation, path edge cases, corrupted file handling, resource release, and live integration against the acquired BDD100K driving sample (`converted_026c7465-309f6d33.mp4`).
-7. **Technical Documentation:** Authored complete API reference, error-handling patterns, and performance guarantees in `docs/VIDEO_LOADING.md`.
+3. **Structured Domain Exceptions:** Implemented custom exception hierarchy: `VideoNotFoundError`, `InvalidVideoPathError`, `VideoOpenError`, `CorruptedVideoError`, `EmptyVideoError`, `FirstFrameDecodeError`, and `InvalidVideoMetadataError`.
+4. **Antigravity Editor Preview Diagnosis:** Diagnosed editor loading error ("An error occurred while loading the video file.") as an Electron/Chromium built-in HTML5 `<video>` engine limitation lacking ISO MPEG-4 Part 2 (`FMP4`) codec support. Verified that OpenCV's FFMPEG backend opens and decodes the original video flawlessly.
+5. **Robust First-Frame & Zero-Byte Verification:** Enhanced `VideoLoader` with zero-byte file detection (`EmptyVideoError`) and first-frame decoding validation on open (`FirstFrameDecodeError`), with automatic stream pointer rewind (`cap.set(cv2.CAP_PROP_POS_FRAMES, 0.0)`).
+6. **Reusable Verification CLI:** Added standardized command `python -m src.video_processing.video_loader --verify` outputting structured diagnostic status: `VIDEO FILE`, `VIDEO OPEN`, `CODEC / BACKEND`, `RESOLUTION`, `FPS`, `FRAME COUNT`, `DURATION`, `FIRST FRAME DECODE`, and `VIDEO LOADING STATUS`.
+7. **Physical Sanity Validation:** Enforced physical parameter boundary checks on extracted FPS, frame count, spatial resolution, and duration calculation (`total_frames / fps`).
+8. **Configurable Thresholds:** Established `config/video_config.yaml` defining supported extensions (`.mp4`, `.avi`, `.mov`, `.mkv`) and validation constraints.
+9. **Automated Unit & Integration Testing:** Expanded automated test suite to 13 tests in `tests/test_video_loader.py` covering synthetic video generation, path edge cases, corrupted file handling, zero-byte handling, first-frame decode failure trapping, resource release, verification method, and live integration against the acquired BDD100K driving sample (`converted_026c7465-309f6d33.mp4`).
+10. **Technical Documentation:** Authored complete API reference, IDE preview diagnosis, error-handling patterns, and CLI verification guide in `docs/VIDEO_LOADING.md`.
 
 #### Files Created or Modified
-- `src/video_processing/__init__.py`: Package export declarations.
-- `src/video_processing/video_loader.py`: Reusable VideoLoader class, metadata extraction, and exception hierarchy.
-- `tests/test_video_loader.py`: 8 automated unit and integration tests.
+- `src/video_processing/video_loader.py`: Reusable VideoLoader class, metadata extraction, first-frame verification, verification API, and CLI entrypoint.
+- `src/video_processing/__init__.py`: Package export declarations for `EmptyVideoError`, `FirstFrameDecodeError`, and `verify_video_file`.
+- `tests/test_video_loader.py`: 13 automated unit and integration tests (100% pass rate).
 - `config/video_config.yaml`: Centralized video ingestion parameters and validation thresholds.
 - `outputs/logs/.gitkeep`: Directory anchor for execution logs.
-- `docs/VIDEO_LOADING.md`: Technical specification, API guide, and test telemetry report.
+- `docs/VIDEO_LOADING.md`: Technical specification, IDE preview diagnosis, API guide, and CLI verification documentation.
 - `requirements.txt`: Added `pyyaml>=6.0.0`.
-- `docs/DEVELOPMENT_PROGRESS.md`: Updated with Day 2 Task 2 completion audit.
+- `docs/DEVELOPMENT_PROGRESS.md`: Updated with video loading diagnostic findings and verification audit.
 
 #### Verified Real-Video Integration Telemetry
 - **Target File:** `datasets/raw/converted_026c7465-309f6d33.mp4`
+- **File Size:** 49,774,590 bytes (47.47 MB)
 - **Resolution:** 720 × 1280 pixels
 - **FPS:** 30.09
 - **Total Frames:** 1,204 frames
 - **Duration:** 40.01 seconds
-- **Codec:** FMP4 (ISO MPEG-4)
-- **Status:** Verified valid and decodable
+- **Codec / Backend:** FMP4 / FFMPEG
+- **First Frame Decode:** SUCCESS
+- **Status:** PASS (Verified valid and decodable)
 
 #### Git Version Control
 - **Branch:** `main`

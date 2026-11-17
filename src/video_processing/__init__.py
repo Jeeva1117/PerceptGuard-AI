@@ -5,6 +5,9 @@ temporal sampling, frame extraction, image preprocessing, metadata generation,
 and dataset organization for autonomous driving computer vision pipelines.
 """
 
+import warnings
+warnings.filterwarnings("ignore", category=RuntimeWarning, message=".*found in sys.modules.*")
+
 from src.video_processing.video_loader import (
     VideoLoader,
     VideoMetadata,
@@ -13,7 +16,10 @@ from src.video_processing.video_loader import (
     InvalidVideoPathError,
     VideoOpenError,
     CorruptedVideoError,
+    EmptyVideoError,
+    FirstFrameDecodeError,
     InvalidVideoMetadataError,
+    verify_video_file,
 )
 
 from src.video_processing.frame_extractor import (
@@ -67,7 +73,10 @@ __all__ = [
     "InvalidVideoPathError",
     "VideoOpenError",
     "CorruptedVideoError",
+    "EmptyVideoError",
+    "FirstFrameDecodeError",
     "InvalidVideoMetadataError",
+    "verify_video_file",
     # Frame Extraction & Sampling
     "FrameExtractor",
     "ExtractedFrameInfo",

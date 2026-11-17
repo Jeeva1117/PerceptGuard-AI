@@ -8,12 +8,20 @@ Constraints:
 - Lightweight CPU execution (Intel Core i3 compatible)
 - Avoids decoding entire video into memory
 - Strictly cleans up all VideoCapture OS file descriptors
+- Guaranteed non-destructive operations
 """
 
 from dataclasses import asdict, dataclass
 import logging
 from pathlib import Path
+import sys
 from typing import Any, Dict, Optional, Set, Union
+
+# Ensure project root is in sys.path when invoked directly
+_project_root = Path(__file__).resolve().parents[2]
+if str(_project_root) not in sys.path:
+    sys.path.insert(0, str(_project_root))
+
 import cv2
 import yaml
 
@@ -44,8 +52,18 @@ class VideoOpenError(VideoProcessingError):
     pass
 
 
-class CorruptedVideoError(VideoProcessingError):
+class CorruptedVideoError(VideoOpenError):
     """Raised when the video file cannot provide valid headers or decodable stream."""
+    pass
+
+
+class EmptyVideoError(CorruptedVideoError):
+    """Raised when the target video file exists but has a size of 0 bytes."""
+    pass
+
+
+class FirstFrameDecodeError(CorruptedVideoError):
+    """Raised when OpenCV opens the container but fails to decode the first frame."""
     pass
 
 
@@ -70,6 +88,7 @@ class VideoMetadata:
     duration_seconds: float
     codec: str
     is_valid: bool
+    backend: str = "FFMPEG"
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert metadata to dictionary with string path representation."""
@@ -85,6 +104,7 @@ class VideoMetadata:
             f"frames={self.total_frames}, "
             f"duration={self.duration_seconds:.2f}s, "
             f"codec='{self.codec}', "
+            f"backend='{self.backend}', "
             f"status={'VALID' if self.is_valid else 'INVALID'})"
         )
 
@@ -133,7 +153,7 @@ class VideoLoader:
         self._load_config(config_path)
 
         if validate_on_init:
-            self.open()
+            self.open(verify_first_frame=True)
             self.get_metadata()
 
     def _load_config(self, config_path: Optional[Union[str, Path]]) -> None:
@@ -161,7 +181,7 @@ class VideoLoader:
                 logger.warning("Failed to parse config file %s: %s. Using defaults.", config_path, e)
 
     def _verify_path_integrity(self) -> None:
-        """Validate filesystem path existence, file type, and extension."""
+        """Validate filesystem path existence, file type, file size, and extension."""
         if not self.video_path.exists():
             msg = f"Video file not found at path: '{self.video_path}'"
             logger.error(msg)
@@ -171,6 +191,11 @@ class VideoLoader:
             msg = f"Provided path is a directory, not a video file: '{self.video_path}'"
             logger.error(msg)
             raise InvalidVideoPathError(msg)
+
+        if self.video_path.stat().st_size == 0:
+            msg = f"Video file is empty (0 bytes): '{self.video_path}'"
+            logger.error(msg)
+            raise EmptyVideoError(msg)
 
         ext = self.video_path.suffix.lower()
         if ext not in self._supported_extensions:
@@ -194,8 +219,12 @@ class VideoLoader:
         except Exception:
             return "UNKNOWN"
 
-    def open(self) -> bool:
-        """Initialize OpenCV VideoCapture and confirm the stream is opened.
+    def open(self, verify_first_frame: bool = True) -> bool:
+        """Initialize OpenCV VideoCapture and confirm the stream is opened and decodable.
+
+        Args:
+            verify_first_frame: If True, tests decoding the first frame to confirm decodability
+                                and rewinds the stream pointer back to 0.
 
         Returns:
             bool: True if video is successfully opened and decodable.
@@ -203,7 +232,9 @@ class VideoLoader:
         Raises:
             VideoNotFoundError: If the file does not exist.
             InvalidVideoPathError: If the path is a directory.
+            EmptyVideoError: If the file exists but has 0 bytes.
             VideoOpenError: If OpenCV fails to open or parse the video container.
+            FirstFrameDecodeError: If first frame decoding fails when verify_first_frame is True.
         """
         self._verify_path_integrity()
 
@@ -219,6 +250,24 @@ class VideoLoader:
             logger.error(msg)
             self.release()
             raise VideoOpenError(msg)
+
+        if verify_first_frame:
+            ret, frame = self._capture.read()
+            if not ret or frame is None or frame.size == 0:
+                self.release()
+                msg = (
+                    f"OpenCV opened the container for '{self.video_path.name}', "
+                    "but failed to decode the first video frame (stream may be corrupted or codec unsupported)."
+                )
+                logger.error(msg)
+                raise FirstFrameDecodeError(msg)
+
+            # Rewind capture pointer to frame 0
+            seek_ok = self._capture.set(cv2.CAP_PROP_POS_FRAMES, 0.0)
+            if not seek_ok or int(self._capture.get(cv2.CAP_PROP_POS_FRAMES)) != 0:
+                # Fallback: re-open if seek failed on container
+                self._capture.release()
+                self._capture = cv2.VideoCapture(str(self.video_path))
 
         return True
 
@@ -266,7 +315,7 @@ class VideoLoader:
             InvalidVideoMetadataError: If metadata attributes fail physical sanity checks.
         """
         if not self.is_opened():
-            self.open()
+            self.open(verify_first_frame=True)
 
         if self._capture is None:
             raise VideoOpenError(f"Cannot retrieve metadata; VideoCapture is uninitialized for '{self.video_path}'.")
@@ -277,6 +326,7 @@ class VideoLoader:
         total_frames = int(self._capture.get(cv2.CAP_PROP_FRAME_COUNT))
         fourcc = self._capture.get(cv2.CAP_PROP_FOURCC)
         codec = self._decode_fourcc(fourcc)
+        backend = self._capture.getBackendName()
 
         # Validate metadata integrity
         if fps <= 0.0 or fps < self._min_fps or fps > self._max_fps:
@@ -306,18 +356,114 @@ class VideoLoader:
             duration_seconds=duration_seconds,
             codec=codec,
             is_valid=True,
+            backend=backend,
         )
 
         logger.info(
-            "Extracted VideoMetadata: %dx%d @ %.2f FPS, %d frames (%.2fs), codec='%s'",
+            "Extracted VideoMetadata: %dx%d @ %.2f FPS, %d frames (%.2fs), codec='%s', backend='%s'",
             width,
             height,
             fps,
             total_frames,
             duration_seconds,
             codec,
+            backend,
         )
         return self._metadata
+
+    def verify(self) -> Dict[str, Any]:
+        """Perform comprehensive, non-destructive verification of the video file.
+
+        Returns:
+            Dict[str, Any]: Verification telemetry with exact status indicators.
+        """
+        results: Dict[str, Any] = {
+            "video_path": str(self.video_path),
+            "filename": self.video_path.name,
+            "file_exists": False,
+            "file_size_bytes": 0,
+            "video_open": False,
+            "backend": "NONE",
+            "codec": "UNKNOWN",
+            "resolution": "N/A",
+            "width": 0,
+            "height": 0,
+            "fps": 0.0,
+            "frame_count": 0,
+            "duration_seconds": 0.0,
+            "first_frame_decode": False,
+            "status": "FAIL",
+            "error_message": None,
+        }
+
+        # 1. Path existence and file type
+        if not self.video_path.exists():
+            results["error_message"] = f"Video file not found at: '{self.video_path}'"
+            return results
+
+        if not self.video_path.is_file():
+            results["error_message"] = f"Provided path is not a regular file: '{self.video_path}'"
+            return results
+
+        file_size = self.video_path.stat().st_size
+        results["file_exists"] = True
+        results["file_size_bytes"] = file_size
+
+        if file_size == 0:
+            results["error_message"] = f"Video file is empty (0 bytes): '{self.video_path}'"
+            return results
+
+        # 2. Open via OpenCV VideoCapture
+        cap = cv2.VideoCapture(str(self.video_path))
+        try:
+            if not cap.isOpened():
+                results["error_message"] = f"OpenCV failed to open video stream at: '{self.video_path}'"
+                return results
+
+            results["video_open"] = True
+            results["backend"] = cap.getBackendName()
+            fourcc = cap.get(cv2.CAP_PROP_FOURCC)
+            codec = self._decode_fourcc(fourcc)
+            results["codec"] = codec
+
+            w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            fps = float(cap.get(cv2.CAP_PROP_FPS))
+            cnt = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+            results["width"] = w
+            results["height"] = h
+            results["resolution"] = f"{w} x {h}"
+            results["fps"] = round(fps, 2)
+            results["frame_count"] = cnt
+            duration = (cnt / fps) if fps > 0.0 else 0.0
+            results["duration_seconds"] = round(duration, 2)
+
+            # Metadata validation
+            if w <= 0 or h <= 0 or fps <= 0.0 or cnt <= 0:
+                results["error_message"] = (
+                    f"Invalid stream telemetry: {w}x{h} @ {fps:.2f} FPS, {cnt} frames"
+                )
+                return results
+
+            # 3. First frame decoding verification
+            ret, frame = cap.read()
+            if not ret or frame is None or frame.size == 0:
+                results["first_frame_decode"] = False
+                results["error_message"] = (
+                    "OpenCV opened the container, but failed to decode the first video frame."
+                )
+                return results
+
+            results["first_frame_decode"] = True
+            results["status"] = "PASS"
+            return results
+
+        except Exception as e:
+            results["error_message"] = f"Exception during video verification: {e}"
+            return results
+        finally:
+            cap.release()
 
     def release(self) -> None:
         """Safely release the underlying OpenCV VideoCapture resource."""
@@ -333,7 +479,7 @@ class VideoLoader:
 
     def __enter__(self) -> "VideoLoader":
         """Context manager entry; opens video stream."""
-        self.open()
+        self.open(verify_first_frame=True)
         return self
 
     def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
@@ -344,3 +490,128 @@ class VideoLoader:
         """Finalizer fallback to ensure OS file handles are never leaked."""
         self.release()
 
+
+# ==============================================================================
+# Verification Runner & CLI
+# ==============================================================================
+
+def verify_video_file(
+    video_path: Optional[Union[str, Path]] = None,
+    config_path: Optional[Union[str, Path]] = None,
+) -> bool:
+    """Execute video verification and print standard diagnostics to stdout.
+
+    Args:
+        video_path: Path to target video file (or None to use default).
+        config_path: Path to video_config.yaml (or None).
+
+    Returns:
+        bool: True if video verification passed, False otherwise.
+    """
+    resolved_path: Optional[Path] = None
+    project_root = Path(__file__).resolve().parents[2]
+
+    if video_path:
+        resolved_path = Path(video_path)
+        if not resolved_path.is_absolute():
+            resolved_path = (project_root / resolved_path).resolve()
+        else:
+            resolved_path = resolved_path.resolve()
+    else:
+        # 1. Try config default
+        cfg_file = Path(config_path).resolve() if config_path else project_root / "config" / "video_config.yaml"
+        if cfg_file.is_file():
+            try:
+                with open(cfg_file, "r", encoding="utf-8") as f:
+                    cfg = yaml.safe_load(f) or {}
+                def_v = cfg.get("video", {}).get("default_video")
+                if def_v:
+                    candidate = (project_root / def_v).resolve() if not Path(def_v).is_absolute() else Path(def_v).resolve()
+                    if candidate.is_file():
+                        resolved_path = candidate
+            except Exception:
+                pass
+
+        # 2. Try datasets/raw directory
+        if not resolved_path or not resolved_path.is_file():
+            raw_dir = project_root / "datasets" / "raw"
+            if raw_dir.is_dir():
+                known_default = raw_dir / "converted_026c7465-309f6d33.mp4"
+                if known_default.is_file():
+                    resolved_path = known_default
+                else:
+                    vids = [
+                        f for f in sorted(raw_dir.iterdir())
+                        if f.is_file() and f.suffix.lower() in VideoLoader.DEFAULT_SUPPORTED_EXTENSIONS
+                    ]
+                    if vids:
+                        resolved_path = vids[0]
+
+        if not resolved_path:
+            resolved_path = project_root / "datasets" / "raw" / "converted_026c7465-309f6d33.mp4"
+
+    loader = VideoLoader(resolved_path, config_path=config_path)
+    res = loader.verify()
+
+    file_found_str = "FOUND" if res["file_exists"] else "NOT FOUND"
+    video_open_str = "SUCCESS" if res["video_open"] else "FAILED"
+    codec_backend_str = (
+        f"{res['codec']} / {res['backend']}"
+        if res["video_open"]
+        else "UNKNOWN / NONE"
+    )
+    resolution_str = res["resolution"] if res["video_open"] else "N/A"
+    fps_str = f"{res['fps']:.2f}" if res["video_open"] and res["fps"] > 0 else "N/A"
+    frame_count_str = f"{res['frame_count']}" if res["video_open"] and res["frame_count"] > 0 else "N/A"
+    duration_str = f"{res['duration_seconds']:.2f}s" if res["video_open"] and res["duration_seconds"] > 0 else "N/A"
+    first_frame_str = "SUCCESS" if res["first_frame_decode"] else "FAILED"
+    status_str = res["status"]
+
+    print(f"VIDEO FILE: {file_found_str}")
+    print(f"VIDEO OPEN: {video_open_str}")
+    print(f"CODEC / BACKEND: {codec_backend_str}")
+    print(f"RESOLUTION: {resolution_str}")
+    print(f"FPS: {fps_str}")
+    print(f"FRAME COUNT: {frame_count_str}")
+    print(f"DURATION: {duration_str}")
+    print(f"FIRST FRAME DECODE: {first_frame_str}")
+    print(f"VIDEO LOADING STATUS: {status_str}")
+
+    return res["status"] == "PASS"
+
+
+def main() -> None:
+    """CLI Entrypoint for video loader and verification."""
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="PerceptGuard AI - Video Loader & Verification Utility"
+    )
+    parser.add_argument(
+        "--verify",
+        action="store_true",
+        help="Run comprehensive video stream verification on the target file.",
+    )
+    parser.add_argument(
+        "--video-path",
+        type=str,
+        default=None,
+        help="Path to target video file (default: default_video from video_config.yaml)",
+    )
+    parser.add_argument(
+        "--config",
+        type=str,
+        default=None,
+        help="Path to YAML configuration file (default: config/video_config.yaml)",
+    )
+    args = parser.parse_args()
+
+    if args.verify or len(sys.argv) == 1:
+        success = verify_video_file(video_path=args.video_path, config_path=args.config)
+        sys.exit(0 if success else 1)
+    else:
+        parser.print_help()
+
+
+if __name__ == "__main__":
+    main()
