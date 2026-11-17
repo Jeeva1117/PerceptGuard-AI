@@ -14,6 +14,18 @@ from src.tracking.bytetrack_engine import (
     TrackRecord,
     TrackingEngineError,
 )
+from src.tracking.multi_object_tracker import (
+    FrameMOTRecord,
+    MOTConfigurationError,
+    MOTInferenceError,
+    MOTInputNotFoundError,
+    MultiObjectTracker,
+    MultiObjectTrackingError,
+    MultiObjectTrackingSummary,
+    TrackHistory,
+    TrackLifecycleState,
+    TrackedObject,
+)
 from src.tracking.single_object_tracker import (
     AmbiguousTargetSelectionError,
     InvalidTargetIdError,
@@ -87,4 +99,15 @@ __all__ = [
     "TargetNotFoundError",
     "AmbiguousTargetSelectionError",
     "InvalidTargetIdError",
+    # Multi-Object Tracking Architecture
+    "MultiObjectTracker",
+    "TrackLifecycleState",
+    "TrackedObject",
+    "TrackHistory",
+    "FrameMOTRecord",
+    "MultiObjectTrackingSummary",
+    "MultiObjectTrackingError",
+    "MOTInputNotFoundError",
+    "MOTConfigurationError",
+    "MOTInferenceError",
 ]

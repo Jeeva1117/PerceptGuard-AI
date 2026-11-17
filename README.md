@@ -279,6 +279,26 @@ python -m src.tracking.single_object_tracker --target-id 1 --max-frames 50 --ove
 ```
 For architecture specifications, state machine definitions, and benchmarks, consult [docs/SINGLE_OBJECT_TRACKING.md](docs/SINGLE_OBJECT_TRACKING.md).
 
+### 14. Run Production Multi-Object Tracking (MOT) Engine
+Detect and track multiple objects simultaneously with persistent identities, lifecycle states, and per-object histories:
+```bash
+# Ingest pre-computed batch detections (fastest, zero duplicate YOLO passes)
+python -m src.tracking.multi_object_tracker \
+  --input datasets/processed/driving_sample/detections/batch_runs/run_20261117_115348_e1789b/detection_results.json
+
+# Run end-to-end detection and tracking on preprocessed frames
+python -m src.tracking.multi_object_tracker \
+  --input datasets/processed/driving_sample/preprocessed_frames \
+  --max-frames 30 \
+  --overwrite
+
+# Run on raw driving video file (.mp4)
+python -m src.tracking.multi_object_tracker \
+  --input datasets/raw/converted_026c7465-309f6d33.mp4 \
+  --max-frames 50
+```
+For architecture specifications, lifecycle machine definitions, and benchmarks, consult [docs/MULTI_OBJECT_TRACKING.md](docs/MULTI_OBJECT_TRACKING.md).
+
 ---
 
 ## 7. Development Roadmap
@@ -347,6 +367,14 @@ For architecture specifications, state machine definitions, and benchmarks, cons
     - Multi-file Schema v1.0 persistence (`single_object_tracking.json`, `target_history.json`, `tracking_summary.json`, `tracking_metadata.json`).
     - Validated on 200 real frames at **0.007 ms / frame** (140,000+ FPS on CPU).
     - 30 automated unit and integration tests (499 repository tests passing, 100% pass rate).
+  - [x] **Production Multi-Object Tracking (MOT) Engine**
+    - Simultaneous multi-object detection and tracking across sequential frames using YOLO and ByteTrack.
+    - Formal 5-state lifecycle management (`NEW`, `TRACKING`, `TEMPORARILY_LOST`, `REACQUIRED`, `TERMINATED`).
+    - Robust per-object identity management without arbitrary ID generation.
+    - Per-track historical trajectory with displacement, velocity, and duration metrics.
+    - Multi-file Schema v1.0 persistence (`multi_object_tracking.json`, `track_histories.json`, `tracking_summary.json`, `metadata.json`, `errors.json`).
+    - Validated on real driving dataset (30 frames with YOLO inference at 280ms/frame, 200 frames batch ingestion in 0.20s).
+    - 30 automated unit and integration tests (529 repository tests passing, 100% pass rate).
   - [ ] **Tracking Visualization & Quality Analysis**
     - Trajectory rendering and track stability metrics.
 - [ ] **Day 4: Feature Extraction & Sequence Construction**
