@@ -145,3 +145,48 @@ This document maintains an auditable, day-by-day record of technical milestones,
 - **Commit Message:** `feat: implement OpenCV video loading module`
 - **Commit Hash:** `d73b6ec`
 - **GitHub Push Status:** Succeeded (`origin/main` synchronized)
+
+
+### Task 3: Frame Extraction Engine
+- **Date:** 2026-11-17
+- **Milestone:** Reusable FrameExtractor Implementation, Deterministic Sampling, Resource-Bounded Decoding & BDD100K Extraction
+- **Lead Engineer:** Staff Computer Vision & Autonomous Driving Research Engineer
+- **Status:** **Task 3 Complete & Verified**
+
+#### Completed Tasks
+1. **FrameExtractor Architecture:** Implemented `FrameExtractor` class in `src/video_processing/frame_extractor.py`, supporting sequential decoding, configurable FPS sampling, zero-padded image naming, and immutable data contracts (`ExtractedFrameInfo`, `ExtractionSummary`).
+2. **Deterministic Temporal Sampling:** Implemented strict mathematical frame sampling \(i_k = \text{round}(k \cdot S)\), preventing duplicate frames under oversampling and preserving strictly monotonic chronological order.
+3. **Independent Index Tracking:** Decoupled 1-indexed sequential extracted frame IDs (`1`, `2`, `3`...) from 0-indexed underlying source video frame positions (`0`, `6`, `12`...).
+4. **Physical Timestamp Calculation:** Preserved deterministic timestamps calculated via \(t = \text{source\_frame\_index} / FPS_{\text{src}}\).
+5. **Memory-Bounded CPU Optimization:** Designed single-frame buffer pipeline utilizing OpenCV `VideoCapture.grab()` for skipping intermediate frames without expensive decompression, achieving 64.2 frames/s on an Intel Core i3 CPU.
+6. **Robust Resource Teardown:** Guaranteed automatic file descriptor release using Python context manager protocol (`__enter__`, `__exit__`), explicit `release_resources()`, and finalizer fallbacks.
+7. **Automated Unit & Integration Testing:** Created 13-test automated test suite in `tests/test_frame_extractor.py` covering synthetic gradient fixtures, naming patterns, directory auto-creation, FPS variation, frame limits, error handling, and real BDD100K driving video integration.
+8. **Real Video Extraction:** Executed end-to-end extraction on `datasets/raw/converted_026c7465-309f6d33.mp4` at 5.0 FPS, extracting 200 JPEG frames (45.41 MB) into `datasets/processed/driving_sample/frames/`.
+9. **Data Governance Verification:** Verified that `.gitignore` strictly ignores `datasets/processed/*`, preventing raw and processed dataset frames from leaking into GitHub.
+10. **Technical Documentation:** Authored comprehensive architectural specification and benchmark report in `docs/FRAME_EXTRACTION.md`.
+
+#### Files Created or Modified
+- `src/video_processing/frame_extractor.py`: Reusable `FrameExtractor` engine, dataclasses, and custom domain exceptions.
+- `src/video_processing/video_loader.py`: Extended with `capture`, `read_frame`, `grab_frame`, `retrieve_frame`, and `set_frame_position`.
+- `src/video_processing/__init__.py`: Package export declarations for `FrameExtractor`, `ExtractedFrameInfo`, `ExtractionSummary`, and extraction exceptions.
+- `config/video_config.yaml`: Added `frame_extraction` parameters (output directory, extraction FPS, quality, prefix, padding).
+- `tests/test_frame_extractor.py`: 13 automated unit and integration tests.
+- `docs/FRAME_EXTRACTION.md`: Technical specification, sampling formulation, and extraction telemetry report.
+- `docs/DEVELOPMENT_PROGRESS.md`: Updated with Day 2 Task 3 milestone and benchmark records.
+
+#### Verified Real-Video Extraction Telemetry
+- **Source Video:** `datasets/raw/converted_026c7465-309f6d33.mp4`
+- **Source Resolution:** 720 × 1280 pixels
+- **Source FPS:** 30.09
+- **Total Source Frames:** 1,204 frames
+- **Configured Extraction FPS:** 5.0 FPS
+- **Actual Extracted Frames:** 200 frames (`frame_000001.jpg` to `frame_000200.jpg`)
+- **Timestamp Range:** `0.0000s` to `39.8139s`
+- **Processing Time:** `3.12 seconds` (Throughput: **64.2 frames/s** on CPU)
+- **Output Storage Size:** 45.41 MB (uncommitted, excluded by `.gitignore`)
+
+#### Git Version Control
+- **Branch:** `main`
+- **Remote:** `https://github.com/Jeeva1117/PerceptGuard-AI.git`
+- **Commit Message:** `feat: implement configurable video frame extraction`
+- **GitHub Push Status:** In Progress
