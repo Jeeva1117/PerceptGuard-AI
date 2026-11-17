@@ -129,3 +129,4 @@ One genuine, uncorrupted reference driving video sample from the BDD100K dataset
 - [x] **No Credentials Exposed:** No API keys, tokens, or AWS Cognito passwords committed or logged.
 - [x] **Hardware Budget Preserved:** Single 47.47 MB clip acquired; multi-terabyte download avoided.
 - [x] **Task Boundaries Respected:** Video remains unmodified and unprocessed in `datasets/raw/`.
+

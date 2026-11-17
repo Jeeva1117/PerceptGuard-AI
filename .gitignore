@@ -39,6 +39,9 @@ models/*
 # Generated outputs and artifacts
 outputs/*
 !outputs/.gitkeep
+!outputs/logs/
+outputs/logs/*
+!outputs/logs/.gitkeep
 runs/
 *.log
 experiments/
