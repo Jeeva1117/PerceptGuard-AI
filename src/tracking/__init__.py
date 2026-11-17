@@ -14,6 +14,17 @@ from src.tracking.bytetrack_engine import (
     TrackRecord,
     TrackingEngineError,
 )
+from src.tracking.single_object_tracker import (
+    AmbiguousTargetSelectionError,
+    InvalidTargetIdError,
+    SingleObjectTracker,
+    SingleObjectTrackingError,
+    SingleObjectTrackingState,
+    SingleObjectTrackingSummary,
+    TargetNotFoundError,
+    TargetObservation,
+    TargetSelectionRule,
+)
 from src.tracking.tracker_config import (
     DEFAULT_CONFIG_RELATIVE_PATH,
     REQUIRED_TRACKER_FIELDS,
@@ -66,4 +77,14 @@ __all__ = [
     "TrackingPipelineError",
     "TrackingInputNotFoundError",
     "TrackingOutputExistsError",
+    # Single-Object Tracking Architecture
+    "SingleObjectTracker",
+    "SingleObjectTrackingState",
+    "TargetSelectionRule",
+    "TargetObservation",
+    "SingleObjectTrackingSummary",
+    "SingleObjectTrackingError",
+    "TargetNotFoundError",
+    "AmbiguousTargetSelectionError",
+    "InvalidTargetIdError",
 ]
