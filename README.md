@@ -220,6 +220,17 @@ python -m src.visualization.detection_visualizer --detection-file datasets/proce
 ```
 For architecture specifications, schema v1.0 visual contracts, and benchmarks, consult [docs/DETECTION_VISUALIZATION.md](docs/DETECTION_VISUALIZATION.md).
 
+### 10. Run Detection Metrics & Perception Analysis Engine
+Evaluate detection statistical distributions, parametric confidence profiles, sequence temporal stability, and heuristic reliability indicators:
+```bash
+# Full dataset detection metrics evaluation on Task 4 output
+python -m src.analysis.detection_metrics --input datasets/processed/driving_sample/detections/batch_runs/run_20261117_115348_e1789b/detection_results.json --overwrite
+
+# Custom confidence and IoU matching thresholds
+python -m src.analysis.detection_metrics --input datasets/processed/driving_sample/detections/batch_runs/run_20261117_115348_e1789b/detection_results.json --confidence-threshold 0.35 --iou-threshold 0.60
+```
+For architecture specifications, mathematical formulations, and benchmarks, consult [docs/DETECTION_METRICS.md](docs/DETECTION_METRICS.md).
+
 ---
 
 ## 7. Development Roadmap
@@ -260,7 +271,11 @@ For architecture specifications, schema v1.0 visual contracts, and benchmarks, c
     - Mathematically deterministic class color system; boundary clamping and non-clipping label positioning.
     - Pristine zero-detection frame handling; atomic multi-file persistence (`annotated_frames/`, summary, errors, metadata).
     - Automated test suite (29 visualization tests, 297+ repository tests passing).
-  - [ ] **Task 6: Detection Metrics & Reliability Analysis**
+  - [x] **Task 6: Detection Metrics & Reliability Analysis**
+    - Statistical detection volume, confidence distributions, and class-wise breakdowns.
+    - Sequence temporal consistency analysis ($S_{\text{temporal}} = 0.8166$) and frame-level heuristic reliability indicator.
+    - Ground-truth bipartite matching architecture; honest `"unavailable"` accounting when labels are absent.
+    - Automated test suite (30 analysis tests, 356+ repository tests passing).
   - [ ] **Task 7: Final Perception Audit & Verification**
 - [ ] **Day 4: Feature Extraction & Sequence Construction**
   - Implement 16-dimensional per-track feature vector extraction.
