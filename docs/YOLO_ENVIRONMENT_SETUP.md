@@ -216,3 +216,4 @@ python -m pytest -q
 | `YOLOModelNotFoundError: Weights file not found` | Weights have not been downloaded to `models/yolo/`. | Download `yolo11n.pt` into `models/yolo/`. |
 | `YOLOInferenceError: Failed to decode image` | Frame path corrupted or invalid image format. | Verify image path and check decodability with `cv2.imread()`. |
 | High CPU Latency (> 200 ms) | System running heavy background processes or wrong model. | Ensure `yolo11n.pt` (nano) is used, not `yolo11x.pt`. |
+
