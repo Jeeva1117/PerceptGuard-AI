@@ -200,3 +200,4 @@ Executed on actual BDD100K driving sample:
 - **Last Frame Timestamp:** `39.8139 s` (`frame_000200.jpg`, source index 1198)
 - **Output Storage Footprint:** `45.41 MB`
 - **Data Governance:** Verified that `datasets/processed/*` is strictly ignored by `.gitignore` and excluded from GitHub version control.
+

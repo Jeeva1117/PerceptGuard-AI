@@ -602,3 +602,4 @@ class FrameExtractor:
     def __del__(self) -> None:
         """Finalizer fallback to guarantee release of OS file handles."""
         self.release_resources()
+
