@@ -147,8 +147,8 @@ This document maintains an auditable, day-by-day record of technical milestones,
 #### Git Version Control
 - **Branch:** `main`
 - **Remote:** `https://github.com/Jeeva1117/PerceptGuard-AI.git`
-- **Commit Message:** `feat: implement OpenCV video loading module`
-- **Commit Hash:** `d73b6ec`
+- **Baseline Commit Hash:** `d73b6ec`
+- **Diagnosis & Verification Commit:** `d1abe6e` (`fix: diagnose and improve original video loading verification`)
 - **GitHub Push Status:** Succeeded (`origin/main` synchronized)
 
 
