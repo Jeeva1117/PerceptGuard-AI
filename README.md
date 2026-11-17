@@ -177,12 +177,17 @@ python tests/verify_environment.py
 python main.py --info
 ```
 
-### 6. Verify YOLO Perception Environment
-Run the CPU-compatible YOLO detection verification tool:
+### 6. Verify YOLO Perception Environment & Presets
+Run the CPU-compatible YOLO detection verification tool with default settings or operational presets:
 ```bash
+# Default balanced configuration
 python -m src.detection.yolo_model_loader --verify
+
+# High-precision or lightweight CPU presets
+python -m src.detection.yolo_model_loader --verify --preset high_precision
+python -m src.detection.yolo_model_loader --verify --preset cpu_lightweight
 ```
-For deep-dive configuration, hardware tuning, and architecture benchmarks, see [docs/YOLO_ENVIRONMENT_SETUP.md](docs/YOLO_ENVIRONMENT_SETUP.md).
+For deep-dive configuration architecture, schema parameters, and hardware tuning, see [docs/YOLO_MODEL_CONFIGURATION.md](docs/YOLO_MODEL_CONFIGURATION.md) and [docs/YOLO_ENVIRONMENT_SETUP.md](docs/YOLO_ENVIRONMENT_SETUP.md).
 
 ---
 
@@ -204,8 +209,14 @@ For deep-dive configuration, hardware tuning, and architecture benchmarks, see [
     - Configured CPU-optimized YOLO11n (`yolo11n.pt`) with lazy-loaded inference engine.
     - Verified sub-50ms CPU inference (~20.6 FPS) on real driving frames.
     - Implemented `YOLOModelLoader`, configuration schema, and 18-test test suite.
-  - [ ] **Task 2: Batch Frame Detection & Bounding Box Extraction**
-  - [ ] **Task 3: Multi-Object Tracking (ByteTrack)**
+  - [x] **Task 2: Advanced YOLO Model Configuration**
+    - Strongly typed, validated dataclass configuration hierarchy (`src/detection/yolo_config.py`).
+    - Stride conformity checks (multiples of 32), boundary validations, and COCO class filtering.
+    - Documented perception presets (`balanced`, `high_precision`, `high_recall`, `cpu_lightweight`).
+    - Automated test suite (23 configuration tests, 158 repository tests passing).
+  - [ ] **Task 3: Single Image Object Detection**
+  - [ ] **Task 4: Batch Frame Detection & Bounding Box Extraction**
+  - [ ] **Task 5: Multi-Object Tracking (ByteTrack)**
 - [ ] **Day 4: Feature Extraction & Sequence Construction**
   - Implement 16-dimensional per-track feature vector extraction.
   - Build sliding historical temporal sequence windows ($W=10$).

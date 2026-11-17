@@ -460,7 +460,65 @@ This document maintains an auditable, day-by-day record of technical milestones,
 - **Branch:** `main`
 - **Remote:** `https://github.com/Jeeva1117/PerceptGuard-AI.git`
 - **Commit Message:** `feat: establish CPU-compatible YOLO model environment`
-- **Commit Hash:** `78b6d87`
-- **GitHub Push Status:** Succeeded (`origin/main` synchronized at `78b6d87`)
+- **Commit Hash:** `04f511d`
+- **GitHub Push Status:** Succeeded (`origin/main` synchronized at `04f511d`)
+
+---
+
+### Task 2: Advanced YOLO Model Configuration Architecture
+- **Date:** 2026-11-17
+- **Milestone:** Strongly Typed Configuration Architecture, Schema Decoupling, Parameter Boundary Validation & Perception Presets
+- **Lead Engineer:** Senior Staff Machine Learning Engineer & Senior Computer Vision Engineer
+- **Status:** **Task 2 Complete & Verified (Awaiting Day 3 Task 3)**
+
+#### Completed Tasks
+1. **Existing Architecture Inspection:** Analyzed Task 1 configuration loading, parameter usage, and `YOLOModelLoader` contracts. Established backward compatibility with existing `yolo:` YAML blocks.
+2. **Modular Configuration Architecture:** Implemented `src/detection/yolo_config.py` with strongly typed dataclass hierarchy:
+   - `ModelConfig`: model name, architecture, weights path, task (`detect`), pretrained flag.
+   - `RuntimeConfig`: compute device (`cpu`), precision (`half_precision: false`), reproducibility (`deterministic: true`, `seed: 42`).
+   - `InferenceConfig`: input size (`640`), confidence threshold (`0.25`), IoU threshold (`0.45`), max detections (`100`), class-agnostic NMS (`false`), class filtering (`classes`), logging (`verbose`).
+   - `PerformanceConfig`: warmup iterations (`1`), latency timeout ceiling (`500.0 ms`), batch size (`1`), CPU threads (`cpu_threads`).
+   - `ValidationConfig`: strict mode, weights validation, parameter boundaries, supported models/devices.
+3. **Parameter Boundary & Constraint Validation:**
+   - Enforced YOLO backbone downsampling stride constraint (`image_size % 32 == 0`).
+   - Enforced finite numerical bounds for confidence and IoU thresholds ($(0.0, 1.0]$).
+   - Enforced non-negative integer class IDs within COCO bounds ($[0, 79]$) and duplicate rejection.
+   - Enforced hardware safety: rejected FP16 on CPU and prevented unauthorized CUDA allocation.
+4. **Operational Perception Presets:** Implemented and validated 4 distinct presets:
+   - `balanced` (default): `conf=0.25, iou=0.45, imgsz=640, max_det=100` (~48 ms latency)
+   - `high_precision`: `conf=0.50, iou=0.50, imgsz=640, max_det=50` (false positive reduction)
+   - `high_recall`: `conf=0.10, iou=0.40, imgsz=640, max_det=200` (faint/occluded object capture)
+   - `cpu_lightweight`: `conf=0.30, iou=0.50, imgsz=320, max_det=50` (~23 ms latency, >40 FPS)
+5. **Seamless YOLOModelLoader Integration:** Updated `src/detection/yolo_model_loader.py` to consume `YOLOConfig`, apply runtime optimizations (`apply_runtime_optimizations`), pass all inference parameters (including `agnostic_nms` and `classes`) to Ultralytics `model.predict()`, and provide preset CLI support (`--preset`).
+6. **Automated Testing Suite:** Created `tests/detection/test_yolo_config.py` and `tests/test_yolo_config.py` with 23 comprehensive tests (schema parsing, missing file, malformed syntax, boundary violations, stride errors, class filtering, duplicate rejection, presets, real weights loading, and live driving frame inference). Confirmed 100% pass rate.
+7. **Full Repository Regression Suite:** Executed full test suite across Day 1, Day 2, Day 3 Task 1, and Day 3 Task 2: **158 passed in 23.26s** (0 failures, 0 regressions).
+8. **Technical Documentation:** Authored `docs/YOLO_MODEL_CONFIGURATION.md`, updated `README.md`, and updated `docs/DEVELOPMENT_PROGRESS.md`.
+
+#### Files Created or Modified
+- `src/detection/yolo_config.py`: Modular YOLO configuration dataclasses, validator, and preset engine.
+- `config/yolo_config.yaml`: Updated structured configuration schema with presets and legacy compatibility block.
+- `src/detection/yolo_model_loader.py`: Integrated with `YOLOConfig`, parameter propagation, and runtime optimizations.
+- `src/detection/__init__.py`: Package export declarations for configuration dataclasses and loader.
+- `tests/detection/__init__.py`: Test package anchor.
+- `tests/detection/test_yolo_config.py`: 23 automated unit and integration tests.
+- `tests/test_yolo_config.py`: Root test suite entrypoint for configuration tests.
+- `docs/YOLO_MODEL_CONFIGURATION.md`: Comprehensive technical specification, YAML reference, and operational guide.
+- `README.md`: Updated with configuration and preset verification instructions.
+- `docs/DEVELOPMENT_PROGRESS.md`: Updated with Day 3 Task 2 milestone record.
+
+#### Verified Telemetry & Benchmarks
+- **Default Inference Latency (640px):** $48.51\text{ ms}$ (~$20.6\text{ FPS}$)
+- **Lightweight Inference Latency (320px):** $23.07\text{ ms}$ (~$43.3\text{ FPS}$)
+- **Class Filtering Test (Traffic Lights Only - Class ID 9):** Returned 1 detection (`traffic light` at conf=0.438) while filtering out truck (Class ID 7).
+- **Automated Configuration Tests:** 23 / 23 Passed
+- **Repository Full Pytest Suite:** 158 / 158 Passed (100% Pass Rate)
+
+#### Git Version Control
+- **Branch:** `main`
+- **Remote:** `https://github.com/Jeeva1117/PerceptGuard-AI.git`
+- **Commit Message:** `feat: implement advanced YOLO model configuration`
+- **Commit Hash:** `8565ce8`
+- **GitHub Push Status:** Succeeded (`origin/main` synchronized at `8565ce8`)
+
 
 
