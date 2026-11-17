@@ -20,8 +20,21 @@ from src.visualization.detection_visualizer import (
     VisualizationErrorRecord,
     VisualizationSummary,
 )
+from src.visualization.tracking_visualizer import (
+    FrameTrackingVisRecord,
+    TrackAnnotation,
+    TrackingJSONValidationError,
+    TrackingSourceFrameDecodeError,
+    TrackingSourceFrameNotFoundError,
+    TrackingVideoGenerationError,
+    TrackingVisualizationError,
+    TrackingVisualizer,
+    TrackingVisSummary,
+    get_deterministic_track_color,
+)
 
 __all__ = [
+    # Detection Visualization
     "DetectionVisualizer",
     "VisualizationSummary",
     "FrameVisualizationRecord",
@@ -33,4 +46,15 @@ __all__ = [
     "SourceImageDecodeError",
     "InvalidBoundingBoxError",
     "OutputPersistenceError",
+    # Tracking Visualization
+    "TrackingVisualizer",
+    "TrackAnnotation",
+    "FrameTrackingVisRecord",
+    "TrackingVisSummary",
+    "TrackingVisualizationError",
+    "TrackingJSONValidationError",
+    "TrackingSourceFrameNotFoundError",
+    "TrackingSourceFrameDecodeError",
+    "TrackingVideoGenerationError",
+    "get_deterministic_track_color",
 ]

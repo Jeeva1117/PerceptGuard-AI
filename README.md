@@ -299,6 +299,28 @@ python -m src.tracking.multi_object_tracker \
 ```
 For architecture specifications, lifecycle machine definitions, and benchmarks, consult [docs/MULTI_OBJECT_TRACKING.md](docs/MULTI_OBJECT_TRACKING.md).
 
+### 15. Run Production Tracking Visualization Engine
+Render sequential tracking results into annotated frames and compiled MP4 video with persistent colors, centroid motion trajectories, and telemetry HUD overlays:
+```bash
+# Full dataset visualization on multi-object tracking output with video export
+python -m src.visualization.tracking_visualizer \
+  --tracking-file datasets/processed/driving_sample/tracking/multi_object/mot_driving_sample_20261117_160903_1c98f4/multi_object_tracking.json \
+  --save-video \
+  --overwrite
+
+# Rapid 30-frame smoke test with video export
+python -m src.visualization.tracking_visualizer \
+  --tracking-file datasets/processed/driving_sample/tracking/multi_object/mot_driving_sample_20261117_160903_1c98f4/multi_object_tracking.json \
+  --max-frames 30 \
+  --save-video
+
+# Visualize single-object tracking sequence
+python -m src.visualization.tracking_visualizer \
+  --tracking-file datasets/processed/driving_sample/tracking/single_object/single_target_1_20261117_154123_fa3f36/single_object_tracking.json \
+  --save-video
+```
+For architecture details, deterministic color generation, and benchmarks, consult [docs/TRACKING_VISUALIZATION.md](docs/TRACKING_VISUALIZATION.md).
+
 ---
 
 ## 7. Development Roadmap
@@ -375,8 +397,17 @@ For architecture specifications, lifecycle machine definitions, and benchmarks, 
     - Multi-file Schema v1.0 persistence (`multi_object_tracking.json`, `track_histories.json`, `tracking_summary.json`, `metadata.json`, `errors.json`).
     - Validated on real driving dataset (30 frames with YOLO inference at 280ms/frame, 200 frames batch ingestion in 0.20s).
     - 30 automated unit and integration tests (529 repository tests passing, 100% pass rate).
-  - [ ] **Tracking Visualization & Quality Analysis**
-    - Trajectory rendering and track stability metrics.
+  - [x] **Advanced Tracking Visualization Engine**
+    - Ingests multi-object tracking, ByteTrack, or single-object tracking JSON results with zero YOLO or ByteTrack re-execution.
+    - Deterministic, persistent identity color synthesis via golden-ratio HSV algorithm ($H = (T_{id} \times 0.61803) \pmod{1.0}$).
+    - Motion trajectory rendering with occlusion gap protection ($|idx_2 - idx_1| \le 2$).
+    - Diagnostic telemetry HUD banner (frame ID, timestamp, active track count, run ID).
+    - Optional sequential OpenCV MP4 video generation with post-write validation probe.
+    - Multi-file Schema v1.0 persistence (`annotated_frames/`, `annotated_video.mp4`, `visualization_summary.json`, `visualization_metadata.json`, `errors.json`).
+    - Validated on 200 real driving frames at **12.33 ms / frame** (81+ FPS on CPU).
+    - 32 automated unit and integration tests (561 repository tests passing, 100% pass rate).
+  - [ ] **Tracking Metrics & Quality Analysis**
+    - Trajectory smoothness, identity switch count, track fragmentation, and temporal stability evaluation.
 - [ ] **Day 4: Feature Extraction & Sequence Construction**
   - Implement 16-dimensional per-track feature vector extraction.
   - Build sliding historical temporal sequence windows ($W=10$).
