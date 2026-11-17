@@ -310,3 +310,4 @@ Execution on actual Task 4 detection output across all 200 preprocessed driving 
 - **Zero Re-Inference:** Confirmed via test mocks that neither `YOLOModelLoader.load_model` nor `SingleImageDetector.detect` is called during visualization.
 - **Source Preservation:** The original preprocessed driving frames in `datasets/processed/driving_sample/preprocessed_frames/` were verified bit-for-bit immutable.
 - **Memory Footprint:** Sequential single-image streaming ensures RSS memory usage remains under 300 MB throughout the 200-frame execution.
+
