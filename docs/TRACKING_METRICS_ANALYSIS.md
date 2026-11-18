@@ -210,3 +210,4 @@ Empirical results evaluating the real BDD100K driving sample (200 frames, 193 tr
 - **Analysis Execution Time:** **0.0078 seconds** (~128,000 frames/sec on CPU).
 - **Memory Overhead:** $< 5\text{ MB}$ RSS delta.
 - **Status:** **`PASS`**.
+
