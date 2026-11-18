@@ -120,6 +120,11 @@ class FeatureConfig:
     visual_quality_contrast_low: float = 30.0
     visual_quality_contrast_high: float = 70.0
 
+    # Temporal Window Aggregation Parameters (Day 5 Task 5)
+    temporal_window_sizes: Tuple[int, ...] = (3, 5, 10)
+    temporal_window_alignment: str = "trailing"
+    min_observations_for_trend: int = 2
+
     def __post_init__(self) -> None:
         """Validate all parameters and invariant constraints upon instantiation."""
         # 1. Schema Version Validation
@@ -173,6 +178,21 @@ class FeatureConfig:
         ]):
             raise InvalidFeatureConfigError(
                 "At least one feature group (detection, motion, visual_quality, tracking) must be enabled."
+            )
+
+        # 7. Temporal Window Aggregation Parameters Guard
+        if not isinstance(self.temporal_window_sizes, (list, tuple)) or len(self.temporal_window_sizes) == 0:
+            raise InvalidFeatureConfigError("temporal_window_sizes must be a non-empty sequence of positive integers.")
+        for ws in self.temporal_window_sizes:
+            if not isinstance(ws, int) or ws <= 0:
+                raise InvalidFeatureConfigError(f"temporal window size must be a positive integer, got {ws}")
+        if self.temporal_window_alignment not in {"trailing", "centered", "future"}:
+            raise InvalidFeatureConfigError(
+                f"Invalid temporal_window_alignment '{self.temporal_window_alignment}'. Must be 'trailing', 'centered', or 'future'."
+            )
+        if self.min_observations_for_trend < 1:
+            raise InvalidFeatureConfigError(
+                f"min_observations_for_trend must be >= 1, got {self.min_observations_for_trend}"
             )
 
     # --------------------------------------------------------------------------
@@ -264,6 +284,16 @@ class FeatureConfig:
                 flat["log_level"] = log_cfg["log_level"]
             if "strict_validation" in log_cfg:
                 flat["strict_validation"] = log_cfg["strict_validation"]
+
+        # Nested: temporal_windows
+        tw_cfg = data.get("temporal_windows", {})
+        if isinstance(tw_cfg, dict):
+            if "window_sizes" in tw_cfg and isinstance(tw_cfg["window_sizes"], (list, tuple)):
+                flat["temporal_window_sizes"] = tuple(int(x) for x in tw_cfg["window_sizes"])
+            if "window_alignment" in tw_cfg:
+                flat["temporal_window_alignment"] = tw_cfg["window_alignment"]
+            if "min_observations_for_trend" in tw_cfg:
+                flat["min_observations_for_trend"] = int(tw_cfg["min_observations_for_trend"])
 
         # Also accept any direct flat parameters that override nested keys
         known_fields = cls.__dataclass_fields__.keys()
@@ -380,6 +410,11 @@ class FeatureConfig:
             "logging": {
                 "log_level": self.log_level,
                 "strict_validation": self.strict_validation,
+            },
+            "temporal_windows": {
+                "window_sizes": list(self.temporal_window_sizes),
+                "window_alignment": self.temporal_window_alignment,
+                "min_observations_for_trend": self.min_observations_for_trend,
             },
         }
 

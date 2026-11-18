@@ -411,6 +411,28 @@ python -m src.features.visual_quality_extractor \
 ```
 For architectural specifications, mathematical formulations, and benchmark results, consult [docs/VISUAL_QUALITY_FEATURE_EXTRACTION.md](docs/VISUAL_QUALITY_FEATURE_EXTRACTION.md).
 
+### 21. Run Temporal Feature Aggregator
+Unify multi-modal perception streams (detection, motion, and visual quality) and compute trailing past-looking window aggregate statistics and Ordinary Least Squares (OLS) linear trend slopes with zero future-frame leakage:
+```bash
+# Ingest detection, motion, and visual quality feature artifacts
+python -m src.features.temporal_feature_aggregator \
+  --detection datasets/processed/driving_sample/features/detection/det_features_driving_sample_20261118_141511_9e022a/frame_detection_features.json \
+  --motion datasets/processed/driving_sample/features/motion/motion_features_driving_sample_20261118_143109_bb4a56/frame_motion_features.json \
+  --visual datasets/processed/driving_sample/features/visual_quality/run_official/visual_quality_features.json \
+  --output datasets/processed/driving_sample/features/temporal/run_official \
+  --window-sizes 3,5,10 \
+  --overwrite
+
+# Run partial batch with custom frame slice
+python -m src.features.temporal_feature_aggregator \
+  --detection datasets/processed/driving_sample/features/detection/det_features_driving_sample_20261118_141511_9e022a/frame_detection_features.json \
+  --motion datasets/processed/driving_sample/features/motion/motion_features_driving_sample_20261118_143109_bb4a56/frame_motion_features.json \
+  --visual datasets/processed/driving_sample/features/visual_quality/run_official/visual_quality_features.json \
+  --max-frames 50 \
+  --overwrite
+```
+For architectural specifications, mathematical formulations, and benchmark results, consult [docs/TEMPORAL_FEATURE_AGGREGATION.md](docs/TEMPORAL_FEATURE_AGGREGATION.md).
+
 ---
 
 ## 7. Development Roadmap
@@ -531,7 +553,14 @@ For architectural specifications, mathematical formulations, and benchmark resul
     - Full alignment with Day 2 `metadata.csv` (preserving `extracted_frame_id`, `source_frame_index`, and `timestamp_seconds`).
     - Atomic multi-file Schema v1.0 persistence (`visual_quality_features.json`, `visual_quality_summary.json`, `visual_quality_metadata.json`, `visual_quality_errors.json`).
     - 42 automated unit and integration tests (190 feature tests, 781 repository tests passing, 100% pass rate).
-  - [ ] **Task 5: Temporal Feature Aggregation**
+  - [x] **Task 5: Temporal Feature Aggregation**
+    - Unified multi-source feature alignment across detection (Task 2), motion (Task 3), and visual quality (Task 4) using `dataset_id` and canonical `frame_id`.
+    - Fused 27 base numerical frame metrics into synchronized temporal vectors with granular source and numerical coverage tracking.
+    - Configurable past-looking trailing windows (`w3`, `w5`, `w10`) with mathematical guarantee of **zero future-frame leakage**.
+    - Numerical rolling statistics: `mean`, `min`, `max`, `std` (population), `median`, `first`, `last`, `diff` with explicit null observation policy (no silent zero infill).
+    - Ordinary Least Squares (OLS) linear trend slopes for confidence, blur, brightness, contrast, displacement, and speed metrics.
+    - Atomic Schema v1.0 persistence: `temporal_features.json`, `aggregated_frame_features.json`, `temporal_feature_summary.json`, `feature_metadata.json`, and `feature_errors.json`.
+    - 45 automated unit and integration tests (235 feature tests, 826 repository tests passing, 100% pass rate).
   - [ ] **Task 6: Sliding Temporal Sequence Generation**
   - [ ] **Task 7: Feature Pipeline Validation & Final Audit**
 - [ ] **Day 6: Ground-Truth Reliability Labeling & Supervision Targets**

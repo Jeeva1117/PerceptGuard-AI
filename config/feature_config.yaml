@@ -41,6 +41,12 @@ temporal_alignment:
   time_unit: "seconds"
   max_sequence_gap_frames: 2
 
+# Temporal Window Aggregation Parameters (Day 5 Task 5)
+temporal_windows:
+  window_sizes: [3, 5, 10]
+  window_alignment: "trailing"
+  min_observations_for_trend: 2
+
 # Missing-Value & Anomaly Policy
 # Invariant: Never invent or fabricate data; missing optional values remain null.
 missing_value_policy:
