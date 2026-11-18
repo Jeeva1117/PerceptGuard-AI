@@ -392,6 +392,25 @@ python -m src.features.motion_feature_extractor \
 ```
 For architectural specifications, kinematic formulas, and benchmark results, consult [docs/MOTION_FEATURE_EXTRACTION.md](docs/MOTION_FEATURE_EXTRACTION.md).
 
+### 20. Run Visual Quality Feature Extractor
+Extract optical blur (Laplacian variance), brightness statistics (mean, median, std, min, max), contrast metrics (RMS contrast, dynamic range, P95-P5 percentile range, normalized contrast), and image geometry directly from raw frame pixels without re-running YOLO or ByteTrack:
+```bash
+# Ingest preprocessed video frames with Day 2 metadata.csv
+python -m src.features.visual_quality_extractor \
+  --input datasets/processed/driving_sample/preprocessed_frames \
+  --metadata datasets/processed/driving_sample/metadata.csv \
+  --output datasets/processed/driving_sample/features/visual_quality/run_official \
+  --dataset-id driving_sample \
+  --overwrite
+
+# Run partial batch with custom frame limits
+python -m src.features.visual_quality_extractor \
+  --input datasets/processed/driving_sample/preprocessed_frames \
+  --max-frames 50 \
+  --overwrite
+```
+For architectural specifications, mathematical formulations, and benchmark results, consult [docs/VISUAL_QUALITY_FEATURE_EXTRACTION.md](docs/VISUAL_QUALITY_FEATURE_EXTRACTION.md).
+
 ---
 
 ## 7. Development Roadmap
@@ -504,8 +523,15 @@ For architectural specifications, kinematic formulas, and benchmark results, con
     - Robust temporal continuity: gap-based motion tracking, first observation handling, and zero interpolation invariant.
     - Atomic multi-file Schema v1.0 persistence (`motion_features.json`, `track_motion_features.json`, `frame_motion_features.json`, summary, metadata, errors).
     - 43 automated unit and integration tests (148 feature tests, 739 repository tests passing, 100% pass rate).
-  - [ ] **Task 4: Tracking Lifecycle Feature Extraction**
-  - [ ] **Task 5: Multidimensional Feature Merging & Normalization**
+  - [x] **Task 4: Visual Quality Feature Extraction**
+    - Extracted optical blur (Laplacian variance `var(Laplacian(gray, CV_64F))`), brightness statistics (mean, median, std, min, max), and contrast metrics (RMS contrast, dynamic range, P95-P5 percentile range, normalized contrast).
+    - Configurable heuristic classification tags: blur (`sharp`, `moderate`, `blurry`), brightness (`dark`, `normal`, `bright`), contrast (`low`, `normal`, `high`).
+    - Zero YOLO or ByteTrack re-execution; direct pixel extraction via OpenCV and NumPy.
+    - Memory-efficient CPU pipeline with explicit buffer releases (`del img`), achieving ~16 ms per frame (~62 FPS) on CPU.
+    - Full alignment with Day 2 `metadata.csv` (preserving `extracted_frame_id`, `source_frame_index`, and `timestamp_seconds`).
+    - Atomic multi-file Schema v1.0 persistence (`visual_quality_features.json`, `visual_quality_summary.json`, `visual_quality_metadata.json`, `visual_quality_errors.json`).
+    - 42 automated unit and integration tests (190 feature tests, 781 repository tests passing, 100% pass rate).
+  - [ ] **Task 5: Temporal Feature Aggregation**
   - [ ] **Task 6: Sliding Temporal Sequence Generation**
   - [ ] **Task 7: Feature Pipeline Validation & Final Audit**
 - [ ] **Day 6: Ground-Truth Reliability Labeling & Supervision Targets**

@@ -112,6 +112,14 @@ class FeatureConfig:
     log_level: str = "INFO"
     strict_validation: bool = True
 
+    # Visual Quality Heuristic Thresholds
+    visual_quality_blur_sharp: float = 300.0
+    visual_quality_blur_blurry: float = 100.0
+    visual_quality_brightness_dark: float = 60.0
+    visual_quality_brightness_bright: float = 180.0
+    visual_quality_contrast_low: float = 30.0
+    visual_quality_contrast_high: float = 70.0
+
     def __post_init__(self) -> None:
         """Validate all parameters and invariant constraints upon instantiation."""
         # 1. Schema Version Validation

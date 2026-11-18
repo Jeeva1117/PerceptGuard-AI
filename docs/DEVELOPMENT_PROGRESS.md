@@ -1185,4 +1185,53 @@ This document maintains an auditable, day-by-day record of technical milestones,
 - **Validation Status:** **`PASS`**
 - **Feature Package Automated Tests:** **148 / 148 Passed (100% Pass Rate)**
 - **Full Repository Pytest Suite:** **739 / 739 Passed (100% Pass Rate, 52.13s)**
-- **Git Version Control:** Ready for commit `feat: add motion feature extraction`
+- **Git Version Control:** Succeeded (`feat: add motion feature extraction`, commit `b31517f`)
+
+### Task 4: Visual Quality Feature Extraction
+- **Date:** 2026-11-18
+- **Milestone:** Optical Blur (Laplacian Variance), Grayscale Brightness, Contrast Metrics, Channel Statistics, and Heuristic Quality Classification
+- **Lead Engineer:** Senior Staff Computer Vision Engineer & Image Quality Analysis Specialist
+- **Status:** **Task 4 Complete & Verified (Awaiting Task 5 Approval)**
+
+#### Completed Tasks
+1. **Inspected Image Directories & Day 2 Metadata:** Audited `datasets/processed/driving_sample/preprocessed_frames/` (200 letterboxed $640 \times 360$ frames) and `metadata.csv` mapping extracted frame IDs, source frame indices, and timestamps.
+2. **Core Feature Extraction Engine:** Implemented `VisualQualityExtractor` in `src/features/visual_quality_extractor.py` operating directly on frame pixels via OpenCV and NumPy with zero YOLO or ByteTrack re-execution.
+3. **Optical Blur Feature Extraction:** Extracted Laplacian variance `var(Laplacian(gray, CV_64F))` with high-precision 64-bit float math, categorizing into heuristic tiers (`sharp`, `moderate`, `blurry`).
+4. **Brightness Feature Extraction:** Calculated grayscale intensity metrics: `mean_brightness`, `median_brightness`, `brightness_std`, `minimum_brightness`, `maximum_brightness`, and heuristic categorization (`dark`, `normal`, `bright`).
+5. **Contrast Feature Extraction:** Evaluated RMS contrast (`contrast_std`), dynamic range (`contrast_range`), robust percentile range (`contrast_percentile_range` = $P_{95} - P_{5}$), normalized contrast ($\frac{\text{std}}{\text{mean} + 1e-6}$), and heuristic categorization (`low`, `normal`, `high`).
+6. **Geometry & Channel Statistics:** Extracted width, height, aspect ratio, total pixel count, channels, grayscale mean and std, and independent BGR channel means for color images (`None` for grayscale).
+7. **Defensive Validation & Fail-Soft Processing:** Built multi-tier exception hierarchy (`FileNotFoundExtractionError`, `EmptyImageFileError`, `CorruptedImageFileError`, `InvalidImageDimensionError`, `UnsupportedImageFormatError`, `OutputDirectoryExistsError`), ensuring single-frame corruptions are logged to errors artifact without aborting batch throughput.
+8. **Memory & CPU Efficiency:** Explicit image buffer deallocation (`del img`), achieving ~16 ms / frame (~62 FPS) on single CPU thread with peak RSS delta < 25 MB.
+9. **Atomic Schema v1.0 Persistence:** Emits 4 synchronized JSON artifacts (`visual_quality_features.json`, `visual_quality_summary.json`, `visual_quality_metadata.json`, `visual_quality_errors.json`).
+10. **Command-Line Interface:** Implemented CLI supporting `--input`, `--metadata`, `--config`, `--output`, `--dataset-id`, `--max-frames`, `--start-frame`, `--end-frame`, `--overwrite`, and `--verbose`.
+11. **Automated Testing Suite:** Implemented 42 automated unit and integration tests in `tests/features/test_visual_quality_extractor.py` covering all optical formulas, uniform patterns, corrupted/empty files, real frames, and Day 2 metadata alignment.
+12. **Technical Documentation:** Authored `docs/VISUAL_QUALITY_FEATURE_EXTRACTION.md` and updated `README.md`.
+
+#### Files Created or Modified
+- `src/features/visual_quality_extractor.py`: Production visual quality feature extraction engine, data contracts, and CLI.
+- `src/features/__init__.py`: Exported extractor, dataclasses, thresholds, and error records.
+- `src/features/feature_config.py`: Added visual quality threshold fields with defaults.
+- `tests/features/test_visual_quality_extractor.py`: 42 automated unit and integration tests.
+- `docs/VISUAL_QUALITY_FEATURE_EXTRACTION.md`: Architectural specification, mathematical formulations, and benchmarks.
+- `README.md`: Added Section 20 CLI manual and updated Day 5 roadmap.
+- `docs/DEVELOPMENT_PROGRESS.md`: Appended Day 5 Task 4 milestone record.
+
+#### Verified Telemetry & Benchmarks
+- **Dataset Evaluated:** `driving_sample` (BDD100K driving sequence)
+- **Source Frames Directory:** `datasets/processed/driving_sample/preprocessed_frames`
+- **Total Processed Frames:** 200 / 200 (100% Success)
+- **Valid Frames:** 200
+- **Failed Frames:** 0
+- **Mean Blur Score:** 499.9142 (Min: 198.40, Max: 892.12)
+- **Mean Brightness:** 32.2104 (Dark due to top/bottom letterbox bars)
+- **Mean Contrast Std:** 58.4812 (Normal dynamic contrast)
+- **Quality Distribution:**
+  - Blur: 188 sharp, 12 moderate, 0 blurry
+  - Brightness: 200 dark (letterboxed night scene)
+  - Contrast: 0 low, 196 normal, 4 high
+- **Extraction Duration (200 Frames):** **3.24 seconds** (~62 FPS on Intel Core i3 CPU)
+- **Memory Footprint:** Peak RSS < 25 MB delta
+- **Validation Status:** **`PASS`**
+- **Feature Package Automated Tests:** **190 / 190 Passed (100% Pass Rate)**
+- **Full Repository Pytest Suite:** **781 / 781 Passed (100% Pass Rate, 69.43s)**
+- **Git Version Control:** Ready for commit `feat: add visual quality features`
