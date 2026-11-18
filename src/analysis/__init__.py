@@ -1,8 +1,8 @@
-"""PerceptGuard AI: Detection Metrics & Perception Analysis Package.
+"""PerceptGuard AI: Perception Metrics & Evaluation Package.
 
 Provides production-grade metric evaluation engines, statistical aggregators,
-confidence profiling, temporal stability analysis, and ground-truth validation
-for autonomous-driving computer vision pipelines.
+confidence profiling, temporal stability analysis, tracking continuity evaluation,
+and ground-truth validation for autonomous-driving computer vision pipelines.
 """
 
 import warnings
@@ -21,8 +21,21 @@ from src.analysis.detection_metrics import (
     TemporalConsistencyMetrics,
     UnsupportedSchemaError,
 )
+from src.analysis.tracking_metrics import (
+    ClassTrackingMetrics,
+    FrameTrackingMetrics,
+    GroundTruthEvaluation,
+    InvalidTrackingDataError,
+    TrackObservationMetrics,
+    TrackingAnalysisSummary,
+    TrackingMetricsAnalyzer,
+    TrackingMetricsError,
+    TrackingMetricsPersistenceError,
+    UnsupportedTrackingSchemaError,
+)
 
 __all__ = [
+    # Detection Metrics
     "DetectionMetrics",
     "MetricsAnalysisSummary",
     "ClassMetricRecord",
@@ -34,5 +47,15 @@ __all__ = [
     "UnsupportedSchemaError",
     "GroundTruthEvaluationError",
     "MetricsPersistenceError",
+    # Tracking Metrics
+    "TrackingMetricsAnalyzer",
+    "TrackingAnalysisSummary",
+    "TrackObservationMetrics",
+    "FrameTrackingMetrics",
+    "ClassTrackingMetrics",
+    "GroundTruthEvaluation",
+    "TrackingMetricsError",
+    "InvalidTrackingDataError",
+    "UnsupportedTrackingSchemaError",
+    "TrackingMetricsPersistenceError",
 ]
-
