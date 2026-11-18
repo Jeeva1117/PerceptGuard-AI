@@ -1139,4 +1139,50 @@ This document maintains an auditable, day-by-day record of technical milestones,
 - **Validation Status:** **`PASS`**
 - **Feature Package Automated Tests:** **105 / 105 Passed (100% Pass Rate)**
 - **Full Repository Pytest Suite:** **696 / 696 Passed (100% Pass Rate)**
-- **Git Version Control:** Ready for commit `feat: add detection feature extraction`
+- **Git Version Control:** Succeeded (`feat: add detection feature extraction`, commit `699b6bf`)
+
+### Task 3: Motion & Kinematic Feature Extraction
+- **Date:** 2026-11-18
+- **Milestone:** Object Motion Feature Extraction Engine, Directional Classification, and Temporal Gap Kinematics
+- **Lead Engineer:** Senior Staff Machine Learning Engineer & Object Motion Analysis Specialist
+- **Status:** **Task 3 Complete & Verified (Awaiting Task 4 Approval)**
+
+#### Completed Tasks
+1. **Inspected Tracking Artifacts:** Audited `multi_object_tracking.json`, `single_object_tracking.json`, and ByteTrack results, confirming schemas across 200 frames (3 persistent tracks, 193 observations).
+2. **Core Feature Extraction Engine:** Implemented `MotionFeatureExtractor` in `src/features/motion_feature_extractor.py` operating purely on pre-computed tracking JSON with zero model re-inference.
+3. **Object Position Features:** Extracted `bbox_center_x`, `bbox_center_y`, `bbox_width`, `bbox_height`, and `bbox_area` from validated XYXY coordinates.
+4. **Frame-to-Frame Displacement:** Calculated horizontal displacement ($\Delta x$), vertical displacement ($\Delta y$), Euclidean displacement ($\sqrt{\Delta x^2 + \Delta y^2}$), absolute displacements ($|\Delta x|, |\Delta y|$), and normalized displacements ($\frac{\Delta x}{W}, \frac{\Delta y}{H}, \frac{\text{disp}}{D}$).
+5. **Velocity & Speed Computation:** Extracted `velocity_x`, `velocity_y`, and `speed` ($\frac{\text{disp}}{\Delta t}$), strictly requiring positive elapsed time ($\Delta t > 0$) and rejecting duplicate/decreasing timestamps.
+6. **Movement Direction & Sector Classification:** Evaluated $\text{atan2}(\Delta y, \Delta x)$ in radians and degrees, classifying motion into 8 angular sectors (`right`, `down_right`, `down`, `down_left`, `left`, `up_left`, `up`, `up_right`) or `stationary` using a configurable displacement threshold.
+7. **Bounding Box Scale Changes:** Extracted `bbox_width_change`, `bbox_height_change`, `bbox_area_change`, and `bbox_area_change_ratio`.
+8. **Temporal Continuity & Gap Handling:** Categorized observations into `first_observation`, `consecutive`, `gap_motion`, and `gap_too_large` without spatial interpolation or fabricated coordinates.
+9. **Dual-Tier Aggregations:** Extracted 16 track-level summary metrics (mean/max/min displacement, std-dev, mean speed, dominant direction, coverage) and 10 frame-level motion indicators (moving vs. stationary tracks, mean displacement, coverage).
+10. **Versioned Multi-Artifact Persistence (v1.0):** Output structure generates `motion_features.json`, `track_motion_features.json`, `frame_motion_features.json`, `motion_feature_summary.json`, `feature_metadata.json`, and `feature_errors.json`.
+11. **CLI Interface:** Built comprehensive CLI supporting `--input`, `--config`, `--output`, `--max-frames`, `--start-frame`, `--end-frame`, `--stationary-threshold`, `--max-gap`, `--verbose`, and `--overwrite`.
+12. **Automated Testing Suite:** Implemented 43 automated unit and integration tests in `tests/features/test_motion_feature_extractor.py` covering all edge cases, gap motion, zero-area boxes, direction sectors, and real BDD100K driving tracks.
+13. **Technical Documentation:** Authored `docs/MOTION_FEATURE_EXTRACTION.md` and updated `README.md`.
+
+#### Files Created or Modified
+- `src/features/motion_feature_extractor.py`: Production motion feature extraction engine, data contracts, and CLI.
+- `src/features/__init__.py`: Exported extractor, dataclasses, and error records.
+- `tests/features/test_motion_feature_extractor.py`: 43 automated unit and integration tests.
+- `docs/MOTION_FEATURE_EXTRACTION.md`: Architectural specification, mathematical formulations, and benchmarks.
+- `README.md`: Added Section 19 CLI manual and updated Day 5 roadmap.
+- `docs/DEVELOPMENT_PROGRESS.md`: Appended Day 5 Task 3 milestone record.
+
+#### Verified Telemetry & Benchmarks
+- **Dataset Evaluated:** `driving_sample` (BDD100K driving sequence)
+- **Source Artifact:** `mot_driving_sample_20261117_160903_1c98f4/multi_object_tracking.json`
+- **Total Processed Frames:** 200 / 200 (100% Success)
+- **Unique Track IDs:** 3 (`traffic light`, `truck`, `bus`)
+- **Total Track Observations:** 193
+- **Valid Motion Steps:** 184
+- **Gap-based Motion Steps:** 22
+- **Unavailable Motions (First Observations):** 9
+- **Invalid Records:** 0
+- **Extraction Duration (200 Frames):** **0.0215 seconds** (~9,300 FPS throughput on CPU)
+- **Memory Footprint:** Peak RSS < 20 MB delta
+- **Validation Status:** **`PASS`**
+- **Feature Package Automated Tests:** **148 / 148 Passed (100% Pass Rate)**
+- **Full Repository Pytest Suite:** **739 / 739 Passed (100% Pass Rate, 52.13s)**
+- **Git Version Control:** Ready for commit `feat: add motion feature extraction`

@@ -374,6 +374,24 @@ python -m src.features.detection_feature_extractor \
 ```
 For architectural specifications, feature formulas, and benchmark results, consult [docs/DETECTION_FEATURE_EXTRACTION.md](docs/DETECTION_FEATURE_EXTRACTION.md).
 
+### 19. Run Motion Feature Extractor
+Extract frame-to-frame displacements, velocities, 8-cardinal directional sectors, and scale changes from sequential tracking results:
+```bash
+# Ingest Multi-Object Tracking results (default driving_sample run)
+python -m src.features.motion_feature_extractor \
+  --input datasets/processed/driving_sample/tracking/multi_object/mot_driving_sample_20261117_160903_1c98f4/multi_object_tracking.json \
+  --overwrite
+
+# Run with custom destination, stationary threshold, and gap tolerance
+python -m src.features.motion_feature_extractor \
+  --input datasets/processed/driving_sample/tracking/multi_object/mot_driving_sample_20261117_160903_1c98f4/multi_object_tracking.json \
+  --output datasets/processed/driving_sample/features/motion/latest \
+  --stationary-threshold 1.0 \
+  --max-gap 5 \
+  --overwrite
+```
+For architectural specifications, kinematic formulas, and benchmark results, consult [docs/MOTION_FEATURE_EXTRACTION.md](docs/MOTION_FEATURE_EXTRACTION.md).
+
 ---
 
 ## 7. Development Roadmap
@@ -479,7 +497,13 @@ For architectural specifications, feature formulas, and benchmark results, consu
     - Full temporal frame continuity: zero-detection frames preserved with explicit `null` policy.
     - Atomic multi-file Schema v1.0 persistence (`detection_features.json`, `frame_detection_features.json`, summary, metadata, errors).
     - 39 automated unit and integration tests (105 feature tests, 696 repository tests passing, 100% pass rate).
-  - [ ] **Task 3: Motion & Kinematic Feature Extraction**
+  - [x] **Task 3: Motion & Kinematic Feature Extraction**
+    - Extracted 35 observation-level kinematic metrics (centroid, displacement, velocity, speed, 8-sector direction, bbox changes) and 16 track-level summaries.
+    - Zero YOLO or ByteTrack re-execution; sub-millisecond CPU execution across 200 frames (193 observations, 184 valid motion steps).
+    - Multi-object, single-object, and ByteTrack JSON schema ingestion with spatial normalization.
+    - Robust temporal continuity: gap-based motion tracking, first observation handling, and zero interpolation invariant.
+    - Atomic multi-file Schema v1.0 persistence (`motion_features.json`, `track_motion_features.json`, `frame_motion_features.json`, summary, metadata, errors).
+    - 43 automated unit and integration tests (148 feature tests, 739 repository tests passing, 100% pass rate).
   - [ ] **Task 4: Tracking Lifecycle Feature Extraction**
   - [ ] **Task 5: Multidimensional Feature Merging & Normalization**
   - [ ] **Task 6: Sliding Temporal Sequence Generation**

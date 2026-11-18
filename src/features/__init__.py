@@ -43,6 +43,16 @@ from src.features.detection_feature_extractor import (
     FrameDetectionFeatureRecord,
     categorize_confidence,
 )
+from src.features.motion_feature_extractor import (
+    FrameMotionFeatureRecord,
+    MotionExtractionErrorRecord,
+    MotionFeatureExtractionError,
+    MotionFeatureExtractor,
+    MotionFeatureRecord,
+    MotionFeatureSummary,
+    TrackMotionSummaryRecord,
+    calculate_direction,
+)
 
 __all__ = [
     # Configuration
@@ -76,4 +86,13 @@ __all__ = [
     "DetectionExtractionErrorRecord",
     "DetectionFeatureExtractionError",
     "categorize_confidence",
+    # Motion Feature Extraction
+    "MotionFeatureExtractor",
+    "MotionFeatureRecord",
+    "TrackMotionSummaryRecord",
+    "FrameMotionFeatureRecord",
+    "MotionFeatureSummary",
+    "MotionExtractionErrorRecord",
+    "MotionFeatureExtractionError",
+    "calculate_direction",
 ]
