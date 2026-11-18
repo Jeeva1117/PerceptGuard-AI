@@ -1,0 +1,67 @@
+# ==============================================================================
+# PerceptGuard AI: Feature Engineering Configuration
+# ==============================================================================
+# Schema Version: 1.0
+# Hardware Target: Intel Core i3 / 8 GB RAM (CPU-first execution)
+# Purpose: Prepares multidimensional feature matrices for predictive reliability
+# modeling across upcoming video frames.
+# ==============================================================================
+
+# Schema and Versioning
+schema_version: "1.0"
+feature_set_name: "standard_driving_features"
+
+# Input Artifact Paths
+# Paths can be overridden via CLI arguments or environment parameters.
+inputs:
+  detection_results_path: "datasets/processed/driving_sample/detections/batch_runs/run_20261117_115348_e1789b/detection_results.json"
+  tracking_results_path: "datasets/processed/driving_sample/tracking/multi_object/mot_driving_sample_20261117_160903_1c98f4/multi_object_tracking.json"
+  dataset_metadata_path: "datasets/processed/driving_sample/metadata.csv"
+  preprocessed_frames_dir: "datasets/processed/driving_sample/preprocessed_frames"
+
+# Output Storage Configuration
+outputs:
+  output_dir: "datasets/processed/driving_sample/features"
+  save_format: "json"
+  compress_output: false
+
+# Feature Group Enablement Toggles
+feature_groups:
+  include_detection_features: true
+  include_motion_features: true
+  include_visual_quality_features: true
+  include_tracking_features: true
+
+# Temporal Sequencing & Frame Alignment
+temporal_alignment:
+  sort_by: "source_frame_index"
+  ascending: true
+  require_timestamps: false
+  default_fps: 5.0
+  time_unit: "seconds"
+  max_sequence_gap_frames: 2
+
+# Missing-Value & Anomaly Policy
+# Invariant: Never invent or fabricate data; missing optional values remain null.
+missing_value_policy:
+  strategy: "explicit_null"
+  fail_on_missing_required: true
+  fail_on_invalid_bbox: false
+
+# Numeric Precision & Geometry Scaling
+precision:
+  float_precision: "float32"
+  decimal_places: 4
+  normalize_coordinates: false
+
+# CPU Execution Budgets
+processing:
+  batch_size: 100
+  max_workers: 1
+  memory_limit_mb: 500
+  stream_processing: true
+
+# Logging & Diagnostic Telemetry
+logging:
+  log_level: "INFO"
+  strict_validation: true

@@ -342,6 +342,21 @@ python -m src.analysis.tracking_metrics \
 ```
 For metric formulations, ground-truth rule definitions, and benchmarks, consult [docs/TRACKING_METRICS_ANALYSIS.md](docs/TRACKING_METRICS_ANALYSIS.md).
 
+### 17. Run Feature Engineering Environment Verification
+Audit system hardware, CPU compute allocations, scientific dependencies, configuration adherence, and upstream artifact integrity prior to feature extraction:
+```bash
+# Human-readable console audit report
+python -m src.features.feature_environment
+
+# Machine-readable JSON telemetry
+python -m src.features.feature_environment --json
+
+# Validate configuration and inspect operational presets
+python -m src.features.feature_config --validate
+python -m src.features.feature_config --preset fast_cpu
+```
+For architectural specifications, Schema v1.0 field definitions, and presets, consult [docs/FEATURE_ENGINEERING_SETUP.md](docs/FEATURE_ENGINEERING_SETUP.md).
+
 ---
 
 ## 7. Development Roadmap
@@ -434,15 +449,25 @@ For metric formulations, ground-truth rule definitions, and benchmarks, consult 
     - Multi-file Schema v1.0 persistence (`tracking_analysis_summary.json`, `track_metrics.json`, `frame_metrics.json`, `class_metrics.json`, `metadata.json`, `errors.json`).
     - Validated on 200 real driving frames at 0.0078s execution duration (~128,000 FPS throughput on CPU).
     - 30 automated unit and integration tests (591 repository tests passing, 100% pass rate).
-- [ ] **Day 4: Feature Extraction & Sequence Construction**
-  - Implement 16-dimensional per-track feature vector extraction.
-  - Build sliding historical temporal sequence windows ($W=10$).
-- [ ] **Day 5: Ground-Truth Reliability Labeling**
+- [ ] **Day 5: Feature Engineering & Temporal Sequence Pipeline**
+  - [x] **Task 1: Feature Engineering Environment Setup**
+    - Strongly typed, immutable `FeatureConfig` and `config/feature_config.yaml` with 4 operational presets.
+    - Production Feature Schema v1.0 defining 25+ fields spanning detection, motion, visual quality, tracking, and metadata.
+    - Multi-artifact pre-flight validation engine (`validate_input_artifacts`) auditing detection, tracking, metadata, and frames.
+    - Automated `FeatureEnvironmentVerifier` runtime diagnostics and CLI tool.
+    - 66 automated unit and integration tests (657 repository tests passing, 100% pass rate).
+  - [ ] **Task 2: Detection & Visual Quality Feature Extraction**
+  - [ ] **Task 3: Motion & Kinematic Feature Extraction**
+  - [ ] **Task 4: Tracking Lifecycle Feature Extraction**
+  - [ ] **Task 5: Multidimensional Feature Merging & Normalization**
+  - [ ] **Task 6: Sliding Temporal Sequence Generation**
+  - [ ] **Task 7: Feature Pipeline Validation & Final Audit**
+- [ ] **Day 6: Ground-Truth Reliability Labeling & Supervision Targets**
   - Hungarian bipartite matching with annotated ground-truth boxes.
   - Construct multi-horizon supervision labels ($t+1, t+3, t+5$).
-- [ ] **Day 6: Recurrent Forecasting Model (LSTM/GRU)**
+- [ ] **Day 7: Recurrent Forecasting Model (LSTM/GRU)**
   - Model architecture definition, PyTorch dataset loaders, and training pipeline.
-- [ ] **Day 7: Evaluation & Streamlit Dashboard**
+- [ ] **Day 8: Evaluation & Streamlit Dashboard**
   - Model evaluation against test sequences.
   - Interactive dashboard with live visual alerts and reliability telemetry.
 
