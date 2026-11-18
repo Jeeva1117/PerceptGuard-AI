@@ -1095,4 +1095,48 @@ This document maintains an auditable, day-by-day record of technical milestones,
   - Preprocessed Frames: `datasets/processed/driving_sample/preprocessed_frames/` (200 frames) [VALID]
 - **Feature Package Automated Tests:** **66 / 66 Passed (100% Pass Rate)**
 - **Full Repository Pytest Suite:** **657 / 657 Passed (100% Pass Rate, 43.34s)**
-- **Git Version Control:** Ready for commit `feat: add feature engineering setup`
+- **Git Version Control:** Succeeded (`feat: add feature engineering setup`, commit `a9d74a6`)
+
+### Task 2: Detection Feature Extraction
+- **Date:** 2026-11-18
+- **Milestone:** Detection Feature Extraction Engine, Dual-Tier Representation, and Fault-Tolerant Geometry Engineering
+- **Lead Engineer:** Senior Staff Machine Learning Engineer & Computer Vision Reliability Specialist
+- **Status:** **Task 2 Complete & Verified (Awaiting Task 3 Approval)**
+
+#### Completed Tasks
+1. **Inspected Detection Artifacts:** Analyzed batch runs (`detection_results.json`) and single-image results (`frame_000001_detections.json`), mapping fields across 200 frames (211 detections, 34 empty frames).
+2. **Core Feature Extraction Engine:** Implemented `DetectionFeatureExtractor` in `src/features/detection_feature_extractor.py` operating purely on pre-computed detection JSON with zero model re-inference.
+3. **Detection-Level Feature Extraction:** Extracted 22 features per detection:
+   - Identity: `dataset_id`, `frame_id`, `source_frame_index`, `timestamp_seconds`, `detection_index`, `class_id`, `class_name`.
+   - Confidence: `confidence`, `confidence_category` (`high` $\ge 0.75$, `medium` $\ge 0.40$, `low` $< 0.40$).
+   - Absolute Bounding Box Geometry: `x_min`, `y_min`, `x_max`, `y_max`, `bbox_width`, `bbox_height`, `bbox_area`, `bbox_center_x`, `bbox_center_y`.
+   - Normalized Bounding Box Geometry: `normalized_center_x`, `normalized_center_y`, `normalized_width`, `normalized_height`, `normalized_bbox_area`.
+4. **Frame-Level Aggregated Telemetry:** Extracted 16 frame-level features: `frame_id`, `source_frame_index`, `timestamp_seconds`, `image_width`, `image_height`, `detection_count`, `unique_class_count`, `mean_confidence`, `minimum_confidence`, `maximum_confidence`, `confidence_std`, `total_bbox_area`, `mean_bbox_area`, `maximum_bbox_area`, `mean_bbox_width`, `mean_bbox_height`, and `class_wise_detection_counts`.
+5. **Zero-Detection Frame Policy:** Formulated and implemented explicit `null` representation for statistical metrics in frames with zero detections, preserving complete temporal sequence continuity without fabricating zeros.
+6. **Robust Coordinate & Numerical Validation:** Validated bounding box geometry ($x_{\max} > x_{\min}$, $y_{\max} > y_{\min}$, $x \ge 0, y \ge 0$), non-finite coordinates (NaN/Inf), confidence ranges $[0.0, 1.0]$, and duplicate detection/frame indices. Segregated rejected records into `feature_errors.json`.
+7. **Versioned Multi-Artifact Persistence (v1.0):** Output structure generates `detection_features.json`, `frame_detection_features.json`, `detection_feature_summary.json`, `feature_metadata.json`, and `feature_errors.json`.
+8. **CLI Interface:** Built comprehensive CLI supporting `--input`, `--config`, `--output`, `--max-frames`, `--start-frame`, `--end-frame`, `--verbose`, and `--overwrite`.
+9. **Automated Testing Suite:** Implemented 39 automated unit and integration tests in `tests/features/test_detection_feature_extractor.py` covering all edge cases, zero-detection frames, math accuracy, and real BDD100K driving detections.
+10. **Technical Documentation:** Authored `docs/DETECTION_FEATURE_EXTRACTION.md` and updated `README.md`.
+
+#### Files Created or Modified
+- `src/features/detection_feature_extractor.py`: Production detection feature extraction engine, data contracts, and CLI.
+- `src/features/__init__.py`: Exported extractor, dataclasses, and error records.
+- `tests/features/test_detection_feature_extractor.py`: 39 automated unit and integration tests.
+- `docs/DETECTION_FEATURE_EXTRACTION.md`: Architectural specification, mathematical formulations, and benchmarks.
+- `README.md`: Added Section 18 CLI manual and updated Day 5 roadmap.
+- `docs/DEVELOPMENT_PROGRESS.md`: Appended Day 5 Task 2 milestone record.
+
+#### Verified Telemetry & Benchmarks
+- **Dataset Evaluated:** `driving_sample` (BDD100K driving sequence)
+- **Source Artifact:** `run_20261117_115348_e1789b/detection_results.json`
+- **Total Processed Frames:** 200 / 200 (100% Success)
+- **Valid Detection Records:** 211
+- **Invalid Detections:** 0
+- **Zero-Detection Frames:** 34
+- **Extraction Duration (200 Frames):** **0.0138 seconds** (~14,500 FPS throughput on CPU)
+- **Memory Footprint:** Peak RSS < 20 MB delta
+- **Validation Status:** **`PASS`**
+- **Feature Package Automated Tests:** **105 / 105 Passed (100% Pass Rate)**
+- **Full Repository Pytest Suite:** **696 / 696 Passed (100% Pass Rate)**
+- **Git Version Control:** Ready for commit `feat: add detection feature extraction`

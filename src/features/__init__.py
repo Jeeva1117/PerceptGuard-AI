@@ -5,6 +5,9 @@ and environment verification utilities for multidimensional feature vector extra
 and temporal sequence construction.
 """
 
+import warnings
+warnings.filterwarnings("ignore", category=RuntimeWarning, message=".*found in sys.modules.*")
+
 from src.features.feature_config import (
     DEFAULT_CONFIG_RELATIVE_PATH,
     FEATURE_PRESETS,
@@ -31,6 +34,15 @@ from src.features.feature_environment import (
     FeatureEnvironmentReport,
     FeatureEnvironmentVerifier,
 )
+from src.features.detection_feature_extractor import (
+    DetectionExtractionErrorRecord,
+    DetectionFeatureExtractionError,
+    DetectionFeatureExtractor,
+    DetectionFeatureRecord,
+    DetectionFeatureSummary,
+    FrameDetectionFeatureRecord,
+    categorize_confidence,
+)
 
 __all__ = [
     # Configuration
@@ -56,4 +68,12 @@ __all__ = [
     # Environment Verification
     "FeatureEnvironmentVerifier",
     "FeatureEnvironmentReport",
+    # Detection Feature Extraction
+    "DetectionFeatureExtractor",
+    "DetectionFeatureRecord",
+    "FrameDetectionFeatureRecord",
+    "DetectionFeatureSummary",
+    "DetectionExtractionErrorRecord",
+    "DetectionFeatureExtractionError",
+    "categorize_confidence",
 ]

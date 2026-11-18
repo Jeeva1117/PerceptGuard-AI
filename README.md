@@ -357,6 +357,23 @@ python -m src.features.feature_config --preset fast_cpu
 ```
 For architectural specifications, Schema v1.0 field definitions, and presets, consult [docs/FEATURE_ENGINEERING_SETUP.md](docs/FEATURE_ENGINEERING_SETUP.md).
 
+### 18. Run Detection Feature Extractor
+Extract detection-level kinematic geometries and frame-level aggregated perception features from existing YOLO inference results:
+```bash
+# Ingest pre-computed batch detections (default driving_sample run)
+python -m src.features.detection_feature_extractor \
+  --input datasets/processed/driving_sample/detections/batch_runs/run_20261117_115348_e1789b/detection_results.json \
+  --overwrite
+
+# Run with custom destination and frame limit
+python -m src.features.detection_feature_extractor \
+  --input datasets/processed/driving_sample/detections/batch_runs/run_20261117_115348_e1789b/detection_results.json \
+  --output datasets/processed/driving_sample/features/detection/latest \
+  --max-frames 30 \
+  --overwrite
+```
+For architectural specifications, feature formulas, and benchmark results, consult [docs/DETECTION_FEATURE_EXTRACTION.md](docs/DETECTION_FEATURE_EXTRACTION.md).
+
 ---
 
 ## 7. Development Roadmap
@@ -456,7 +473,12 @@ For architectural specifications, Schema v1.0 field definitions, and presets, co
     - Multi-artifact pre-flight validation engine (`validate_input_artifacts`) auditing detection, tracking, metadata, and frames.
     - Automated `FeatureEnvironmentVerifier` runtime diagnostics and CLI tool.
     - 66 automated unit and integration tests (657 repository tests passing, 100% pass rate).
-  - [ ] **Task 2: Detection & Visual Quality Feature Extraction**
+  - [x] **Task 2: Detection Feature Extraction**
+    - Extracted 22 detection-level features (identity, confidence tier, absolute and normalized geometry) and 16 frame-level aggregated metrics.
+    - Zero YOLO re-execution; operations run directly on pre-computed detection artifacts at ~14,500 FPS on CPU.
+    - Full temporal frame continuity: zero-detection frames preserved with explicit `null` policy.
+    - Atomic multi-file Schema v1.0 persistence (`detection_features.json`, `frame_detection_features.json`, summary, metadata, errors).
+    - 39 automated unit and integration tests (105 feature tests, 696 repository tests passing, 100% pass rate).
   - [ ] **Task 3: Motion & Kinematic Feature Extraction**
   - [ ] **Task 4: Tracking Lifecycle Feature Extraction**
   - [ ] **Task 5: Multidimensional Feature Merging & Normalization**
