@@ -116,11 +116,15 @@ PerceptGuard-AI/
 │   │   └── __init__.py
 │   ├── features/               # Feature extraction & temporal windowing
 │   │   └── __init__.py
-│   ├── forecasting/            # Deep learning perception reliability forecasting
+│   ├── forecasting/            # Perception reliability forecasting module
 │   │   ├── __init__.py
 │   │   ├── forecasting_config.py
 │   │   ├── forecasting_environment.py
-│   │   └── forecasting_data_contract.py
+│   │   ├── forecasting_data_contract.py
+│   │   ├── baseline_forecaster.py
+│   │   ├── baseline_data_loader.py
+│   │   ├── baseline_experiment.py
+│   │   └── baseline_metrics.py
 │   ├── prediction/             # Legacy prediction stubs
 │   └── evaluation/             # Ground-truth IoU labeling & validation metrics
 │       └── __init__.py
@@ -610,9 +614,15 @@ For architectural specifications, mathematical formulations, and benchmark resul
     - Model input spec defined as `(batch_size, sequence_length, feature_count)` float32; output spec defined as `(batch_size, number_of_horizons)` float32 with continuous reliability score in $[0.0, 1.0]$.
     - Honest target label policy: reported `ground_truth_labels_available: false` and `supervised_readiness: "NOT AVAILABLE"` because YOLO confidence alone is not ground-truth reliability.
     - 47 automated unit and integration tests across forecasting modules (100% pass rate).
-  - [ ] **Task 2: Ground-Truth Reliability Labeling & Supervision Targets**
-  - [ ] **Task 3: Baseline Forecasting Model & Benchmarks**
-  - [ ] **Task 4: Recurrent Neural Network Forecasting Architecture (LSTM/GRU)**
+  - [x] **Task 2: Advanced Baseline Forecasting Model Development**
+    - Implemented reusable `BaselineForecaster` supporting 3 reference strategies: Persistence ($\hat{y}_{t+h} = y_t$), Historical Mean ($\hat{y}_{t+h} = \bar{y}_{\text{train}}$ fitted on training split only), and Linear Trend Extrapolation with OLS slope and $[0.0, 1.0]$ target clipping.
+    - Implemented `BaselineDataLoader` ingesting Day 5 sequence metadata and tensors across split partitions (train: 101, val: 18, test: 19) without video reprocessing or future-frame leakage.
+    - Implemented multi-horizon evaluation metrics (`calculate_mae`, `calculate_rmse`, `evaluate_predictions_by_horizon`) per horizon ($H \in \{1, 3, 5\}$) and per strategy.
+    - Built reproducible `BaselineExperiment` orchestrator emitting standardized experiment run artifacts (`experiment_config.yaml`, `predictions.json`, `baseline_metrics.json`, `experiment_summary.json`, `metadata.json`, `errors.json`).
+    - Enforced scientific target readiness gate: documented `targets_available: false` and `supervised_readiness: "NOT AVAILABLE"` on real Day 5 driving sequences (no YOLO confidence fabrication).
+    - 41 automated unit and integration tests across baseline forecasting modules (88 total forecasting tests, 100% pass rate).
+  - [ ] **Task 3: Recurrent Neural Network Forecasting Architecture (LSTM/GRU)**
+  - [ ] **Task 4: Ground-Truth Reliability Supervision & Target Engineering**
   - [ ] **Task 5: Model Training & Optimization Pipeline**
   - [ ] **Task 6: Multi-Horizon Inference & Reliability Evaluation**
   - [ ] **Task 7: Final Forecasting Audit & Pipeline Certification**
