@@ -58,6 +58,16 @@ from src.forecasting.model_factory import (
     build_forecasting_model,
     resolve_input_dimension,
 )
+from src.forecasting.training_data import (
+    DatasetSplitError,
+    ForecastingDataModule,
+    ForecastingDataset,
+    TargetContractError,
+)
+from src.forecasting.early_stopping import EarlyStopping
+from src.forecasting.checkpoint_manager import CheckpointError, CheckpointManager
+from src.forecasting.training_logger import TrainingLogger
+from src.forecasting.training_engine import LSTMTrainingEngine, TrainingEngineError
 
 __all__ = [
     # Configuration
@@ -106,4 +116,15 @@ __all__ = [
     "build_forecasting_model",
     "resolve_input_dimension",
     "ModelFactoryError",
+    # Training Data & Pipeline
+    "ForecastingDataset",
+    "ForecastingDataModule",
+    "TargetContractError",
+    "DatasetSplitError",
+    "EarlyStopping",
+    "CheckpointManager",
+    "CheckpointError",
+    "TrainingLogger",
+    "LSTMTrainingEngine",
+    "TrainingEngineError",
 ]
