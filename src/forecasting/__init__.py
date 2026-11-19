@@ -1,8 +1,8 @@
 """PerceptGuard AI Forecasting Package.
 
 Predictive perception reliability forecasting module using baseline models
-(Persistence, Historical Mean, Linear Trend) and future deep learning
-temporal sequence models (LSTM/GRU).
+(Persistence, Historical Mean, Linear Trend) and recurrent neural network
+forecasting architectures (LSTMForecaster).
 """
 
 from src.forecasting.baseline_data_loader import (
@@ -46,6 +46,18 @@ from src.forecasting.forecasting_environment import (
     EnvironmentVerificationResult,
     ForecastingEnvironmentVerifier,
 )
+from src.forecasting.lstm_forecaster import (
+    LSTMForecaster,
+    ModelArchitectureError,
+    benchmark_cpu_latency,
+    create_forecasting_loss,
+    validate_loss_inputs,
+)
+from src.forecasting.model_factory import (
+    ModelFactoryError,
+    build_forecasting_model,
+    resolve_input_dimension,
+)
 
 __all__ = [
     # Configuration
@@ -84,4 +96,14 @@ __all__ = [
     "calculate_metrics_summary",
     "evaluate_predictions_by_horizon",
     "MetricCalculationError",
+    # LSTM Architecture
+    "LSTMForecaster",
+    "ModelArchitectureError",
+    "create_forecasting_loss",
+    "validate_loss_inputs",
+    "benchmark_cpu_latency",
+    # Model Factory
+    "build_forecasting_model",
+    "resolve_input_dimension",
+    "ModelFactoryError",
 ]

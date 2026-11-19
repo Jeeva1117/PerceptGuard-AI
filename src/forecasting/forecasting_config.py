@@ -108,6 +108,10 @@ class ModelConfig:
     num_layers: int = 1
     dropout: float = 0.0
     output_horizons: List[int] = field(default_factory=lambda: [1, 3, 5])
+    output_size: Optional[int] = None
+    target_type: str = "regression"
+    batch_first: bool = True
+    activation: str = "sigmoid"
 
     def validate(self, data_horizons: Optional[List[int]] = None) -> List[str]:
         errors = []
@@ -133,6 +137,26 @@ class ModelConfig:
                 for h in self.output_horizons:
                     if h not in data_horizons:
                         errors.append(f"model.output_horizons entry {h} not found in data.forecast_horizons {data_horizons}")
+
+        if self.output_size is not None:
+            if not isinstance(self.output_size, int) or self.output_size <= 0:
+                errors.append(f"model.output_size must be a positive integer, got: {self.output_size}")
+            elif self.output_size != len(self.output_horizons):
+                errors.append(
+                    f"model.output_size ({self.output_size}) does not match len(model.output_horizons) ({len(self.output_horizons)})"
+                )
+
+        target = str(self.target_type).lower().strip()
+        if target not in ["regression", "classification"]:
+            errors.append(f"model.target_type must be 'regression' or 'classification', got: {self.target_type}")
+
+        if not isinstance(self.batch_first, bool):
+            errors.append("model.batch_first must be a boolean")
+
+        act = str(self.activation).lower().strip()
+        if act not in ["sigmoid", "none", "identity"]:
+            errors.append(f"model.activation must be 'sigmoid', 'none', or 'identity', got: {self.activation}")
+
         return errors
 
 

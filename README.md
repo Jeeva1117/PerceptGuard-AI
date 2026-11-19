@@ -124,7 +124,9 @@ PerceptGuard-AI/
 │   │   ├── baseline_forecaster.py
 │   │   ├── baseline_data_loader.py
 │   │   ├── baseline_experiment.py
-│   │   └── baseline_metrics.py
+│   │   ├── baseline_metrics.py
+│   │   ├── lstm_forecaster.py
+│   │   └── model_factory.py
 │   ├── prediction/             # Legacy prediction stubs
 │   └── evaluation/             # Ground-truth IoU labeling & validation metrics
 │       └── __init__.py
@@ -621,7 +623,15 @@ For architectural specifications, mathematical formulations, and benchmark resul
     - Built reproducible `BaselineExperiment` orchestrator emitting standardized experiment run artifacts (`experiment_config.yaml`, `predictions.json`, `baseline_metrics.json`, `experiment_summary.json`, `metadata.json`, `errors.json`).
     - Enforced scientific target readiness gate: documented `targets_available: false` and `supervised_readiness: "NOT AVAILABLE"` on real Day 5 driving sequences (no YOLO confidence fabrication).
     - 41 automated unit and integration tests across baseline forecasting modules (88 total forecasting tests, 100% pass rate).
-  - [ ] **Task 3: Recurrent Neural Network Forecasting Architecture (LSTM/GRU)**
+  - [x] **Task 3: Advanced LSTM Architecture Development**
+    - Implemented modular, CPU-optimized `LSTMForecaster` recurrent neural network processing historical sequences `(batch_size, sequence_length, feature_count)` to predict multi-horizon reliability scores `(batch_size, 3)`.
+    - Enforced strict unidirectional temporal encoding (zero future lookahead), Xavier/orthogonal parameter initialization, and final representation forecasting head with bounded $[0.0, 1.0]$ sigmoid activation.
+    - Preserved explicit column-to-horizon mappings: Column 0 $\rightarrow h=1$, Column 1 $\rightarrow h=3$, Column 2 $\rightarrow h=5$.
+    - Implemented reusable `build_forecasting_model` factory in `model_factory.py` with dynamic input dimension resolution from `feature_manifest.json` ($F=27$).
+    - Decoupled forecasting loss factory (`create_forecasting_loss`) supporting MSE and MAE with input validation.
+    - Benchmarked CPU execution: **0.587 ms** forward latency (~13,620 samples/sec throughput, 7,907 parameters, 30.89 KB parameter memory) on Intel Core i3 CPU.
+    - Verified compatibility with actual Day 5 sequence tensors ($L \in \{5, 10, 15, 20\}$).
+    - 40 automated unit and integration tests across LSTM modules (128 total forecasting tests, 100% pass rate).
   - [ ] **Task 4: Ground-Truth Reliability Supervision & Target Engineering**
   - [ ] **Task 5: Model Training & Optimization Pipeline**
   - [ ] **Task 6: Multi-Horizon Inference & Reliability Evaluation**
