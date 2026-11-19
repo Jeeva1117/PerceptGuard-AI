@@ -28,7 +28,7 @@ DEFAULT_DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 DEVICE = os.getenv("DEVICE", DEFAULT_DEVICE)
 
 # Detection & Tracking Settings
-DEFAULT_YOLO_MODEL = os.getenv("YOLO_MODEL", "yolov8n.pt")
+DEFAULT_YOLO_MODEL = os.getenv("YOLO_MODEL", "yolo11n.pt" if (MODELS_DIR / "yolo" / "yolo11n.pt").exists() else "yolov8n.pt")
 DEFAULT_CONF_THRESHOLD = float(os.getenv("CONFIDENCE_THRESHOLD", "0.35"))
 DEFAULT_IOU_THRESHOLD = float(os.getenv("IOU_THRESHOLD", "0.45"))
 TRACKER_TYPE = os.getenv("TRACKER_TYPE", "bytetrack")
