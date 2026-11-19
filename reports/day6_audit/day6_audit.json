@@ -1,0 +1,676 @@
+{
+  "schema_version": "1.0",
+  "audit_date": "2026-11-19T12:19:41.629835+00:00",
+  "overall_status": "PASS",
+  "task_statuses": {
+    "Task 1": "PASS",
+    "Task 2": "PASS",
+    "Task 3": "PASS",
+    "Task 4": "PASS",
+    "Task 5": "PASS",
+    "Task 6": "PASS",
+    "Task 7": "PASS"
+  },
+  "summary": {
+    "total_checks": 75,
+    "passed_checks": 75,
+    "failed_checks": 0,
+    "tasks_audited": 7,
+    "tasks_passed": 7
+  },
+  "checks": [
+    {
+      "name": "file_valid:src/forecasting/forecasting_config.py",
+      "category": "Task 1",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: src/forecasting/forecasting_config.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:src/forecasting/forecasting_environment.py",
+      "category": "Task 1",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: src/forecasting/forecasting_environment.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:src/forecasting/forecasting_data_contract.py",
+      "category": "Task 1",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: src/forecasting/forecasting_data_contract.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:config/forecasting_config.yaml",
+      "category": "Task 1",
+      "status": "PASS",
+      "message": "File exists and is non-empty: config/forecasting_config.yaml",
+      "details": null
+    },
+    {
+      "name": "file_valid:tests/forecasting/test_forecasting_config.py",
+      "category": "Task 1",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: tests/forecasting/test_forecasting_config.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:tests/forecasting/test_forecasting_environment.py",
+      "category": "Task 1",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: tests/forecasting/test_forecasting_environment.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:tests/forecasting/test_forecasting_data_contract.py",
+      "category": "Task 1",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: tests/forecasting/test_forecasting_data_contract.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:docs/FORECASTING_ENVIRONMENT_SETUP.md",
+      "category": "Task 1",
+      "status": "PASS",
+      "message": "File exists and is non-empty: docs/FORECASTING_ENVIRONMENT_SETUP.md",
+      "details": null
+    },
+    {
+      "name": "file_valid:src/forecasting/baseline_forecaster.py",
+      "category": "Task 2",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: src/forecasting/baseline_forecaster.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:src/forecasting/baseline_data_loader.py",
+      "category": "Task 2",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: src/forecasting/baseline_data_loader.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:src/forecasting/baseline_experiment.py",
+      "category": "Task 2",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: src/forecasting/baseline_experiment.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:src/forecasting/baseline_metrics.py",
+      "category": "Task 2",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: src/forecasting/baseline_metrics.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:tests/forecasting/test_baseline_forecaster.py",
+      "category": "Task 2",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: tests/forecasting/test_baseline_forecaster.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:tests/forecasting/test_baseline_data_loader.py",
+      "category": "Task 2",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: tests/forecasting/test_baseline_data_loader.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:tests/forecasting/test_baseline_experiment.py",
+      "category": "Task 2",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: tests/forecasting/test_baseline_experiment.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:tests/forecasting/test_baseline_metrics.py",
+      "category": "Task 2",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: tests/forecasting/test_baseline_metrics.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:docs/BASELINE_FORECASTING_MODEL.md",
+      "category": "Task 2",
+      "status": "PASS",
+      "message": "File exists and is non-empty: docs/BASELINE_FORECASTING_MODEL.md",
+      "details": null
+    },
+    {
+      "name": "file_valid:src/forecasting/lstm_forecaster.py",
+      "category": "Task 3",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: src/forecasting/lstm_forecaster.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:src/forecasting/model_factory.py",
+      "category": "Task 3",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: src/forecasting/model_factory.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:tests/forecasting/test_lstm_forecaster.py",
+      "category": "Task 3",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: tests/forecasting/test_lstm_forecaster.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:tests/forecasting/test_model_factory.py",
+      "category": "Task 3",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: tests/forecasting/test_model_factory.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:tests/forecasting/test_model_output_contract.py",
+      "category": "Task 3",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: tests/forecasting/test_model_output_contract.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:docs/LSTM_ARCHITECTURE.md",
+      "category": "Task 3",
+      "status": "PASS",
+      "message": "File exists and is non-empty: docs/LSTM_ARCHITECTURE.md",
+      "details": null
+    },
+    {
+      "name": "file_valid:src/forecasting/training_data.py",
+      "category": "Task 4",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: src/forecasting/training_data.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:src/forecasting/training_engine.py",
+      "category": "Task 4",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: src/forecasting/training_engine.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:src/forecasting/early_stopping.py",
+      "category": "Task 4",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: src/forecasting/early_stopping.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:src/forecasting/checkpoint_manager.py",
+      "category": "Task 4",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: src/forecasting/checkpoint_manager.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:src/forecasting/training_logger.py",
+      "category": "Task 4",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: src/forecasting/training_logger.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:src/forecasting/train_lstm.py",
+      "category": "Task 4",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: src/forecasting/train_lstm.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:tests/forecasting/test_training_data.py",
+      "category": "Task 4",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: tests/forecasting/test_training_data.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:tests/forecasting/test_training_engine.py",
+      "category": "Task 4",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: tests/forecasting/test_training_engine.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:tests/forecasting/test_early_stopping.py",
+      "category": "Task 4",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: tests/forecasting/test_early_stopping.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:tests/forecasting/test_checkpoint_manager.py",
+      "category": "Task 4",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: tests/forecasting/test_checkpoint_manager.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:tests/forecasting/test_training_logger.py",
+      "category": "Task 4",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: tests/forecasting/test_training_logger.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:tests/forecasting/test_train_lstm_cli.py",
+      "category": "Task 4",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: tests/forecasting/test_train_lstm_cli.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:docs/LSTM_TRAINING_PIPELINE.md",
+      "category": "Task 4",
+      "status": "PASS",
+      "message": "File exists and is non-empty: docs/LSTM_TRAINING_PIPELINE.md",
+      "details": null
+    },
+    {
+      "name": "file_valid:src/forecasting/multi_horizon_forecaster.py",
+      "category": "Task 5",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: src/forecasting/multi_horizon_forecaster.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:tests/forecasting/test_multi_horizon_forecaster.py",
+      "category": "Task 5",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: tests/forecasting/test_multi_horizon_forecaster.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:docs/MULTI_HORIZON_FORECASTING.md",
+      "category": "Task 5",
+      "status": "PASS",
+      "message": "File exists and is non-empty: docs/MULTI_HORIZON_FORECASTING.md",
+      "details": null
+    },
+    {
+      "name": "file_valid:docs/TASK_5_VALIDATION_REPORT.md",
+      "category": "Task 5",
+      "status": "PASS",
+      "message": "File exists and is non-empty: docs/TASK_5_VALIDATION_REPORT.md",
+      "details": null
+    },
+    {
+      "name": "file_valid:src/forecasting/model_evaluator.py",
+      "category": "Task 6",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: src/forecasting/model_evaluator.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:src/forecasting/evaluation_visualizer.py",
+      "category": "Task 6",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: src/forecasting/evaluation_visualizer.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:tests/forecasting/test_model_evaluator.py",
+      "category": "Task 6",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: tests/forecasting/test_model_evaluator.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:tests/forecasting/test_evaluation_visualizer.py",
+      "category": "Task 6",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: tests/forecasting/test_evaluation_visualizer.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:docs/MODEL_EVALUATION_ANALYSIS.md",
+      "category": "Task 6",
+      "status": "PASS",
+      "message": "File exists and is non-empty: docs/MODEL_EVALUATION_ANALYSIS.md",
+      "details": null
+    },
+    {
+      "name": "file_valid:docs/TASK_6_VALIDATION_REPORT.md",
+      "category": "Task 6",
+      "status": "PASS",
+      "message": "File exists and is non-empty: docs/TASK_6_VALIDATION_REPORT.md",
+      "details": null
+    },
+    {
+      "name": "file_valid:scripts/audit_day6.py",
+      "category": "Task 7",
+      "status": "PASS",
+      "message": "Valid syntax and non-empty: scripts/audit_day6.py",
+      "details": null
+    },
+    {
+      "name": "file_valid:docs/FINAL_VALIDATION_REPORT.md",
+      "category": "Task 7",
+      "status": "PASS",
+      "message": "File exists and is non-empty: docs/FINAL_VALIDATION_REPORT.md",
+      "details": null
+    },
+    {
+      "name": "file_valid:docs/DEVELOPMENT_PROGRESS.md",
+      "category": "Task 7",
+      "status": "PASS",
+      "message": "File exists and is non-empty: docs/DEVELOPMENT_PROGRESS.md",
+      "details": null
+    },
+    {
+      "name": "file_valid:README.md",
+      "category": "Task 7",
+      "status": "PASS",
+      "message": "File exists and is non-empty: README.md",
+      "details": null
+    },
+    {
+      "name": "import_clean:src.forecasting",
+      "category": "Imports",
+      "status": "PASS",
+      "message": "Module src.forecasting imported successfully with 19 symbols.",
+      "details": null
+    },
+    {
+      "name": "import_clean:src.forecasting.forecasting_config",
+      "category": "Imports",
+      "status": "PASS",
+      "message": "Module src.forecasting.forecasting_config imported successfully with 2 symbols.",
+      "details": null
+    },
+    {
+      "name": "import_clean:src.forecasting.forecasting_environment",
+      "category": "Imports",
+      "status": "PASS",
+      "message": "Module src.forecasting.forecasting_environment imported successfully with 1 symbols.",
+      "details": null
+    },
+    {
+      "name": "import_clean:src.forecasting.forecasting_data_contract",
+      "category": "Imports",
+      "status": "PASS",
+      "message": "Module src.forecasting.forecasting_data_contract imported successfully with 1 symbols.",
+      "details": null
+    },
+    {
+      "name": "import_clean:src.forecasting.baseline_forecaster",
+      "category": "Imports",
+      "status": "PASS",
+      "message": "Module src.forecasting.baseline_forecaster imported successfully with 2 symbols.",
+      "details": null
+    },
+    {
+      "name": "import_clean:src.forecasting.lstm_forecaster",
+      "category": "Imports",
+      "status": "PASS",
+      "message": "Module src.forecasting.lstm_forecaster imported successfully with 2 symbols.",
+      "details": null
+    },
+    {
+      "name": "import_clean:src.forecasting.model_factory",
+      "category": "Imports",
+      "status": "PASS",
+      "message": "Module src.forecasting.model_factory imported successfully with 2 symbols.",
+      "details": null
+    },
+    {
+      "name": "import_clean:src.forecasting.training_data",
+      "category": "Imports",
+      "status": "PASS",
+      "message": "Module src.forecasting.training_data imported successfully with 2 symbols.",
+      "details": null
+    },
+    {
+      "name": "import_clean:src.forecasting.training_engine",
+      "category": "Imports",
+      "status": "PASS",
+      "message": "Module src.forecasting.training_engine imported successfully with 1 symbols.",
+      "details": null
+    },
+    {
+      "name": "import_clean:src.forecasting.multi_horizon_forecaster",
+      "category": "Imports",
+      "status": "PASS",
+      "message": "Module src.forecasting.multi_horizon_forecaster imported successfully with 1 symbols.",
+      "details": null
+    },
+    {
+      "name": "import_clean:src.forecasting.model_evaluator",
+      "category": "Imports",
+      "status": "PASS",
+      "message": "Module src.forecasting.model_evaluator imported successfully with 2 symbols.",
+      "details": null
+    },
+    {
+      "name": "import_clean:src.forecasting.evaluation_visualizer",
+      "category": "Imports",
+      "status": "PASS",
+      "message": "Module src.forecasting.evaluation_visualizer imported successfully with 1 symbols.",
+      "details": null
+    },
+    {
+      "name": "npy_valid:datasets/processed/driving_sample/features/sequences/run_official/sequences_L5.npy",
+      "category": "Temporal Sequences (Day 5 Input)",
+      "status": "PASS",
+      "message": "Valid NPY tensor with shape (138, 5, 27), dtype float32: datasets/processed/driving_sample/features/sequences/run_official/sequences_L5.npy",
+      "details": null
+    },
+    {
+      "name": "npy_valid:datasets/processed/driving_sample/features/sequences/run_official/sequences_L10.npy",
+      "category": "Temporal Sequences (Day 5 Input)",
+      "status": "PASS",
+      "message": "Valid NPY tensor with shape (123, 10, 27), dtype float32: datasets/processed/driving_sample/features/sequences/run_official/sequences_L10.npy",
+      "details": null
+    },
+    {
+      "name": "npy_valid:datasets/processed/driving_sample/features/sequences/run_official/sequences_L15.npy",
+      "category": "Temporal Sequences (Day 5 Input)",
+      "status": "PASS",
+      "message": "Valid NPY tensor with shape (108, 15, 27), dtype float32: datasets/processed/driving_sample/features/sequences/run_official/sequences_L15.npy",
+      "details": null
+    },
+    {
+      "name": "npy_valid:datasets/processed/driving_sample/features/sequences/run_official/sequences_L20.npy",
+      "category": "Temporal Sequences (Day 5 Input)",
+      "status": "PASS",
+      "message": "Valid NPY tensor with shape (93, 20, 27), dtype float32: datasets/processed/driving_sample/features/sequences/run_official/sequences_L20.npy",
+      "details": null
+    },
+    {
+      "name": "json_valid:datasets/processed/driving_sample/features/sequences/run_official/sequence_metadata.json",
+      "category": "Temporal Sequences (Day 5 Input)",
+      "status": "PASS",
+      "message": "Valid JSON artifact (6 top-level entries): datasets/processed/driving_sample/features/sequences/run_official/sequence_metadata.json",
+      "details": null
+    },
+    {
+      "name": "json_valid:datasets/processed/driving_sample/features/sequences/run_official/feature_manifest.json",
+      "category": "Temporal Sequences (Day 5 Input)",
+      "status": "PASS",
+      "message": "Valid JSON artifact (5 top-level entries): datasets/processed/driving_sample/features/sequences/run_official/feature_manifest.json",
+      "details": null
+    },
+    {
+      "name": "json_valid:datasets/processed/driving_sample/features/sequences/run_official/dataset_splits.json",
+      "category": "Temporal Sequences (Day 5 Input)",
+      "status": "PASS",
+      "message": "Valid JSON artifact (9 top-level entries): datasets/processed/driving_sample/features/sequences/run_official/dataset_splits.json",
+      "details": null
+    },
+    {
+      "name": "json_valid:datasets/processed/driving_sample/features/sequences/run_official/scaler_parameters.json",
+      "category": "Temporal Sequences (Day 5 Input)",
+      "status": "PASS",
+      "message": "Valid JSON artifact (5 top-level entries): datasets/processed/driving_sample/features/sequences/run_official/scaler_parameters.json",
+      "details": null
+    },
+    {
+      "name": "json_valid:datasets/processed/driving_sample/features/sequences/run_official/imputation_parameters.json",
+      "category": "Temporal Sequences (Day 5 Input)",
+      "status": "PASS",
+      "message": "Valid JSON artifact (7 top-level entries): datasets/processed/driving_sample/features/sequences/run_official/imputation_parameters.json",
+      "details": null
+    },
+    {
+      "name": "json_valid:datasets/processed/driving_sample/features/sequences/run_official/sequence_summary.json",
+      "category": "Temporal Sequences (Day 5 Input)",
+      "status": "PASS",
+      "message": "Valid JSON artifact (19 top-level entries): datasets/processed/driving_sample/features/sequences/run_official/sequence_summary.json",
+      "details": null
+    },
+    {
+      "name": "forecasting_data_contract",
+      "category": "Data Contract",
+      "status": "PASS",
+      "message": "Forecasting data contract passed all checks.",
+      "details": {
+        "passed": true,
+        "dataset_id": "driving_sample",
+        "artifacts_dir": "C:\\Users\\acer\\Desktop\\PerceptGuard-AI\\datasets\\processed\\driving_sample\\features\\sequences\\run_official",
+        "feature_count": 27,
+        "ordered_feature_names": [
+          "detection_count",
+          "unique_class_count",
+          "mean_confidence",
+          "confidence_std",
+          "mean_bbox_area",
+          "mean_bbox_width",
+          "mean_bbox_height",
+          "observed_track_count",
+          "moving_track_count",
+          "stationary_track_count",
+          "mean_displacement",
+          "maximum_displacement",
+          "mean_speed",
+          "mean_velocity_x",
+          "mean_velocity_y",
+          "motion_feature_coverage",
+          "blur_score",
+          "mean_brightness",
+          "brightness_std",
+          "contrast_std",
+          "contrast_range",
+          "contrast_percentile_range",
+          "numeric_feature_coverage",
+          "w3_confidence_trend_slope",
+          "w3_blur_trend_slope",
+          "w5_confidence_trend_slope",
+          "w5_blur_trend_slope"
+        ],
+        "sequence_lengths_validated": [
+          5,
+          10,
+          15,
+          20
+        ],
+        "tensor_shapes": {
+          "L5": [
+            138,
+            5,
+            27
+          ],
+          "L10": [
+            123,
+            10,
+            27
+          ],
+          "L15": [
+            108,
+            15,
+            27
+          ],
+          "L20": [
+            93,
+            20,
+            27
+          ]
+        },
+        "sequence_counts": {
+          "L5": 138,
+          "L10": 123,
+          "L15": 108,
+          "L20": 93
+        },
+        "splits_validated": true,
+        "leakage_check_passed": true,
+        "finite_check_passed": true,
+        "chronological_check_passed": true,
+        "ground_truth_labels_available": false,
+        "supervised_readiness": "NOT AVAILABLE",
+        "checks": {
+          "artifacts_dir_exists": true,
+          "feature_manifest_exists": true,
+          "feature_manifest_valid": true,
+          "tensor_exists_L5": true,
+          "tensor_dim_L5": true,
+          "tensor_len_L5": true,
+          "tensor_feat_L5": true,
+          "tensor_dtype_L5": true,
+          "tensor_finite_L5": true,
+          "tensor_exists_L10": true,
+          "tensor_dim_L10": true,
+          "tensor_len_L10": true,
+          "tensor_feat_L10": true,
+          "tensor_dtype_L10": true,
+          "tensor_finite_L10": true,
+          "tensor_exists_L15": true,
+          "tensor_dim_L15": true,
+          "tensor_len_L15": true,
+          "tensor_feat_L15": true,
+          "tensor_dtype_L15": true,
+          "tensor_finite_L15": true,
+          "tensor_exists_L20": true,
+          "tensor_dim_L20": true,
+          "tensor_len_L20": true,
+          "tensor_feat_L20": true,
+          "tensor_dtype_L20": true,
+          "tensor_finite_L20": true,
+          "all_tensors_finite": true,
+          "sequence_metadata_exists": true,
+          "sequence_metadata_valid": true,
+          "chronological_ordering": true,
+          "dataset_splits_exists": true,
+          "dataset_splits_valid": true,
+          "leakage_check_passed": true,
+          "overall_data_contract_passed": true
+        },
+        "warnings": [
+          "Supervised training readiness is NOT AVAILABLE: Day 5 sequence dataset does not contain ground-truth perception reliability annotations. YOLO confidence alone is NOT ground-truth reliability."
+        ],
+        "errors": []
+      }
+    },
+    {
+      "name": "target_label_availability_honesty",
+      "category": "Scientific Validation",
+      "status": "PASS",
+      "message": "Supervised readiness status: 'NOT AVAILABLE'. Correctly certified: Real Day 5 driving sequences do not contain human-annotated ground-truth reliability targets. Zero fabrication.",
+      "details": null
+    },
+    {
+      "name": "split_disjointness_zero_leakage",
+      "category": "Leakage Audit",
+      "status": "PASS",
+      "message": "Zero sequence and frame overlap across splits. Frame Ranges: Train=0-105, Val=130-152, Test=177-200. Embargo Gap=25 frames. L5 Sequences: Train=101, Val=18, Test=19.",
+      "details": {
+        "train_frame_count": 105,
+        "val_frame_count": 22,
+        "test_frame_count": 23,
+        "embargo_gap_frames": 25,
+        "train_seq_count": 101,
+        "val_seq_count": 18,
+        "test_seq_count": 19
+      }
+    }
+  ],
+  "git_info": {
+    "branch": "main",
+    "latest_commit": "5223a51 feat: add model evaluation",
+    "working_tree": "Dirty (4 modified files)"
+  }
+}
