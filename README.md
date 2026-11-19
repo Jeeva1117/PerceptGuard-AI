@@ -116,8 +116,12 @@ PerceptGuard-AI/
 │   │   └── __init__.py
 │   ├── features/               # Feature extraction & temporal windowing
 │   │   └── __init__.py
-│   ├── prediction/             # LSTM / GRU reliability forecasting models
-│   │   └── __init__.py
+│   ├── forecasting/            # Deep learning perception reliability forecasting
+│   │   ├── __init__.py
+│   │   ├── forecasting_config.py
+│   │   ├── forecasting_environment.py
+│   │   └── forecasting_data_contract.py
+│   ├── prediction/             # Legacy prediction stubs
 │   └── evaluation/             # Ground-truth IoU labeling & validation metrics
 │       └── __init__.py
 ├── tests/                      # Unit & integration test suites
@@ -598,11 +602,21 @@ For architectural specifications, mathematical formulations, and benchmark resul
     - Certified data leakage prevention: zero future-frame leakage, purged temporal embargo gaps ($G=25$), disjoint split frame sets, and training-only scaler/imputer fitting.
     - 100% test pass rate: **878 / 878 tests passed** across entire repository (287 feature tests).
     - Status: **PASS (100% Verified & Production-Ready)**.
-- [ ] **Day 6: Ground-Truth Reliability Labeling & Supervision Targets**
-  - Hungarian bipartite matching with annotated ground-truth boxes.
-  - Construct multi-horizon supervision labels ($t+1, t+3, t+5$).
-- [ ] **Day 7: Recurrent Forecasting Model (LSTM/GRU)**
-  - Model architecture definition, PyTorch dataset loaders, and training pipeline.
+- [ ] **Day 6: Predictive Perception Reliability Forecasting**
+  - [x] **Task 1: Advanced Forecasting Environment & Model Setup**
+    - Established strongly typed, CPU-first `ForecastingConfig` and `config/forecasting_config.yaml` supporting multi-horizon configuration ($H \in \{1, 3, 5\}$).
+    - Runtime verification engine (`ForecastingEnvironmentVerifier`) enforcing CPU-only execution, bounded CPU threads (`torch.set_num_threads(2)`), deterministic seed initialization (42), and checkpoint directory readiness.
+    - Deep learning data contract validation engine (`ForecastingDataContract`) auditing Day 5 sequence outputs across 14 strict validation checks (3D tensor dimensionality, float32 dtypes, finite numbers, 27-feature manifest alignment, split disjointness, and chronological monotonicity).
+    - Model input spec defined as `(batch_size, sequence_length, feature_count)` float32; output spec defined as `(batch_size, number_of_horizons)` float32 with continuous reliability score in $[0.0, 1.0]$.
+    - Honest target label policy: reported `ground_truth_labels_available: false` and `supervised_readiness: "NOT AVAILABLE"` because YOLO confidence alone is not ground-truth reliability.
+    - 47 automated unit and integration tests across forecasting modules (100% pass rate).
+  - [ ] **Task 2: Ground-Truth Reliability Labeling & Supervision Targets**
+  - [ ] **Task 3: Baseline Forecasting Model & Benchmarks**
+  - [ ] **Task 4: Recurrent Neural Network Forecasting Architecture (LSTM/GRU)**
+  - [ ] **Task 5: Model Training & Optimization Pipeline**
+  - [ ] **Task 6: Multi-Horizon Inference & Reliability Evaluation**
+  - [ ] **Task 7: Final Forecasting Audit & Pipeline Certification**
+- [ ] **Day 7: Live Inference & Perception Telemetry Pipeline**
 - [ ] **Day 8: Evaluation & Streamlit Dashboard**
   - Model evaluation against test sequences.
   - Interactive dashboard with live visual alerts and reliability telemetry.
