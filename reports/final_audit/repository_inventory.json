@@ -1,0 +1,1376 @@
+{
+  "audit_metadata": {
+    "audit_stage": "Stage 1 \u2014 Repository & Project Inventory Audit",
+    "auditor_role": "Senior Machine Learning Architect, Senior Python Engineer, Computer Vision Engineer & Repository Auditor",
+    "timestamp": "2026-11-19T16:18:33.650423+00:00",
+    "git_branch": "main",
+    "git_head_commit": "6875081",
+    "git_remote_url": "https://github.com/Jeeva1117/PerceptGuard-AI.git",
+    "overall_inventory_verdict": "PASS"
+  },
+  "repository_metrics": {
+    "total_files_on_disk": 5346,
+    "git_tracked_files": 196,
+    "git_ignored_or_untracked_files": 5150,
+    "python_source_files": 57,
+    "configuration_files": 7,
+    "test_files": 55,
+    "total_test_cases": 1187,
+    "markdown_documents": 45,
+    "sensitive_files_detected": 0,
+    "large_binary_files_tracked_in_git": 0
+  },
+  "directory_summaries": {
+    "src": {
+      "file_count": 57,
+      "description": "Modular Python production source packages"
+    },
+    "config": {
+      "file_count": 7,
+      "description": "YAML configs, python settings dataclass"
+    },
+    "tests": {
+      "file_count": 59,
+      "description": "Pytest unit, integration, and regression test suites"
+    },
+    "docs": {
+      "file_count": 39,
+      "description": "Technical specifications, mathematical formulation, audit reports"
+    },
+    "datasets": {
+      "file_count": 5132,
+      "description": "Raw video, extracted frames, preprocessed images, features, sequence tensors (gitignored)"
+    },
+    "models": {
+      "file_count": 4,
+      "description": "YOLO weights (yolo11n.pt) and forecasting checkpoints (gitignored)"
+    },
+    "experiments": {
+      "file_count": 23,
+      "description": "Synthetic LSTM and baseline training experiment run artifacts"
+    },
+    "reports": {
+      "file_count": 12,
+      "description": "Machine-readable JSON and Markdown audit reports"
+    },
+    "scripts": {
+      "file_count": 3,
+      "description": "Automated audit and verification utilities"
+    },
+    "dashboard": {
+      "file_count": 1,
+      "description": "Streamlit monitoring dashboard package"
+    },
+    "notebooks": {
+      "file_count": 1,
+      "description": "Exploratory research notebooks placeholder"
+    },
+    "outputs": {
+      "file_count": 3,
+      "description": "Visualizations, plots, and evaluation reports placeholder"
+    }
+  },
+  "components": [
+    {
+      "day": "Day 1: Project Foundation",
+      "subsystem": "Environment & Package Setup",
+      "component": "Centralized Application Settings",
+      "expected_file": "config/settings.py",
+      "actual_file": "config/settings.py",
+      "status": "PRESENT",
+      "tests": [
+        "tests/test_settings.py (via test_environment)"
+      ],
+      "docs": [
+        "README.md",
+        "docs/architecture.md"
+      ],
+      "artifacts": [],
+      "dependencies": [
+        "pydantic",
+        "pathlib",
+        "torch"
+      ],
+      "audit_finding": "Valid Python AST. Implements Pathlib paths and auto device detection."
+    },
+    {
+      "day": "Day 1: Project Foundation",
+      "subsystem": "Environment & Package Setup",
+      "component": "Environment Verification Utility",
+      "expected_file": "tests/verify_environment.py",
+      "actual_file": "tests/verify_environment.py",
+      "status": "PRESENT",
+      "tests": [
+        "tests/verify_environment.py"
+      ],
+      "docs": [
+        "README.md"
+      ],
+      "artifacts": [],
+      "dependencies": [
+        "torch",
+        "cv2",
+        "ultralytics"
+      ],
+      "audit_finding": "Standalone environment verifier checking torch, cv2, and ultralytics."
+    },
+    {
+      "day": "Day 1: Project Foundation",
+      "subsystem": "Packaging",
+      "component": "Project Packaging Metadata (setup.py / pyproject.toml)",
+      "expected_file": "setup.py / pyproject.toml",
+      "actual_file": "requirements.txt, main.py",
+      "status": "INCOMPLETE",
+      "tests": [],
+      "docs": [
+        "README.md"
+      ],
+      "artifacts": [],
+      "dependencies": [],
+      "audit_finding": "Project uses requirements.txt and main.py directly; setup.py and pyproject.toml not present in root."
+    },
+    {
+      "day": "Day 2: Video Processing",
+      "subsystem": "Video Ingestion",
+      "component": "Video Loader Engine",
+      "expected_file": "src/video_processing/video_loader.py",
+      "actual_file": "src/video_processing/video_loader.py",
+      "status": "PRESENT",
+      "tests": [
+        "tests/test_video_loader.py"
+      ],
+      "docs": [
+        "docs/VIDEO_LOADING.md"
+      ],
+      "artifacts": [
+        "datasets/raw/converted_026c7465-309f6d33.mp4"
+      ],
+      "dependencies": [
+        "cv2",
+        "numpy"
+      ],
+      "audit_finding": "Robust OpenCV frame decoding and stream validation."
+    },
+    {
+      "day": "Day 2: Video Processing",
+      "subsystem": "Video Ingestion",
+      "component": "Frame Extraction Engine",
+      "expected_file": "src/video_processing/frame_extractor.py",
+      "actual_file": "src/video_processing/frame_extractor.py",
+      "status": "PRESENT",
+      "tests": [
+        "tests/test_frame_extractor.py"
+      ],
+      "docs": [
+        "docs/FRAME_EXTRACTION.md"
+      ],
+      "artifacts": [
+        "datasets/processed/driving_sample/metadata/video_summary.json"
+      ],
+      "dependencies": [
+        "cv2",
+        "numpy"
+      ],
+      "audit_finding": "Extracts 200 sequential 720p frames with zero drops."
+    },
+    {
+      "day": "Day 2: Video Processing",
+      "subsystem": "Preprocessing",
+      "component": "Frame Preprocessor Pipeline",
+      "expected_file": "src/video_processing/frame_preprocessor.py",
+      "actual_file": "src/video_processing/frame_preprocessor.py",
+      "status": "PRESENT",
+      "tests": [
+        "tests/test_frame_preprocessor.py"
+      ],
+      "docs": [
+        "docs/FRAME_PREPROCESSING.md"
+      ],
+      "artifacts": [
+        "datasets/processed/driving_sample/preprocessed_frames/"
+      ],
+      "dependencies": [
+        "cv2",
+        "numpy"
+      ],
+      "audit_finding": "Letterbox resizing (640x360), normalization, blur and contrast quality computation."
+    },
+    {
+      "day": "Day 2: Video Processing",
+      "subsystem": "Metadata & Organization",
+      "component": "Metadata Generator & Dataset Organizer",
+      "expected_file": "src/video_processing/metadata_generator.py",
+      "actual_file": "src/video_processing/metadata_generator.py, src/video_processing/dataset_organizer.py",
+      "status": "PRESENT",
+      "tests": [
+        "tests/test_metadata_generator.py",
+        "tests/test_dataset_structure.py"
+      ],
+      "docs": [
+        "docs/METADATA_GENERATION.md",
+        "docs/DATASET_STRUCTURE.md"
+      ],
+      "artifacts": [
+        "datasets/processed/driving_sample/metadata.csv"
+      ],
+      "dependencies": [
+        "pandas",
+        "json"
+      ],
+      "audit_finding": "Schema v1.0 metadata serialization across extracted frames."
+    },
+    {
+      "day": "Day 2: Video Processing",
+      "subsystem": "Quality Assurance",
+      "component": "Dataset Quality Validator",
+      "expected_file": "src/validation/dataset_validator.py",
+      "actual_file": "src/validation/dataset_validator.py",
+      "status": "PRESENT",
+      "tests": [
+        "tests/test_dataset_validator.py"
+      ],
+      "docs": [
+        "docs/DATASET_VALIDATION.md",
+        "docs/DAY_2_FINAL_AUDIT.md"
+      ],
+      "artifacts": [
+        "datasets/processed/driving_sample/metadata/validation_report.json"
+      ],
+      "dependencies": [
+        "cv2",
+        "numpy"
+      ],
+      "audit_finding": "Multi-tier validation verifying frame resolution, corruptions, and metadata conformity."
+    },
+    {
+      "day": "Day 3: YOLO Object Detection",
+      "subsystem": "Detection Environment",
+      "component": "YOLO Model Loader & Config Schema",
+      "expected_file": "src/detection/yolo_model_loader.py, src/detection/yolo_config.py",
+      "actual_file": "src/detection/yolo_model_loader.py, src/detection/yolo_config.py",
+      "status": "PRESENT",
+      "tests": [
+        "tests/test_yolo_model_loader.py",
+        "tests/test_yolo_config.py",
+        "tests/detection/test_yolo_config.py"
+      ],
+      "docs": [
+        "docs/YOLO_ENVIRONMENT_SETUP.md",
+        "docs/YOLO_MODEL_CONFIGURATION.md"
+      ],
+      "artifacts": [
+        "models/yolo/yolo11n.pt",
+        "config/yolo_config.yaml"
+      ],
+      "dependencies": [
+        "ultralytics",
+        "torch",
+        "yaml"
+      ],
+      "audit_finding": "Lazy loading YOLO11n weights with validated stride and class filters."
+    },
+    {
+      "day": "Day 3: YOLO Object Detection",
+      "subsystem": "Inference Engines",
+      "component": "Single Image & Batch Detectors",
+      "expected_file": "src/detection/single_image_detector.py, src/detection/batch_detector.py",
+      "actual_file": "src/detection/single_image_detector.py, src/detection/batch_detector.py",
+      "status": "PRESENT",
+      "tests": [
+        "tests/test_single_image_detector.py",
+        "tests/test_batch_detector.py",
+        "tests/detection/test_single_image_detector.py",
+        "tests/detection/test_batch_detector.py"
+      ],
+      "docs": [
+        "docs/SINGLE_IMAGE_DETECTION.md",
+        "docs/BATCH_OBJECT_DETECTION.md"
+      ],
+      "artifacts": [
+        "datasets/processed/driving_sample/detections/batch/"
+      ],
+      "dependencies": [
+        "ultralytics",
+        "cv2",
+        "numpy"
+      ],
+      "audit_finding": "Batch inference with coordinate normalization and boundary clipping."
+    },
+    {
+      "day": "Day 3: YOLO Object Detection",
+      "subsystem": "Visualization & Analysis",
+      "component": "Detection Visualizer & Perception Metrics",
+      "expected_file": "src/visualization/detection_visualizer.py, src/analysis/detection_metrics.py",
+      "actual_file": "src/visualization/detection_visualizer.py, src/analysis/detection_metrics.py",
+      "status": "PRESENT",
+      "tests": [
+        "tests/test_detection_visualizer.py",
+        "tests/test_detection_metrics.py",
+        "tests/visualization/test_detection_visualizer.py",
+        "tests/analysis/test_detection_metrics.py"
+      ],
+      "docs": [
+        "docs/DETECTION_VISUALIZATION.md",
+        "docs/DETECTION_METRICS.md"
+      ],
+      "artifacts": [],
+      "dependencies": [
+        "matplotlib",
+        "cv2",
+        "numpy"
+      ],
+      "audit_finding": "Bounding box overlays and statistical confidence/class aggregations."
+    },
+    {
+      "day": "Day 4: Object Tracking",
+      "subsystem": "Tracking Core",
+      "component": "ByteTrack Engine & Kalman State Filtering",
+      "expected_file": "src/tracking/bytetrack_engine.py",
+      "actual_file": "src/tracking/bytetrack_engine.py",
+      "status": "PRESENT",
+      "tests": [
+        "tests/tracking/test_bytetrack_engine.py",
+        "tests/tracking/test_tracker_config.py"
+      ],
+      "docs": [
+        "docs/TRACKING_ENVIRONMENT_SETUP.md",
+        "docs/BYTETRACK_INTEGRATION.md"
+      ],
+      "artifacts": [
+        "config/tracker_config.yaml"
+      ],
+      "dependencies": [
+        "scipy",
+        "numpy"
+      ],
+      "audit_finding": "Two-stage Hungarian association matching high- and low-confidence detections."
+    },
+    {
+      "day": "Day 4: Object Tracking",
+      "subsystem": "Tracking Pipelines",
+      "component": "Single & Multi-Object Tracking Pipelines",
+      "expected_file": "src/tracking/single_object_tracker.py, src/tracking/multi_object_tracker.py, src/tracking/tracking_pipeline.py",
+      "actual_file": "src/tracking/single_object_tracker.py, src/tracking/multi_object_tracker.py, src/tracking/tracking_pipeline.py",
+      "status": "PRESENT",
+      "tests": [
+        "tests/tracking/test_single_object_tracker.py",
+        "tests/tracking/test_multi_object_tracker.py",
+        "tests/tracking/test_tracking_pipeline.py"
+      ],
+      "docs": [
+        "docs/SINGLE_OBJECT_TRACKING.md",
+        "docs/MULTI_OBJECT_TRACKING.md"
+      ],
+      "artifacts": [
+        "datasets/processed/driving_sample/tracking/"
+      ],
+      "dependencies": [
+        "scipy",
+        "numpy"
+      ],
+      "audit_finding": "Trajectory generation, velocity estimation, and lifecycle management."
+    },
+    {
+      "day": "Day 4: Object Tracking",
+      "subsystem": "Visualization & Metrics",
+      "component": "Tracking Visualizer & Metrics Analyzer",
+      "expected_file": "src/visualization/tracking_visualizer.py, src/analysis/tracking_metrics.py",
+      "actual_file": "src/visualization/tracking_visualizer.py, src/analysis/tracking_metrics.py",
+      "status": "PRESENT",
+      "tests": [
+        "tests/visualization/test_tracking_visualizer.py",
+        "tests/analysis/test_tracking_metrics.py"
+      ],
+      "docs": [
+        "docs/TRACKING_VISUALIZATION.md",
+        "docs/TRACKING_METRICS_ANALYSIS.md"
+      ],
+      "artifacts": [],
+      "dependencies": [
+        "cv2",
+        "numpy",
+        "matplotlib"
+      ],
+      "audit_finding": "Trajectory breadcrumb rendering, ID switches, and fragmentation metrics."
+    },
+    {
+      "day": "Day 5: Feature Engineering",
+      "subsystem": "Extraction Engines",
+      "component": "Detection, Motion & Visual Quality Feature Extractors",
+      "expected_file": "src/features/detection_feature_extractor.py, src/features/motion_feature_extractor.py, src/features/visual_quality_extractor.py",
+      "actual_file": "src/features/detection_feature_extractor.py, src/features/motion_feature_extractor.py, src/features/visual_quality_extractor.py",
+      "status": "PRESENT",
+      "tests": [
+        "tests/features/test_detection_feature_extractor.py",
+        "tests/features/test_motion_feature_extractor.py",
+        "tests/features/test_visual_quality_extractor.py"
+      ],
+      "docs": [
+        "docs/DETECTION_FEATURE_EXTRACTION.md",
+        "docs/MOTION_FEATURE_EXTRACTION.md",
+        "docs/VISUAL_QUALITY_FEATURE_EXTRACTION.md"
+      ],
+      "artifacts": [
+        "datasets/processed/driving_sample/features/sequences/run_official/feature_manifest.json"
+      ],
+      "dependencies": [
+        "numpy",
+        "scipy",
+        "cv2"
+      ],
+      "audit_finding": "23 multi-modal frame features (7 detection, 9 motion kinematics, 7 visual quality)."
+    },
+    {
+      "day": "Day 5: Feature Engineering",
+      "subsystem": "Temporal Sequencing",
+      "component": "Temporal Feature Aggregator & Sequence Builder",
+      "expected_file": "src/features/temporal_feature_aggregator.py, src/features/temporal_sequence_builder.py",
+      "actual_file": "src/features/temporal_feature_aggregator.py, src/features/temporal_sequence_builder.py",
+      "status": "PRESENT",
+      "tests": [
+        "tests/features/test_temporal_feature_aggregator.py",
+        "tests/features/test_temporal_sequence_builder.py",
+        "tests/test_day5_audit.py"
+      ],
+      "docs": [
+        "docs/TEMPORAL_FEATURE_AGGREGATION.md",
+        "docs/TEMPORAL_SEQUENCE_CONSTRUCTION.md",
+        "docs/DAY5_FINAL_VALIDATION_REPORT.md"
+      ],
+      "artifacts": [
+        "datasets/processed/driving_sample/features/sequences/run_official/sequences_L5.npy",
+        "datasets/processed/driving_sample/features/sequences/run_official/sequences_L10.npy",
+        "datasets/processed/driving_sample/features/sequences/run_official/sequences_L15.npy",
+        "datasets/processed/driving_sample/features/sequences/run_official/sequences_L20.npy",
+        "datasets/processed/driving_sample/features/sequences/run_official/dataset_splits.json",
+        "datasets/processed/driving_sample/features/sequences/run_official/scaler_parameters.json",
+        "datasets/processed/driving_sample/features/sequences/run_official/imputation_parameters.json"
+      ],
+      "dependencies": [
+        "numpy",
+        "scikit-learn"
+      ],
+      "audit_finding": "Chronological sliding windows (L in {5,10,15,20}), 25-frame embargo gap, training-only scalers."
+    },
+    {
+      "day": "Day 6: Predictive Forecasting",
+      "subsystem": "Environment & Baseline",
+      "component": "Forecasting Environment, Config & Baseline Models",
+      "expected_file": "src/forecasting/forecasting_environment.py, src/forecasting/forecasting_config.py, src/forecasting/baseline_forecaster.py",
+      "actual_file": "src/forecasting/forecasting_environment.py, src/forecasting/forecasting_config.py, src/forecasting/baseline_forecaster.py",
+      "status": "PRESENT",
+      "tests": [
+        "tests/forecasting/test_forecasting_environment.py",
+        "tests/forecasting/test_forecasting_config.py",
+        "tests/forecasting/test_forecasting_data_contract.py",
+        "tests/forecasting/test_baseline_forecaster.py",
+        "tests/forecasting/test_baseline_data_loader.py",
+        "tests/forecasting/test_baseline_metrics.py",
+        "tests/forecasting/test_baseline_experiment.py"
+      ],
+      "docs": [
+        "docs/FORECASTING_ENVIRONMENT_SETUP.md",
+        "docs/BASELINE_FORECASTING_MODEL.md"
+      ],
+      "artifacts": [
+        "config/forecasting_config.yaml"
+      ],
+      "dependencies": [
+        "torch",
+        "numpy",
+        "yaml"
+      ],
+      "audit_finding": "CPU thread boundedness (2 threads), deterministic seeds, Persistence/Mean/Linear Trend baselines."
+    },
+    {
+      "day": "Day 6: Predictive Forecasting",
+      "subsystem": "Deep Learning Architecture",
+      "component": "LSTM Forecaster Architecture & Model Factory",
+      "expected_file": "src/forecasting/lstm_forecaster.py, src/forecasting/model_factory.py",
+      "actual_file": "src/forecasting/lstm_forecaster.py, src/forecasting/model_factory.py",
+      "status": "PRESENT",
+      "tests": [
+        "tests/forecasting/test_lstm_forecaster.py",
+        "tests/forecasting/test_model_factory.py",
+        "tests/forecasting/test_model_output_contract.py"
+      ],
+      "docs": [
+        "docs/LSTM_ARCHITECTURE.md"
+      ],
+      "artifacts": [],
+      "dependencies": [
+        "torch"
+      ],
+      "audit_finding": "Dynamic input resolution (F=27), multi-horizon sigmoid head bounded in [0.0, 1.0]."
+    },
+    {
+      "day": "Day 6: Predictive Forecasting",
+      "subsystem": "Training Pipeline",
+      "component": "PyTorch DataModule, Trainer Engine & Checkpointing",
+      "expected_file": "src/forecasting/training_data.py, src/forecasting/training_engine.py, src/forecasting/checkpoint_manager.py, src/forecasting/early_stopping.py, src/forecasting/training_logger.py, src/forecasting/train_lstm.py",
+      "actual_file": "src/forecasting/training_data.py, src/forecasting/training_engine.py, src/forecasting/checkpoint_manager.py, src/forecasting/early_stopping.py, src/forecasting/training_logger.py, src/forecasting/train_lstm.py",
+      "status": "PRESENT",
+      "tests": [
+        "tests/forecasting/test_training_data.py",
+        "tests/forecasting/test_training_engine.py",
+        "tests/forecasting/test_checkpoint_manager.py",
+        "tests/forecasting/test_early_stopping.py",
+        "tests/forecasting/test_training_logger.py",
+        "tests/forecasting/test_train_lstm_cli.py"
+      ],
+      "docs": [
+        "docs/LSTM_TRAINING_PIPELINE.md"
+      ],
+      "artifacts": [],
+      "dependencies": [
+        "torch"
+      ],
+      "audit_finding": "AdamW, gradient clipping (1.0), early stopping, strict target readiness gate (NOT AVAILABLE on unannotated driving sample)."
+    },
+    {
+      "day": "Day 6: Predictive Forecasting",
+      "subsystem": "Inference & Evaluation",
+      "component": "Multi-Horizon Forecaster, Model Evaluator & Visualizer",
+      "expected_file": "src/forecasting/multi_horizon_forecaster.py, src/forecasting/model_evaluator.py, src/forecasting/evaluation_visualizer.py",
+      "actual_file": "src/forecasting/multi_horizon_forecaster.py, src/forecasting/model_evaluator.py, src/forecasting/evaluation_visualizer.py",
+      "status": "PRESENT",
+      "tests": [
+        "tests/forecasting/test_multi_horizon_forecaster.py",
+        "tests/forecasting/test_model_evaluator.py",
+        "tests/forecasting/test_evaluation_visualizer.py"
+      ],
+      "docs": [
+        "docs/MULTI_HORIZON_FORECASTING.md",
+        "docs/MODEL_EVALUATION_ANALYSIS.md",
+        "docs/TASK_5_VALIDATION_REPORT.md",
+        "docs/TASK_6_VALIDATION_REPORT.md",
+        "docs/FINAL_VALIDATION_REPORT.md"
+      ],
+      "artifacts": [],
+      "dependencies": [
+        "torch",
+        "matplotlib",
+        "numpy"
+      ],
+      "audit_finding": "0.054 ms CPU inference latency, composite key temporal alignment, headless matplotlib plots."
+    },
+    {
+      "day": "Day 6: Predictive Forecasting",
+      "subsystem": "Master Audit Framework",
+      "component": "End-to-End Master Project Auditor Tool",
+      "expected_file": "scripts/audit_project.py, scripts/audit_day6.py",
+      "actual_file": "scripts/audit_project.py, scripts/audit_day6.py",
+      "status": "PRESENT",
+      "tests": [
+        "tests/test_audit_project.py",
+        "tests/test_day6_audit.py"
+      ],
+      "docs": [
+        "docs/DAY_7_INDEPENDENT_AUDIT_REPORT.md"
+      ],
+      "artifacts": [
+        "reports/final_audit/project_audit.json",
+        "reports/final_audit/project_audit_summary.md",
+        "reports/final_audit/missing_files_report.json",
+        "reports/final_audit/integration_audit.json",
+        "reports/final_audit/data_integrity_report.json",
+        "reports/day6_audit/day6_audit.json",
+        "reports/day6_audit/day6_audit_summary.md"
+      ],
+      "dependencies": [
+        "yaml",
+        "numpy",
+        "torch"
+      ],
+      "audit_finding": "Master automated audit suite conducting 178 checks across file inventory, imports, configs, artifacts, integration, and leakage."
+    }
+  ],
+  "missing_files": [
+    {
+      "file": "setup.py",
+      "severity": "LOW",
+      "category": "Packaging",
+      "reason": "Repository uses direct requirements.txt dependency resolution and python main.py CLI rather than pip install -e ."
+    },
+    {
+      "file": "pyproject.toml",
+      "severity": "LOW",
+      "category": "Packaging",
+      "reason": "Standard PEP 517 build configuration omitted in favor of requirements.txt."
+    }
+  ],
+  "suspicious_or_duplicate_files": [
+    {
+      "file": "src/prediction/__init__.py",
+      "status": "NEEDS REVIEW",
+      "reason": "Legacy prediction namespace kept for backwards compatibility; re-exports forecasting symbols."
+    },
+    {
+      "file": "tests/test_detection_visualizer.py & tests/visualization/test_detection_visualizer.py",
+      "status": "DUPLICATE SUITE",
+      "reason": "Two separate test files exist testing detection visualizer (one at root tests/ and one in tests/visualization/)."
+    },
+    {
+      "file": "tests/test_batch_detector.py & tests/detection/test_batch_detector.py",
+      "status": "DUPLICATE SUITE",
+      "reason": "Two separate test files exist testing batch detector (one at root tests/ and one in tests/detection/)."
+    },
+    {
+      "file": "tests/test_single_image_detector.py & tests/detection/test_single_image_detector.py",
+      "status": "DUPLICATE SUITE",
+      "reason": "Two separate test files exist testing single image detector (one at root tests/ and one in tests/detection/)."
+    },
+    {
+      "file": "tests/test_yolo_config.py & tests/detection/test_yolo_config.py",
+      "status": "DUPLICATE SUITE",
+      "reason": "Two separate test files exist testing YOLO configuration (one at root tests/ and one in tests/detection/)."
+    },
+    {
+      "file": "tests/test_detection_metrics.py & tests/analysis/test_detection_metrics.py",
+      "status": "DUPLICATE SUITE",
+      "reason": "Two separate test files exist testing detection metrics (one at root tests/ and one in tests/analysis/)."
+    }
+  ],
+  "test_inventory": {
+    "total_test_files": 55,
+    "total_tests": 1187,
+    "files": {
+      "tests/analysis/test_detection_metrics.py": 30,
+      "tests/analysis/test_tracking_metrics.py": 30,
+      "tests/detection/test_batch_detector.py": 29,
+      "tests/detection/test_single_image_detector.py": 26,
+      "tests/detection/test_yolo_config.py": 23,
+      "tests/features/test_detection_feature_extractor.py": 39,
+      "tests/features/test_feature_config.py": 26,
+      "tests/features/test_feature_environment.py": 15,
+      "tests/features/test_feature_schema.py": 25,
+      "tests/features/test_motion_feature_extractor.py": 43,
+      "tests/features/test_temporal_feature_aggregator.py": 45,
+      "tests/features/test_temporal_sequence_builder.py": 52,
+      "tests/features/test_visual_quality_extractor.py": 42,
+      "tests/forecasting/test_baseline_data_loader.py": 12,
+      "tests/forecasting/test_baseline_experiment.py": 4,
+      "tests/forecasting/test_baseline_forecaster.py": 12,
+      "tests/forecasting/test_baseline_metrics.py": 13,
+      "tests/forecasting/test_checkpoint_manager.py": 8,
+      "tests/forecasting/test_early_stopping.py": 10,
+      "tests/forecasting/test_evaluation_visualizer.py": 16,
+      "tests/forecasting/test_forecasting_config.py": 18,
+      "tests/forecasting/test_forecasting_data_contract.py": 19,
+      "tests/forecasting/test_forecasting_environment.py": 10,
+      "tests/forecasting/test_lstm_forecaster.py": 19,
+      "tests/forecasting/test_model_evaluator.py": 35,
+      "tests/forecasting/test_model_factory.py": 12,
+      "tests/forecasting/test_model_output_contract.py": 9,
+      "tests/forecasting/test_multi_horizon_forecaster.py": 45,
+      "tests/forecasting/test_train_lstm_cli.py": 5,
+      "tests/forecasting/test_training_data.py": 15,
+      "tests/forecasting/test_training_engine.py": 10,
+      "tests/forecasting/test_training_logger.py": 5,
+      "tests/test_audit_project.py": 8,
+      "tests/test_batch_detector.py": 29,
+      "tests/test_dataset_structure.py": 13,
+      "tests/test_dataset_validator.py": 21,
+      "tests/test_day5_audit.py": 14,
+      "tests/test_day6_audit.py": 10,
+      "tests/test_detection_metrics.py": 30,
+      "tests/test_detection_visualizer.py": 29,
+      "tests/test_frame_extractor.py": 13,
+      "tests/test_frame_preprocessor.py": 18,
+      "tests/test_metadata_generator.py": 16,
+      "tests/test_single_image_detector.py": 26,
+      "tests/test_video_loader.py": 13,
+      "tests/test_yolo_config.py": 23,
+      "tests/test_yolo_model_loader.py": 18,
+      "tests/tracking/test_bytetrack_engine.py": 17,
+      "tests/tracking/test_multi_object_tracker.py": 30,
+      "tests/tracking/test_single_object_tracker.py": 30,
+      "tests/tracking/test_tracker_config.py": 26,
+      "tests/tracking/test_tracking_environment.py": 25,
+      "tests/tracking/test_tracking_pipeline.py": 15,
+      "tests/visualization/test_detection_visualizer.py": 29,
+      "tests/visualization/test_tracking_visualizer.py": 32
+    }
+  },
+  "documentation_inventory": [
+    {
+      "path": ".pytest_cache/README.md",
+      "size_bytes": 302,
+      "lines": 8,
+      "first_heading": "# pytest cache directory #"
+    },
+    {
+      "path": "docs/architecture.md",
+      "size_bytes": 17269,
+      "lines": 277,
+      "first_heading": "# PerceptGuard-AI: System Architecture Specification"
+    },
+    {
+      "path": "docs/BASELINE_FORECASTING_MODEL.md",
+      "size_bytes": 7550,
+      "lines": 158,
+      "first_heading": "# PerceptGuard AI \u2014 Baseline Forecasting System"
+    },
+    {
+      "path": "docs/BATCH_OBJECT_DETECTION.md",
+      "size_bytes": 21492,
+      "lines": 384,
+      "first_heading": "# PerceptGuard AI \u2013 Advanced Batch Object Detection Engine"
+    },
+    {
+      "path": "docs/BYTETRACK_INTEGRATION.md",
+      "size_bytes": 12135,
+      "lines": 231,
+      "first_heading": "# PerceptGuard AI \u2014 Advanced ByteTrack Integration Specification"
+    },
+    {
+      "path": "docs/DATASET_SOURCES.md",
+      "size_bytes": 8431,
+      "lines": 132,
+      "first_heading": "# PerceptGuard-AI: Dataset Sources & Acquisition Governance"
+    },
+    {
+      "path": "docs/DATASET_STRUCTURE.md",
+      "size_bytes": 9795,
+      "lines": 189,
+      "first_heading": "# Final Dataset Structure & Organization Specification"
+    },
+    {
+      "path": "docs/DATASET_VALIDATION.md",
+      "size_bytes": 17219,
+      "lines": 263,
+      "first_heading": "# Dataset Quality Assurance & Validation Pipeline Specification"
+    },
+    {
+      "path": "docs/DAY5_FINAL_VALIDATION_REPORT.md",
+      "size_bytes": 19107,
+      "lines": 264,
+      "first_heading": "# PerceptGuard AI \u2013 Day 5 Final System Audit & Pipeline Validation Report"
+    },
+    {
+      "path": "docs/DAY_2_FINAL_AUDIT.md",
+      "size_bytes": 19778,
+      "lines": 400,
+      "first_heading": "# PerceptGuard AI \u2013 Day 2 Complete Final Audit"
+    },
+    {
+      "path": "docs/DAY_7_INDEPENDENT_AUDIT_REPORT.md",
+      "size_bytes": 25521,
+      "lines": 290,
+      "first_heading": "# PERCEPTGUARD AI \u2014 INDEPENDENT END-TO-END ENGINEERING AUDIT REPORT"
+    },
+    {
+      "path": "docs/DETECTION_FEATURE_EXTRACTION.md",
+      "size_bytes": 11076,
+      "lines": 228,
+      "first_heading": "# PerceptGuard AI \u2014 Detection Feature Extraction Architecture & Specification"
+    },
+    {
+      "path": "docs/DETECTION_METRICS.md",
+      "size_bytes": 15165,
+      "lines": 242,
+      "first_heading": "# PerceptGuard AI \u2013 Advanced YOLO Detection Metrics & Perception Analysis"
+    },
+    {
+      "path": "docs/DETECTION_VISUALIZATION.md",
+      "size_bytes": 17554,
+      "lines": 313,
+      "first_heading": "# PerceptGuard AI \u2013 Advanced Object Detection Visualization Engine"
+    },
+    {
+      "path": "docs/DEVELOPMENT_PROGRESS.md",
+      "size_bytes": 160259,
+      "lines": 1768,
+      "first_heading": "# PerceptGuard-AI: Development Progress Tracker"
+    },
+    {
+      "path": "docs/FEATURE_ENGINEERING_SETUP.md",
+      "size_bytes": 12682,
+      "lines": 236,
+      "first_heading": "# PerceptGuard AI \u2014 Feature Engineering Environment & Architecture Specification"
+    },
+    {
+      "path": "docs/FINAL_VALIDATION_REPORT.md",
+      "size_bytes": 17398,
+      "lines": 251,
+      "first_heading": "# PerceptGuard AI \u2014 Day 6 Final System Audit & Pipeline Validation Report"
+    },
+    {
+      "path": "docs/FORECASTING_ENVIRONMENT_SETUP.md",
+      "size_bytes": 9580,
+      "lines": 237,
+      "first_heading": "# PerceptGuard AI \u2014 Forecasting Environment & Model Setup"
+    },
+    {
+      "path": "docs/FRAME_EXTRACTION.md",
+      "size_bytes": 8971,
+      "lines": 203,
+      "first_heading": "# Frame Extraction Engine Specification"
+    },
+    {
+      "path": "docs/FRAME_PREPROCESSING.md",
+      "size_bytes": 10254,
+      "lines": 213,
+      "first_heading": "# Frame Preprocessing Pipeline Specification"
+    },
+    {
+      "path": "docs/LSTM_ARCHITECTURE.md",
+      "size_bytes": 8777,
+      "lines": 187,
+      "first_heading": "# PerceptGuard AI \u2014 Advanced LSTM Forecasting Architecture"
+    },
+    {
+      "path": "docs/LSTM_TRAINING_PIPELINE.md",
+      "size_bytes": 16327,
+      "lines": 293,
+      "first_heading": "# PerceptGuard AI \u2014 LSTM Model Training Pipeline"
+    },
+    {
+      "path": "docs/METADATA_GENERATION.md",
+      "size_bytes": 8674,
+      "lines": 182,
+      "first_heading": "# Metadata Generation Engine Specification"
+    },
+    {
+      "path": "docs/MODEL_EVALUATION_ANALYSIS.md",
+      "size_bytes": 11861,
+      "lines": 222,
+      "first_heading": "# PerceptGuard AI \u2014 Model Evaluation & Analysis"
+    },
+    {
+      "path": "docs/MOTION_FEATURE_EXTRACTION.md",
+      "size_bytes": 12776,
+      "lines": 236,
+      "first_heading": "# PerceptGuard AI \u2014 Motion Feature Extraction Architecture & Specification"
+    },
+    {
+      "path": "docs/MULTI_HORIZON_FORECASTING.md",
+      "size_bytes": 12232,
+      "lines": 205,
+      "first_heading": "# PerceptGuard AI \u2014 Multi-Horizon Forecasting Engine"
+    },
+    {
+      "path": "docs/MULTI_OBJECT_TRACKING.md",
+      "size_bytes": 14601,
+      "lines": 331,
+      "first_heading": "# PerceptGuard AI \u2014 Production Multi-Object Tracking (MOT) Architecture"
+    },
+    {
+      "path": "docs/SINGLE_IMAGE_DETECTION.md",
+      "size_bytes": 10771,
+      "lines": 225,
+      "first_heading": "# PerceptGuard AI \u2013 Single Image Object Detection Engine"
+    },
+    {
+      "path": "docs/SINGLE_OBJECT_TRACKING.md",
+      "size_bytes": 15646,
+      "lines": 310,
+      "first_heading": "# PerceptGuard AI \u2014 Advanced Single-Object Tracking Architecture"
+    },
+    {
+      "path": "docs/TASK_5_VALIDATION_REPORT.md",
+      "size_bytes": 8194,
+      "lines": 168,
+      "first_heading": "# PerceptGuard AI \u2014 Day 6 Task 5 Validation Report"
+    },
+    {
+      "path": "docs/TASK_6_VALIDATION_REPORT.md",
+      "size_bytes": 7902,
+      "lines": 140,
+      "first_heading": "# PerceptGuard AI \u2014 Day 6 Task 6 Validation Report"
+    },
+    {
+      "path": "docs/TEMPORAL_FEATURE_AGGREGATION.md",
+      "size_bytes": 13570,
+      "lines": 275,
+      "first_heading": "# PerceptGuard AI: Temporal Feature Aggregation"
+    },
+    {
+      "path": "docs/TEMPORAL_SEQUENCE_CONSTRUCTION.md",
+      "size_bytes": 10725,
+      "lines": 184,
+      "first_heading": "# Temporal Sequence Construction Specification"
+    },
+    {
+      "path": "docs/TRACKING_ENVIRONMENT_SETUP.md",
+      "size_bytes": 16099,
+      "lines": 261,
+      "first_heading": "# PerceptGuard AI \u2014 Advanced Tracking Environment & Configuration Specification"
+    },
+    {
+      "path": "docs/TRACKING_METRICS_ANALYSIS.md",
+      "size_bytes": 11495,
+      "lines": 213,
+      "first_heading": "# PerceptGuard AI \u2013 Advanced Tracking Metrics & Perception Analysis Engine"
+    },
+    {
+      "path": "docs/TRACKING_VISUALIZATION.md",
+      "size_bytes": 19522,
+      "lines": 337,
+      "first_heading": "# PerceptGuard AI \u2013 Advanced Tracking Visualization Engine"
+    },
+    {
+      "path": "docs/VIDEO_LOADING.md",
+      "size_bytes": 10006,
+      "lines": 186,
+      "first_heading": "# PerceptGuard-AI: Video Loading & Ingestion Specification"
+    },
+    {
+      "path": "docs/VISUAL_QUALITY_FEATURE_EXTRACTION.md",
+      "size_bytes": 12530,
+      "lines": 285,
+      "first_heading": "# PerceptGuard AI: Visual Quality Feature Extraction"
+    },
+    {
+      "path": "docs/YOLO_ENVIRONMENT_SETUP.md",
+      "size_bytes": 10232,
+      "lines": 219,
+      "first_heading": "# PerceptGuard AI \u2013 Advanced YOLO Environment & Pretrained Model Setup"
+    },
+    {
+      "path": "docs/YOLO_MODEL_CONFIGURATION.md",
+      "size_bytes": 10265,
+      "lines": 213,
+      "first_heading": "# PerceptGuard AI \u2013 Advanced YOLO Model Configuration Architecture"
+    },
+    {
+      "path": "README.md",
+      "size_bytes": 52029,
+      "lines": 723,
+      "first_heading": "# PerceptGuard-AI: Predictive Object Detection Reliability System"
+    },
+    {
+      "path": "reports/day5_audit/audit_report.md",
+      "size_bytes": 15457,
+      "lines": 100,
+      "first_heading": "# PerceptGuard AI \u2014 Day 5 Automated Engineering Audit Report"
+    },
+    {
+      "path": "reports/day6_audit/day6_audit_summary.md",
+      "size_bytes": 2695,
+      "lines": 38,
+      "first_heading": "# PerceptGuard AI \u2014 Day 6 Automated Engineering Audit Summary"
+    },
+    {
+      "path": "reports/final_audit/project_audit_summary.md",
+      "size_bytes": 2470,
+      "lines": 37,
+      "first_heading": "# PerceptGuard AI \u2014 Comprehensive Independent Project Audit Summary"
+    },
+    {
+      "path": "reports/github/commit_cleanup_plan.md",
+      "size_bytes": 14215,
+      "lines": 140,
+      "first_heading": "# Git Commit History Cleanup Plan"
+    }
+  ],
+  "git_commit_inventory": {
+    "total_commits": 88,
+    "head_commit": {
+      "full": "6875081dc534be4d094dec322de1281c7b0f2cb2",
+      "short": "6875081",
+      "subject": "chore: add commit history cleanup reports and scripts",
+      "date": "2026-11-19T21:34:04+05:30"
+    },
+    "commits_with_day_task_references": [
+      {
+        "hash": "6be8c22",
+        "subject": "docs: add comprehensive Day 7 independent engineering audit report and audit artifact summaries"
+      },
+      {
+        "hash": "11b1669",
+        "subject": "docs: add final validation report and development progress tracker with updated readme task completion"
+      },
+      {
+        "hash": "1dabfb6",
+        "subject": "feat: add day 6 audit report and summary metrics"
+      },
+      {
+        "hash": "022c8f5",
+        "subject": "docs: add day 5 final validation report and day 6 audit infrastructure and tests"
+      },
+      {
+        "hash": "feda949",
+        "subject": "docs: add comprehensive Day 2 final engineering audit report"
+      },
+      {
+        "hash": "6aad778",
+        "subject": "docs: add Day 2 complete final audit report"
+      },
+      {
+        "hash": "5c2e479",
+        "subject": "docs: update development progress tracker with day 2 task 7 verification"
+      },
+      {
+        "hash": "e4b565a",
+        "subject": "docs: update development progress tracker with day 2 task 6 verification"
+      },
+      {
+        "hash": "050f341",
+        "subject": "docs: update development progress tracker with day 2 task 5 verification"
+      },
+      {
+        "hash": "9d938b1",
+        "subject": "docs: update development progress tracker with day 2 task 4 verification"
+      },
+      {
+        "hash": "f000255",
+        "subject": "docs: update development progress tracker with day 2 task 3 verification"
+      },
+      {
+        "hash": "3e646e5",
+        "subject": "docs: update development progress tracker with day 2 task 2 verification"
+      },
+      {
+        "hash": "3cb4625",
+        "subject": "docs: update development progress tracker with Day 2 Task 1 commit hash"
+      },
+      {
+        "hash": "9456b3e",
+        "subject": "chore: complete day 1 project foundation and environment setup"
+      },
+      {
+        "hash": "3e06490",
+        "subject": "docs: update Day 1 development progress with verified push status"
+      },
+      {
+        "hash": "091578e",
+        "subject": "feat: initialize Day 1 project architecture and engineering foundation"
+      }
+    ],
+    "long_or_ai_style_commits": [
+      {
+        "hash": "6875081",
+        "subject": "chore: add commit history cleanup reports and scripts",
+        "word_count": 8,
+        "char_len": 53
+      },
+      {
+        "hash": "0918562",
+        "subject": "test: add comprehensive test suite for master project auditor script",
+        "word_count": 10,
+        "char_len": 68
+      },
+      {
+        "hash": "6c1ca40",
+        "subject": "docs: update README with project audit and add development progress tracker",
+        "word_count": 11,
+        "char_len": 75
+      },
+      {
+        "hash": "6be8c22",
+        "subject": "docs: add comprehensive Day 7 independent engineering audit report and audit artifact summaries",
+        "word_count": 13,
+        "char_len": 95
+      },
+      {
+        "hash": "44eed37",
+        "subject": "feat: add project audit script for comprehensive repository verification",
+        "word_count": 9,
+        "char_len": 72
+      },
+      {
+        "hash": "9600f70",
+        "subject": "test: add comprehensive test suite for master project auditor script",
+        "word_count": 10,
+        "char_len": 68
+      },
+      {
+        "hash": "11b1669",
+        "subject": "docs: add final validation report and development progress tracker with updated readme task completion",
+        "word_count": 14,
+        "char_len": 102
+      },
+      {
+        "hash": "1dabfb6",
+        "subject": "feat: add day 6 audit report and summary metrics",
+        "word_count": 9,
+        "char_len": 48
+      },
+      {
+        "hash": "022c8f5",
+        "subject": "docs: add day 5 final validation report and day 6 audit infrastructure and tests",
+        "word_count": 14,
+        "char_len": 80
+      },
+      {
+        "hash": "f41445a",
+        "subject": "feat: add forecasting model evaluator and visualizer modules with unit tests",
+        "word_count": 11,
+        "char_len": 76
+      },
+      {
+        "hash": "66b8ac7",
+        "subject": "test: add unit tests for forecasting early stopping and training data modules",
+        "word_count": 12,
+        "char_len": 77
+      },
+      {
+        "hash": "368cb4c",
+        "subject": "feat: implement LSTM forecasting package with training engine, checkpointing, and early stopping",
+        "word_count": 12,
+        "char_len": 96
+      },
+      {
+        "hash": "64009de",
+        "subject": "feat: implement advanced LSTM forecasting architecture and model factory",
+        "word_count": 9,
+        "char_len": 72
+      },
+      {
+        "hash": "449531c",
+        "subject": "docs: add technical documentation for tracking metrics and perception analysis engine",
+        "word_count": 11,
+        "char_len": 85
+      },
+      {
+        "hash": "cb0b02d",
+        "subject": "docs: add final system audit and pipeline validation report",
+        "word_count": 9,
+        "char_len": 59
+      },
+      {
+        "hash": "8498daa",
+        "subject": "test: add automated unit and integration tests for detection metrics and analysis engine",
+        "word_count": 13,
+        "char_len": 88
+      },
+      {
+        "hash": "daea055",
+        "subject": "docs: finalize commit hash metadata for detection metrics",
+        "word_count": 8,
+        "char_len": 57
+      },
+      {
+        "hash": "1f9611a",
+        "subject": "feat: implement production-grade detection metrics and perception analysis engine",
+        "word_count": 9,
+        "char_len": 81
+      },
+      {
+        "hash": "21cab9f",
+        "subject": "feat: implement advanced object detection visualization engine and tests",
+        "word_count": 9,
+        "char_len": 72
+      },
+      {
+        "hash": "b4bdfb8",
+        "subject": "docs: finalize commit hash metadata for detection visualization",
+        "word_count": 8,
+        "char_len": 63
+      },
+      {
+        "hash": "dc9a15a",
+        "subject": "docs: add comprehensive specification for detection visualization engine",
+        "word_count": 8,
+        "char_len": 72
+      },
+      {
+        "hash": "baf3681",
+        "subject": "feat: initialize visualization package with detection visualizer exports",
+        "word_count": 8,
+        "char_len": 72
+      },
+      {
+        "hash": "142b0d7",
+        "subject": "feat: add automated test suite for detection visualizer",
+        "word_count": 8,
+        "char_len": 55
+      },
+      {
+        "hash": "b184841",
+        "subject": "feat: add batch object detection documentation and visualization module",
+        "word_count": 9,
+        "char_len": 71
+      },
+      {
+        "hash": "48c3935",
+        "subject": "docs: finalize commit hash metadata for batch object detection",
+        "word_count": 9,
+        "char_len": 62
+      },
+      {
+        "hash": "c3de873",
+        "subject": "feat: implement core detection module and YOLO model loader foundation",
+        "word_count": 10,
+        "char_len": 70
+      },
+      {
+        "hash": "d2b0bc6",
+        "subject": "feat: add YOLO configuration schema and YAML loader module",
+        "word_count": 9,
+        "char_len": 58
+      },
+      {
+        "hash": "04f511d",
+        "subject": "feat: add YOLO environment configuration, setup documentation, and test suite",
+        "word_count": 10,
+        "char_len": 77
+      },
+      {
+        "hash": "feda949",
+        "subject": "docs: add comprehensive Day 2 final engineering audit report",
+        "word_count": 9,
+        "char_len": 60
+      },
+      {
+        "hash": "6aad778",
+        "subject": "docs: add Day 2 complete final audit report",
+        "word_count": 8,
+        "char_len": 43
+      },
+      {
+        "hash": "d65717f",
+        "subject": "docs: update development progress tracker with video loading fix commit",
+        "word_count": 10,
+        "char_len": 71
+      },
+      {
+        "hash": "d1abe6e",
+        "subject": "fix: diagnose and improve original video loading verification",
+        "word_count": 8,
+        "char_len": 61
+      },
+      {
+        "hash": "dcd574c",
+        "subject": "feat: add dataset quality assurance and validation pipeline",
+        "word_count": 8,
+        "char_len": 59
+      },
+      {
+        "hash": "5c2e479",
+        "subject": "docs: update development progress tracker with day 2 task 7 verification",
+        "word_count": 11,
+        "char_len": 72
+      },
+      {
+        "hash": "7b66f2a",
+        "subject": "feat: implement comprehensive dataset quality assurance and validation engine",
+        "word_count": 9,
+        "char_len": 77
+      },
+      {
+        "hash": "354993f",
+        "subject": "feat: add production-grade dataset validation engine and comprehensive test suite",
+        "word_count": 10,
+        "char_len": 81
+      },
+      {
+        "hash": "8cdbc05",
+        "subject": "feat: implement dataset organizer and manifest management engine for video processing pipeline",
+        "word_count": 12,
+        "char_len": 94
+      },
+      {
+        "hash": "e4b565a",
+        "subject": "docs: update development progress tracker with day 2 task 6 verification",
+        "word_count": 11,
+        "char_len": 72
+      },
+      {
+        "hash": "b66dc48",
+        "subject": "feat: implement DatasetOrganizer for dataset layout and manifest management",
+        "word_count": 9,
+        "char_len": 75
+      },
+      {
+        "hash": "050f341",
+        "subject": "docs: update development progress tracker with day 2 task 5 verification",
+        "word_count": 11,
+        "char_len": 72
+      },
+      {
+        "hash": "37065e1",
+        "subject": "feat: implement CPU-optimized frame preprocessor pipeline and unit tests",
+        "word_count": 9,
+        "char_len": 72
+      },
+      {
+        "hash": "9d938b1",
+        "subject": "docs: update development progress tracker with day 2 task 4 verification",
+        "word_count": 11,
+        "char_len": 72
+      },
+      {
+        "hash": "fa45ea8",
+        "subject": "feat: implement frame preprocessor module with config and tests",
+        "word_count": 9,
+        "char_len": 63
+      },
+      {
+        "hash": "afb2b52",
+        "subject": "feat: implement frame extraction engine and associated documentation and tests",
+        "word_count": 10,
+        "char_len": 78
+      },
+      {
+        "hash": "f000255",
+        "subject": "docs: update development progress tracker with day 2 task 3 verification",
+        "word_count": 11,
+        "char_len": 72
+      },
+      {
+        "hash": "0f275e7",
+        "subject": "feat: implement frame extraction engine and video processing package init",
+        "word_count": 10,
+        "char_len": 73
+      },
+      {
+        "hash": "c658599",
+        "subject": "feat: add video configuration and video loader module",
+        "word_count": 8,
+        "char_len": 53
+      },
+      {
+        "hash": "23b187d",
+        "subject": "feat: implement video loader module and configuration for ingestion pipeline",
+        "word_count": 10,
+        "char_len": 76
+      },
+      {
+        "hash": "3e646e5",
+        "subject": "docs: update development progress tracker with day 2 task 2 verification",
+        "word_count": 11,
+        "char_len": 72
+      },
+      {
+        "hash": "3cb4625",
+        "subject": "docs: update development progress tracker with Day 2 Task 1 commit hash",
+        "word_count": 12,
+        "char_len": 71
+      },
+      {
+        "hash": "1b18c86",
+        "subject": "data: document autonomous driving dataset source and acquisition",
+        "word_count": 8,
+        "char_len": 64
+      },
+      {
+        "hash": "9456b3e",
+        "subject": "chore: complete day 1 project foundation and environment setup",
+        "word_count": 9,
+        "char_len": 62
+      },
+      {
+        "hash": "3e06490",
+        "subject": "docs: update Day 1 development progress with verified push status",
+        "word_count": 10,
+        "char_len": 65
+      },
+      {
+        "hash": "091578e",
+        "subject": "feat: initialize Day 1 project architecture and engineering foundation",
+        "word_count": 9,
+        "char_len": 70
+      }
+    ],
+    "prefix_distribution": {
+      "chore": 3,
+      "test": 11,
+      "docs": 21,
+      "feat": 51,
+      "fix": 1,
+      "data": 1
+    }
+  }
+}
