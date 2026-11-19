@@ -656,7 +656,16 @@ For architectural specifications, mathematical formulations, and benchmark resul
     - Implemented CLI runner `python -m src.forecasting.multi_horizon_forecaster` supporting `--input`, `--checkpoint`, `--config`, `--horizons`, `--batch-size`, and `--device`.
     - Maintained scientific integrity: reported `trained_checkpoint: "NOT AVAILABLE"` on real Day 5 driving sequences until ground-truth annotations are provided.
     - 45 automated unit and integration tests (226 total forecasting tests, 100% pass rate).
-  - [ ] **Task 6: Model Evaluation & Analysis**
+  - [x] **Task 6: Model Evaluation & Analysis**
+    - Implemented production-grade `ForecastingModelEvaluator` evaluating multi-horizon perception reliability predictions across horizons $h \in \{1, 3, 5\}$.
+    - Target Integrity Safeguard: strictly rejects YOLO confidence or heuristic indicators as ground-truth reliability; reports `NOT AVAILABLE` cleanly on unannotated Day 5 sequences without fabricating metrics.
+    - Strict temporal alignment on composite key `(dataset_id, video_id, target_frame_index, horizon)` with test split isolation and structured exclusion tracking (`excluded_records.json`).
+    - Standardized regression metrics computed per horizon: MAE, RMSE, Bias, Median AE, Error Std, MAPE, and directional counts (underprediction vs. overprediction vs. exact).
+    - Comparative baseline benchmarking against Persistence, Historical Mean, and Linear Trend with relative percentage improvement calculations (`baseline_comparison.json`).
+    - Statistical error analysis: full error distribution percentiles (p5, p25, p50, p75, p95), horizon breakdowns, and top worst error cases (`error_analysis.json`).
+    - Diagnostic visualization suite (`ForecastingEvaluationVisualizer`) generating 6 publication-grade charts via headless Matplotlib `Agg` backend (`actual_vs_predicted_reliability.png`, `mae_by_horizon.png`, `rmse_by_horizon.png`, `prediction_error_distribution.png`, `baseline_vs_lstm_comparison.png`, `residual_analysis.png`).
+    - CLI runner `python -m src.forecasting.model_evaluator` supporting `--predictions`, `--ground-truth`, `--baseline-results`, `--split`, `--horizons`, `--output`, and `--generate-plots`.
+    - 51 automated unit and integration tests (277 total forecasting tests, 1,169 repository-wide tests passing, 100% pass rate).
   - [ ] **Task 7: Final Forecasting Audit & Pipeline Certification**
 - [ ] **Day 7: Live Inference & Perception Telemetry Pipeline**
 - [ ] **Day 8: Evaluation & Streamlit Dashboard**

@@ -74,6 +74,17 @@ from src.forecasting.multi_horizon_forecaster import (
     MultiHorizonForecastingError,
     MultiHorizonForecastingSummary,
 )
+from src.forecasting.model_evaluator import (
+    AlignedEvaluationPair,
+    ForecastingModelEvaluator,
+    GroundTruthObservation,
+    HorizonEvaluationMetrics,
+    ModelEvaluationError,
+)
+from src.forecasting.evaluation_visualizer import (
+    ForecastingEvaluationVisualizer,
+    VisualizationError,
+)
 
 __all__ = [
     # Configuration
@@ -138,4 +149,12 @@ __all__ = [
     "MultiHorizonForecastingError",
     "HorizonPredictionRecord",
     "MultiHorizonForecastingSummary",
+    # Model Evaluation & Analysis
+    "ForecastingModelEvaluator",
+    "ModelEvaluationError",
+    "GroundTruthObservation",
+    "AlignedEvaluationPair",
+    "HorizonEvaluationMetrics",
+    "ForecastingEvaluationVisualizer",
+    "VisualizationError",
 ]
