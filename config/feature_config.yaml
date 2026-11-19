@@ -47,6 +47,20 @@ temporal_windows:
   window_alignment: "trailing"
   min_observations_for_trend: 2
 
+# Temporal Sequence Construction Parameters (Day 5 Task 6)
+temporal_sequences:
+  sequence_lengths: [5, 10, 15, 20]
+  forecast_horizons: [1, 3, 5]
+  scaling_strategy: "none"
+  sequence_missing_policy: "reject"
+  missing_feature_threshold: 0.3
+  split_strategy: "chronological_purged"
+  train_ratio: 0.7
+  val_ratio: 0.15
+  test_ratio: 0.15
+  temporal_gap: null
+  random_seed: 42
+
 # Missing-Value & Anomaly Policy
 # Invariant: Never invent or fabricate data; missing optional values remain null.
 missing_value_policy:

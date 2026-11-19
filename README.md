@@ -433,6 +433,27 @@ python -m src.features.temporal_feature_aggregator \
 ```
 For architectural specifications, mathematical formulations, and benchmark results, consult [docs/TEMPORAL_FEATURE_AGGREGATION.md](docs/TEMPORAL_FEATURE_AGGREGATION.md).
 
+### 22. Run Temporal Sequence Builder
+Construct model-ready chronological sliding-window sequence tensors for multi-horizon predictive reliability forecasting ($L \in \{5, 10, 15, 20\}$ and horizons $H \in \{1, 3, 5\}$):
+```bash
+# Generate model sequences with standardization and training-derived imputation
+python -m src.features.temporal_sequence_builder \
+  --input datasets/processed/driving_sample/features/temporal/run_official/temporal_features.json \
+  --output datasets/processed/driving_sample/features/sequences/run_official \
+  --sequence-lengths 5,10,15,20 \
+  --horizons 1,3,5 \
+  --scaling standardization \
+  --missing-policy impute_mean \
+  --overwrite \
+  --verbose
+
+# Dry-run validation of inputs and sequence feasibility
+python -m src.features.temporal_sequence_builder \
+  --input datasets/processed/driving_sample/features/temporal/run_official/temporal_features.json \
+  --validate-only
+```
+For architectural specifications, mathematical formulations, and benchmark results, consult [docs/TEMPORAL_SEQUENCE_CONSTRUCTION.md](docs/TEMPORAL_SEQUENCE_CONSTRUCTION.md).
+
 ---
 
 ## 7. Development Roadmap
@@ -561,7 +582,15 @@ For architectural specifications, mathematical formulations, and benchmark resul
     - Ordinary Least Squares (OLS) linear trend slopes for confidence, blur, brightness, contrast, displacement, and speed metrics.
     - Atomic Schema v1.0 persistence: `temporal_features.json`, `aggregated_frame_features.json`, `temporal_feature_summary.json`, `feature_metadata.json`, and `feature_errors.json`.
     - 45 automated unit and integration tests (235 feature tests, 826 repository tests passing, 100% pass rate).
-  - [ ] **Task 6: Sliding Temporal Sequence Generation**
+  - [x] **Task 6: Temporal Sequence Construction**
+    - Built production `TemporalSequenceBuilder` transforming multi-modal chronological frames into model-ready sliding-window sequences ($L \in \{5, 10, 15, 20\}$).
+    - Multi-horizon forecasting alignment ($H \in \{1, 3, 5\}$ frames ahead) with strict target identification and frame gap calculation.
+    - Zero future-frame leakage invariant: input sequences strictly evaluate historical frames without future contamination.
+    - Purged chronological dataset partitioning: enforced temporal embargo gaps ($\text{gap} \ge \max(L) + \max(H) = 25$ frames) between Train, Val, and Test to eliminate overlapping window leakage from the same video.
+    - Training-only imputation (mean, median) and scaling (standardization, min-max): parameters strictly fitted on training split data only.
+    - Honest target label policy: preserves `target_label_available: false` until ground-truth annotations are ingested in Day 6 (no confidence score fabrication).
+    - Atomic persistence: emitted `.npy` sequence tensors (`sequences_L*.npy`), `sequence_metadata.json`, `feature_manifest.json`, `dataset_splits.json`, `scaler_parameters.json`, `imputation_parameters.json`, `sequence_summary.json`, and `sequence_errors.json`.
+    - 52 automated unit and integration tests (287 feature tests, 878 repository tests passing, 100% pass rate).
   - [ ] **Task 7: Feature Pipeline Validation & Final Audit**
 - [ ] **Day 6: Ground-Truth Reliability Labeling & Supervision Targets**
   - Hungarian bipartite matching with annotated ground-truth boxes.

@@ -1282,4 +1282,58 @@ This document maintains an auditable, day-by-day record of technical milestones,
 - **Validation Status:** **`PASS`**
 - **Feature Package Automated Tests:** **235 / 235 Passed (100% Pass Rate)**
 - **Full Repository Pytest Suite:** **826 / 826 Passed (100% Pass Rate)**
-- **Git Version Control:** Ready for commit `feat: add temporal feature aggregation`
+- **Git Version Control:** Succeeded (`feat: add temporal feature aggregation`, commit `d2c3689`)
+
+### Task 6: Temporal Sequence Construction
+- **Date:** 2026-11-19
+- **Milestone:** Sliding-Window Sequence Tensors, Multi-Horizon Forecast Alignment, Purged Chronological Dataset Splitting, and Training-Only Scaler/Imputer Governance
+- **Lead Engineer:** Principal Machine Learning Engineer & Time-Series Modeling Specialist
+- **Status:** **Task 6 Complete & Verified (Awaiting Task 7 Approval)**
+
+#### Completed Tasks
+1. **Inspected Upstream Aggregated Feature Artifacts:** Ingested Task 5 temporal aggregation artifacts (`temporal_features.json` and `aggregated_frame_features.json`), verifying schema integrity, 200 frame records, and 27 candidate perception metrics.
+2. **Temporal Sequence Builder Architecture:** Implemented `TemporalSequenceBuilder` in `src/features/temporal_sequence_builder.py` transforming chronological multi-modal feature matrices into model-ready sliding-window sequence tensors without re-running any upstream perception models.
+3. **Multi-Horizon Forecasting Alignment:** Evaluated future forecast targets at $H \in \{1, 3, 5\}$ frames ahead. Enforced strict sequence ordering, computed source frame gaps, and marked out-of-bounds boundary conditions transparently.
+4. **Target Label Governance:** Maintained honest label policy—explicitly tagged `target_label_available: false` and `target_label: null` when ground truth annotations are absent. Zero fabrication of synthetic reliability labels from detector confidence.
+5. **Zero Future-Frame Leakage Guarantees:** Mathematically and empirically verified that input sequences $X_t = [f_{t-L+1}, \dots, f_t]$ evaluate strictly historical frames; altering future frames produces zero modification to past sequence tensors.
+6. **Purged Chronological Dataset Partitioning:** Enforced temporal embargo gaps ($\text{gap} \ge \max(L) + \max(H) = 25$ frames) between contiguous chronological partitions (Train: $[0, 105)$, Gap 1: $[105, 130)$, Val: $[130, 152)$, Gap 2: $[152, 177)$, Test: $[177, 200)$). Eliminated overlapping-window leakage from the same video across splits.
+7. **Training-Only Imputation & Scaler Fitting:** Standardized features ($z = \frac{x - \mu}{\sigma}$) and imputed missing values (`impute_mean`) using statistics fitted strictly on the **TRAINING** split only. Validation and Test splits were scaled with training statistics without data leakage. Added zero-variance protection ($\sigma \to 1.0$).
+8. **Model-Ready Artifact Persistence:** Emitted 4 NumPy `.npy` tensors (`sequences_L5.npy`, `sequences_L10.npy`, `sequences_L15.npy`, `sequences_L20.npy`) and 7 JSON manifests (`sequence_metadata.json`, `feature_manifest.json`, `dataset_splits.json`, `scaler_parameters.json`, `imputation_parameters.json`, `sequence_summary.json`, `sequence_errors.json`).
+9. **Command-Line Interface:** Provided full CLI supporting `--input`, `--output`, `--sequence-lengths`, `--horizons`, `--scaling`, `--missing-policy`, `--test-size`, `--validation-size`, `--random-seed`, `--max-sequences`, `--validate-only`, `--overwrite`, and `--verbose`.
+10. **Automated Testing Suite:** Implemented 52 automated unit and integration tests in `tests/features/test_temporal_sequence_builder.py` covering all 45 enumerated requirements and edge cases. Confirmed 100% pass rate.
+11. **Technical Documentation:** Authored `docs/TEMPORAL_SEQUENCE_CONSTRUCTION.md`, updated `README.md`, and updated `docs/DEVELOPMENT_PROGRESS.md`.
+
+#### Files Created or Modified
+- `src/features/temporal_sequence_builder.py`: Production temporal sequence builder engine, data contracts, and CLI.
+- `src/features/__init__.py`: Exported sequence builder, contracts, and domain exceptions.
+- `src/features/feature_config.py`: Added sequence construction, scaling, and splitting parameters.
+- `config/feature_config.yaml`: Added `temporal_sequences` configuration block.
+- `tests/features/test_temporal_sequence_builder.py`: 52 automated unit and integration tests.
+- `docs/TEMPORAL_SEQUENCE_CONSTRUCTION.md`: Architectural specification, mathematical proofs, and benchmarks.
+- `README.md`: Added Section 22 CLI manual and updated Day 5 roadmap.
+- `docs/DEVELOPMENT_PROGRESS.md`: Appended Day 5 Task 6 milestone record.
+
+#### Verified Telemetry & Benchmarks
+- **Dataset Evaluated:** `driving_sample` (BDD100K driving sequence)
+- **Input Temporal Artifact:** `datasets/processed/driving_sample/features/temporal/run_official/temporal_features.json` (200 frames)
+- **Features Selected:** 27 numerical features (standard perception & temporal trend preset)
+- **Configured Sequence Lengths:** $L \in \{5, 10, 15, 20\}$
+- **Configured Forecast Horizons:** $H \in \{1, 3, 5\}$ frames ahead
+- **Scaling Strategy:** `standardization` (fitted on training split only)
+- **Missing Value Policy:** `impute_mean` (fitted on training split only)
+- **Generated Sequence Counts:**
+  - $L=5$: 138 sequences (Train: 101, Val: 18, Test: 19)
+  - $L=10$: 123 sequences (Train: 96, Val: 13, Test: 14)
+  - $L=15$: 108 sequences (Train: 91, Val: 8, Test: 9)
+  - $L=20$: 93 sequences (Train: 86, Val: 3, Test: 4)
+- **Tensor Dimensions:**
+  - `sequences_L5.npy`: `(138, 5, 27)` (74.6 KB)
+  - `sequences_L10.npy`: `(123, 10, 27)` (133.0 KB)
+  - `sequences_L15.npy`: `(108, 15, 27)` (175.1 KB)
+  - `sequences_L20.npy`: `(93, 20, 27)` (201.0 KB)
+- **Processing Duration (200 Frames):** **0.187 seconds** (~1,070 FPS on Intel Core i3 CPU)
+- **Memory Footprint:** Peak RSS < 40 MB delta
+- **Validation Status:** **`PASS`**
+- **Feature Package Automated Tests:** **287 / 287 Passed (100% Pass Rate)**
+- **Full Repository Pytest Suite:** **878 / 878 Passed (100% Pass Rate)**
+- **Git Version Control:** Ready for commit `feat: add temporal sequence builder`

@@ -34,6 +34,9 @@ SUPPORTED_SCHEMA_VERSIONS = {"1.0", "1", 1, 1.0}
 SUPPORTED_FLOAT_PRECISIONS = {"float16", "float32", "float64"}
 SUPPORTED_MISSING_VALUE_STRATEGIES = {"explicit_null", "drop_incomplete"}
 SUPPORTED_SORT_FIELDS = {"source_frame_index", "frame_id", "timestamp_seconds"}
+SUPPORTED_SCALING_STRATEGIES = {"none", "standardization", "min_max"}
+SUPPORTED_SEQUENCE_MISSING_POLICIES = {"reject", "drop_features", "impute_mean", "impute_median"}
+SUPPORTED_SPLIT_STRATEGIES = {"chronological_purged", "video_level", "none"}
 
 
 # ==============================================================================
@@ -125,6 +128,19 @@ class FeatureConfig:
     temporal_window_alignment: str = "trailing"
     min_observations_for_trend: int = 2
 
+    # Temporal Sequence Construction Parameters (Day 5 Task 6)
+    sequence_lengths: Tuple[int, ...] = (5, 10, 15, 20)
+    forecast_horizons: Tuple[int, ...] = (1, 3, 5)
+    scaling_strategy: str = "none"
+    sequence_missing_policy: str = "reject"
+    missing_feature_threshold: float = 0.3
+    split_strategy: str = "chronological_purged"
+    train_ratio: float = 0.7
+    val_ratio: float = 0.15
+    test_ratio: float = 0.15
+    temporal_gap: Optional[int] = None
+    random_seed: int = 42
+
     def __post_init__(self) -> None:
         """Validate all parameters and invariant constraints upon instantiation."""
         # 1. Schema Version Validation
@@ -194,6 +210,42 @@ class FeatureConfig:
             raise InvalidFeatureConfigError(
                 f"min_observations_for_trend must be >= 1, got {self.min_observations_for_trend}"
             )
+
+        # 8. Temporal Sequence Construction Parameters Guard
+        if not isinstance(self.sequence_lengths, (list, tuple)) or len(self.sequence_lengths) == 0:
+            raise InvalidFeatureConfigError("sequence_lengths must be a non-empty sequence of positive integers.")
+        for sl in self.sequence_lengths:
+            if not isinstance(sl, int) or sl <= 0:
+                raise InvalidFeatureConfigError(f"sequence length must be a positive integer, got {sl}")
+        if not isinstance(self.forecast_horizons, (list, tuple)) or len(self.forecast_horizons) == 0:
+            raise InvalidFeatureConfigError("forecast_horizons must be a non-empty sequence of positive integers.")
+        for fh in self.forecast_horizons:
+            if not isinstance(fh, int) or fh <= 0:
+                raise InvalidFeatureConfigError(f"forecast horizon must be a positive integer, got {fh}")
+        if self.scaling_strategy not in SUPPORTED_SCALING_STRATEGIES:
+            raise InvalidFeatureConfigError(
+                f"Invalid scaling_strategy '{self.scaling_strategy}'. Must be one of {SUPPORTED_SCALING_STRATEGIES}"
+            )
+        if self.sequence_missing_policy not in SUPPORTED_SEQUENCE_MISSING_POLICIES:
+            raise InvalidFeatureConfigError(
+                f"Invalid sequence_missing_policy '{self.sequence_missing_policy}'. Must be one of {SUPPORTED_SEQUENCE_MISSING_POLICIES}"
+            )
+        if not (0.0 <= self.missing_feature_threshold <= 1.0):
+            raise InvalidFeatureConfigError(
+                f"missing_feature_threshold must be between 0.0 and 1.0, got {self.missing_feature_threshold}"
+            )
+        if self.split_strategy not in SUPPORTED_SPLIT_STRATEGIES:
+            raise InvalidFeatureConfigError(
+                f"Invalid split_strategy '{self.split_strategy}'. Must be one of {SUPPORTED_SPLIT_STRATEGIES}"
+            )
+        if self.train_ratio < 0.0 or self.val_ratio < 0.0 or self.test_ratio < 0.0:
+            raise InvalidFeatureConfigError("Split ratios (train, val, test) must be non-negative.")
+        if self.split_strategy != "none":
+            total_ratio = self.train_ratio + self.val_ratio + self.test_ratio
+            if abs(total_ratio - 1.0) > 1e-3:
+                raise InvalidFeatureConfigError(f"Split ratios must sum to 1.0 (got {total_ratio:.4f})")
+        if self.temporal_gap is not None and self.temporal_gap < 0:
+            raise InvalidFeatureConfigError(f"temporal_gap must be non-negative, got {self.temporal_gap}")
 
     # --------------------------------------------------------------------------
     # Serialization and Factory Methods
@@ -294,6 +346,32 @@ class FeatureConfig:
                 flat["temporal_window_alignment"] = tw_cfg["window_alignment"]
             if "min_observations_for_trend" in tw_cfg:
                 flat["min_observations_for_trend"] = int(tw_cfg["min_observations_for_trend"])
+
+        # Nested: temporal_sequences
+        seq_cfg = data.get("temporal_sequences", {})
+        if isinstance(seq_cfg, dict):
+            if "sequence_lengths" in seq_cfg and isinstance(seq_cfg["sequence_lengths"], (list, tuple)):
+                flat["sequence_lengths"] = tuple(int(x) for x in seq_cfg["sequence_lengths"])
+            if "forecast_horizons" in seq_cfg and isinstance(seq_cfg["forecast_horizons"], (list, tuple)):
+                flat["forecast_horizons"] = tuple(int(x) for x in seq_cfg["forecast_horizons"])
+            if "scaling_strategy" in seq_cfg:
+                flat["scaling_strategy"] = seq_cfg["scaling_strategy"]
+            if "sequence_missing_policy" in seq_cfg:
+                flat["sequence_missing_policy"] = seq_cfg["sequence_missing_policy"]
+            if "missing_feature_threshold" in seq_cfg:
+                flat["missing_feature_threshold"] = float(seq_cfg["missing_feature_threshold"])
+            if "split_strategy" in seq_cfg:
+                flat["split_strategy"] = seq_cfg["split_strategy"]
+            if "train_ratio" in seq_cfg:
+                flat["train_ratio"] = float(seq_cfg["train_ratio"])
+            if "val_ratio" in seq_cfg:
+                flat["val_ratio"] = float(seq_cfg["val_ratio"])
+            if "test_ratio" in seq_cfg:
+                flat["test_ratio"] = float(seq_cfg["test_ratio"])
+            if "temporal_gap" in seq_cfg and seq_cfg["temporal_gap"] is not None:
+                flat["temporal_gap"] = int(seq_cfg["temporal_gap"])
+            if "random_seed" in seq_cfg:
+                flat["random_seed"] = int(seq_cfg["random_seed"])
 
         # Also accept any direct flat parameters that override nested keys
         known_fields = cls.__dataclass_fields__.keys()
@@ -415,6 +493,19 @@ class FeatureConfig:
                 "window_sizes": list(self.temporal_window_sizes),
                 "window_alignment": self.temporal_window_alignment,
                 "min_observations_for_trend": self.min_observations_for_trend,
+            },
+            "temporal_sequences": {
+                "sequence_lengths": list(self.sequence_lengths),
+                "forecast_horizons": list(self.forecast_horizons),
+                "scaling_strategy": self.scaling_strategy,
+                "sequence_missing_policy": self.sequence_missing_policy,
+                "missing_feature_threshold": self.missing_feature_threshold,
+                "split_strategy": self.split_strategy,
+                "train_ratio": self.train_ratio,
+                "val_ratio": self.val_ratio,
+                "test_ratio": self.test_ratio,
+                "temporal_gap": self.temporal_gap,
+                "random_seed": self.random_seed,
             },
         }
 

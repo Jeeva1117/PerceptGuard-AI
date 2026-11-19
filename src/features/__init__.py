@@ -102,6 +102,24 @@ from src.features.temporal_feature_aggregator import (
     WindowFeatureStatistics,
     calculate_ols_trend,
 )
+from src.features.temporal_sequence_builder import (
+    CANONICAL_DETECTION_FEATURES,
+    CANONICAL_MOTION_FEATURES,
+    CANONICAL_TEMPORAL_COVERAGE_FEATURES,
+    CANONICAL_VISUAL_QUALITY_FEATURES,
+    ChronologicalOrderError,
+    DataLeakageError,
+    EmptyDatasetError,
+    FeatureSelectionError,
+    HorizonTargetRecord,
+    InvalidSequenceInputError,
+    MissingValueError,
+    ScalingError,
+    SchemaVersionMismatchError,
+    SequenceMetadataRecord,
+    TemporalSequenceBuilder,
+    TemporalSequenceError,
+)
 
 __all__ = [
     # Configuration
@@ -191,4 +209,21 @@ __all__ = [
     "DEFAULT_MIN_OBSERVATIONS_FOR_TREND",
     "NUMERICAL_FEATURE_KEYS",
     "TREND_FEATURE_MAPPINGS",
+    # Temporal Sequence Construction (Day 5 Task 6)
+    "TemporalSequenceBuilder",
+    "TemporalSequenceError",
+    "InvalidSequenceInputError",
+    "SchemaVersionMismatchError",
+    "EmptyDatasetError",
+    "ChronologicalOrderError",
+    "FeatureSelectionError",
+    "DataLeakageError",
+    "MissingValueError",
+    "ScalingError",
+    "HorizonTargetRecord",
+    "SequenceMetadataRecord",
+    "CANONICAL_DETECTION_FEATURES",
+    "CANONICAL_MOTION_FEATURES",
+    "CANONICAL_VISUAL_QUALITY_FEATURES",
+    "CANONICAL_TEMPORAL_COVERAGE_FEATURES",
 ]
