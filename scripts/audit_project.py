@@ -502,6 +502,21 @@ class ProjectAuditor:
 
         return all_passed
 
+    # Alias for convenience
+    check_configs = check_config
+
+    def run_full_audit(self, output_dir: Optional[Union[str, Path]] = None) -> ProjectAuditReport:
+        """Run all audit stages and persist output reports."""
+        self.check_files()
+        self.check_imports()
+        self.check_config()
+        self.check_artifacts()
+        self.check_integration()
+        self.check_data_integrity()
+        report = self.generate_report()
+        self.save_reports(report, output_dir=Path(output_dir) if output_dir else None)
+        return report
+
     def check_artifacts(self) -> bool:
         """Inspect generated artifacts from actual driving data runs."""
         print("\n" + "=" * 78)
