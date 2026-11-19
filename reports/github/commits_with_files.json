@@ -1,0 +1,1149 @@
+[
+  {
+    "full_hash": "091578ef93a54f6c5544a9c24b851db2c4a218e0",
+    "short_hash": "091578e",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 12:33:52 2026 +0530",
+    "subject": "feat: initialize Day 1 project architecture and engineering foundation",
+    "files": []
+  },
+  {
+    "full_hash": "3e064900cd2471fe1c9657d20bd3138ee6e74671",
+    "short_hash": "3e06490",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 12:35:37 2026 +0530",
+    "subject": "docs: update Day 1 development progress with verified push status",
+    "files": [
+      "docs/DEVELOPMENT_PROGRESS.md"
+    ]
+  },
+  {
+    "full_hash": "9456b3e4f7a84dd62c1926202bd8ce061947e68b",
+    "short_hash": "9456b3e",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 12:50:38 2026 +0530",
+    "subject": "chore: complete day 1 project foundation and environment setup",
+    "files": [
+      "docs/DEVELOPMENT_PROGRESS.md"
+    ]
+  },
+  {
+    "full_hash": "1b18c8659b163d931206379deaf71b175d8e14af",
+    "short_hash": "1b18c86",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 13:24:19 2026 +0530",
+    "subject": "data: document autonomous driving dataset source and acquisition",
+    "files": [
+      "docs/DATASET_SOURCES.md",
+      "docs/DEVELOPMENT_PROGRESS.md"
+    ]
+  },
+  {
+    "full_hash": "3cb462581180b82f96a638c299fe8b3d00ee95aa",
+    "short_hash": "3cb4625",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 13:28:05 2026 +0530",
+    "subject": "docs: update development progress tracker with Day 2 Task 1 commit hash",
+    "files": [
+      "docs/DEVELOPMENT_PROGRESS.md"
+    ]
+  },
+  {
+    "full_hash": "d73b6ecf09e8a845b4a1a53020f9dc86c498f984",
+    "short_hash": "d73b6ec",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 13:37:24 2026 +0530",
+    "subject": "feat: implement OpenCV video loading module",
+    "files": [
+      ".gitignore",
+      "config/video_config.yaml",
+      "docs/DATASET_SOURCES.md",
+      "docs/DEVELOPMENT_PROGRESS.md",
+      "docs/VIDEO_LOADING.md",
+      "outputs/logs/.gitkeep",
+      "requirements.txt",
+      "src/video_processing/__init__.py",
+      "src/video_processing/video_loader.py",
+      "tests/test_video_loader.py"
+    ]
+  },
+  {
+    "full_hash": "3e646e5dcc2f3f1c34507c98b4f38413bccea9f0",
+    "short_hash": "3e646e5",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 13:38:03 2026 +0530",
+    "subject": "docs: update development progress tracker with day 2 task 2 verification",
+    "files": [
+      "docs/DEVELOPMENT_PROGRESS.md"
+    ]
+  },
+  {
+    "full_hash": "23b187d3f1669493226583b9ce8266948038eaaa",
+    "short_hash": "23b187d",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 13:45:41 2026 +0530",
+    "subject": "feat: implement video loader module and configuration for ingestion pipeline",
+    "files": [
+      "config/video_config.yaml",
+      "docs/VIDEO_LOADING.md",
+      "outputs/logs/.gitkeep",
+      "src/video_processing/__init__.py",
+      "src/video_processing/video_loader.py"
+    ]
+  },
+  {
+    "full_hash": "c6585990d7c135b03d84094e4af66e85c5ee8e67",
+    "short_hash": "c658599",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 13:49:02 2026 +0530",
+    "subject": "feat: add video configuration and video loader module",
+    "files": [
+      "config/video_config.yaml",
+      "src/video_processing/video_loader.py"
+    ]
+  },
+  {
+    "full_hash": "0f275e708295c3703e005de3502d015f515c3d3f",
+    "short_hash": "0f275e7",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 13:49:25 2026 +0530",
+    "subject": "feat: implement frame extraction engine and video processing package init",
+    "files": [
+      "src/video_processing/__init__.py",
+      "src/video_processing/frame_extractor.py"
+    ]
+  },
+  {
+    "full_hash": "f2a43fe1b775d547c8fa303a82e672234ae7c8f3",
+    "short_hash": "f2a43fe",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 13:54:23 2026 +0530",
+    "subject": "feat: implement configurable video frame extraction",
+    "files": [
+      "docs/DEVELOPMENT_PROGRESS.md",
+      "docs/FRAME_EXTRACTION.md",
+      "tests/test_frame_extractor.py"
+    ]
+  },
+  {
+    "full_hash": "f000255a7fc233731d05e4e73c24c92d0951e901",
+    "short_hash": "f000255",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 13:55:01 2026 +0530",
+    "subject": "docs: update development progress tracker with day 2 task 3 verification",
+    "files": [
+      "docs/DEVELOPMENT_PROGRESS.md"
+    ]
+  },
+  {
+    "full_hash": "afb2b52f7bd8809e5e0e0e7fff8496927f6552c2",
+    "short_hash": "afb2b52",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 13:57:39 2026 +0530",
+    "subject": "feat: implement frame extraction engine and associated documentation and tests",
+    "files": [
+      "docs/FRAME_EXTRACTION.md",
+      "src/video_processing/frame_extractor.py",
+      "tests/test_frame_extractor.py"
+    ]
+  },
+  {
+    "full_hash": "fa45ea856030bc3c104777a13f036c1678d118bb",
+    "short_hash": "fa45ea8",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 14:03:49 2026 +0530",
+    "subject": "feat: implement frame preprocessor module with config and tests",
+    "files": [
+      "config/video_config.yaml",
+      "docs/DEVELOPMENT_PROGRESS.md",
+      "docs/FRAME_PREPROCESSING.md",
+      "src/video_processing/__init__.py",
+      "src/video_processing/frame_preprocessor.py",
+      "tests/test_frame_preprocessor.py"
+    ]
+  },
+  {
+    "full_hash": "9d938b1671581d13e88454541d3ce7f1ca53b4d8",
+    "short_hash": "9d938b1",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 14:12:37 2026 +0530",
+    "subject": "docs: update development progress tracker with day 2 task 4 verification",
+    "files": [
+      "docs/DEVELOPMENT_PROGRESS.md"
+    ]
+  },
+  {
+    "full_hash": "37065e17d390cb8a1daf0e0723b56b08a8b8d3cc",
+    "short_hash": "37065e1",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 14:19:18 2026 +0530",
+    "subject": "feat: implement CPU-optimized frame preprocessor pipeline and unit tests",
+    "files": [
+      "src/video_processing/frame_preprocessor.py",
+      "tests/test_frame_preprocessor.py"
+    ]
+  },
+  {
+    "full_hash": "3cf8f13352dce1ecfc782c1ec57697a9ebec8437",
+    "short_hash": "3cf8f13",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 14:26:32 2026 +0530",
+    "subject": "feat: implement structured video frame metadata generation",
+    "files": [
+      "docs/DEVELOPMENT_PROGRESS.md",
+      "docs/METADATA_GENERATION.md",
+      "src/video_processing/__init__.py",
+      "src/video_processing/metadata_generator.py",
+      "tests/test_metadata_generator.py"
+    ]
+  },
+  {
+    "full_hash": "050f341b74c1307a1843e7e282a624d37c3e29b3",
+    "short_hash": "050f341",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 14:26:59 2026 +0530",
+    "subject": "docs: update development progress tracker with day 2 task 5 verification",
+    "files": [
+      "docs/DEVELOPMENT_PROGRESS.md"
+    ]
+  },
+  {
+    "full_hash": "b66dc48d31bba4d3401853ecdf8e767b1cf46aea",
+    "short_hash": "b66dc48",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 14:32:41 2026 +0530",
+    "subject": "feat: implement DatasetOrganizer for dataset layout and manifest management",
+    "files": [
+      "src/video_processing/__init__.py",
+      "src/video_processing/dataset_organizer.py"
+    ]
+  },
+  {
+    "full_hash": "1e522fc0ab00c927bd81ece7f66f459534e2b684",
+    "short_hash": "1e522fc",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 14:36:16 2026 +0530",
+    "subject": "feat: organize dataset into standardized ML-ready structure",
+    "files": [
+      "config/video_config.yaml",
+      "docs/DATASET_STRUCTURE.md",
+      "docs/DEVELOPMENT_PROGRESS.md",
+      "tests/test_dataset_structure.py"
+    ]
+  },
+  {
+    "full_hash": "e4b565a5a2c32fdf6af732bc812254629aacce3c",
+    "short_hash": "e4b565a",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 14:40:27 2026 +0530",
+    "subject": "docs: update development progress tracker with day 2 task 6 verification",
+    "files": [
+      "docs/DEVELOPMENT_PROGRESS.md"
+    ]
+  },
+  {
+    "full_hash": "8cdbc05fa8bc01c819a3f4a6fb60728ef5077eb6",
+    "short_hash": "8cdbc05",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 14:44:24 2026 +0530",
+    "subject": "feat: implement dataset organizer and manifest management engine for video processing pipeline",
+    "files": [
+      "docs/DATASET_STRUCTURE.md",
+      "src/video_processing/dataset_organizer.py",
+      "tests/test_dataset_structure.py"
+    ]
+  },
+  {
+    "full_hash": "354993f8bd912df9c9531698b2f037ef44726a43",
+    "short_hash": "354993f",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 14:53:26 2026 +0530",
+    "subject": "feat: add production-grade dataset validation engine and comprehensive test suite",
+    "files": [
+      "src/validation/__init__.py",
+      "src/validation/dataset_validator.py",
+      "tests/test_dataset_validator.py"
+    ]
+  },
+  {
+    "full_hash": "7b66f2aacc256f8b311ad03fba6614a57e89b3f6",
+    "short_hash": "7b66f2a",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 14:54:33 2026 +0530",
+    "subject": "feat: implement comprehensive dataset quality assurance and validation engine",
+    "files": [
+      "src/validation/dataset_validator.py"
+    ]
+  },
+  {
+    "full_hash": "e3c27f84880025034ffc67b121860b3d5b7a7351",
+    "short_hash": "e3c27f8",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 14:56:41 2026 +0530",
+    "subject": "test: implement comprehensive dataset validation pipeline",
+    "files": [
+      "docs/DATASET_VALIDATION.md",
+      "docs/DEVELOPMENT_PROGRESS.md"
+    ]
+  },
+  {
+    "full_hash": "5c2e4793444b77f2ef154af3ef722d41122fa90b",
+    "short_hash": "5c2e479",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 14:57:22 2026 +0530",
+    "subject": "docs: update development progress tracker with day 2 task 7 verification",
+    "files": [
+      "docs/DEVELOPMENT_PROGRESS.md"
+    ]
+  },
+  {
+    "full_hash": "dcd574ca4a90fe11989c2cf7e2c338287428efc7",
+    "short_hash": "dcd574c",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 15:12:36 2026 +0530",
+    "subject": "feat: add dataset quality assurance and validation pipeline",
+    "files": [
+      "docs/DATASET_VALIDATION.md",
+      "src/validation/__init__.py",
+      "tests/test_dataset_validator.py"
+    ]
+  },
+  {
+    "full_hash": "d1abe6e597839a6b1e233532996d0116687b1263",
+    "short_hash": "d1abe6e",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 15:29:48 2026 +0530",
+    "subject": "fix: diagnose and improve original video loading verification",
+    "files": [
+      "docs/DEVELOPMENT_PROGRESS.md",
+      "docs/VIDEO_LOADING.md",
+      "src/video_processing/__init__.py",
+      "src/video_processing/video_loader.py",
+      "tests/test_video_loader.py"
+    ]
+  },
+  {
+    "full_hash": "d65717f72bc0371334891645205c3faceb2fa63b",
+    "short_hash": "d65717f",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 15:30:25 2026 +0530",
+    "subject": "docs: update development progress tracker with video loading fix commit",
+    "files": [
+      "docs/DEVELOPMENT_PROGRESS.md"
+    ]
+  },
+  {
+    "full_hash": "6aad7782689ba3b7842d3ec111bcc17044dfad26",
+    "short_hash": "6aad778",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 15:43:12 2026 +0530",
+    "subject": "docs: add Day 2 complete final audit report",
+    "files": [
+      "docs/DAY_2_FINAL_AUDIT.md"
+    ]
+  },
+  {
+    "full_hash": "feda949db2acf3358de4ee01bea1c32e4ed18278",
+    "short_hash": "feda949",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 15:44:02 2026 +0530",
+    "subject": "docs: add comprehensive Day 2 final engineering audit report",
+    "files": [
+      "docs/DAY_2_FINAL_AUDIT.md"
+    ]
+  },
+  {
+    "full_hash": "2c4b942b656a4ba07afb51c8b084eeb78401f10b",
+    "short_hash": "2c4b942",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 15:58:26 2026 +0530",
+    "subject": "feat: establish CPU-compatible YOLO model environment",
+    "files": [
+      ".gitignore",
+      "README.md",
+      "config/yolo_config.yaml",
+      "docs/DEVELOPMENT_PROGRESS.md",
+      "docs/YOLO_ENVIRONMENT_SETUP.md",
+      "models/yolo/.gitkeep",
+      "src/detection/__init__.py",
+      "src/detection/yolo_model_loader.py",
+      "tests/test_yolo_model_loader.py"
+    ]
+  },
+  {
+    "full_hash": "04f511d153ee91b9615904578755bacffc172d6b",
+    "short_hash": "04f511d",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 16:07:28 2026 +0530",
+    "subject": "feat: add YOLO environment configuration, setup documentation, and test suite",
+    "files": [
+      "config/yolo_config.yaml",
+      "docs/YOLO_ENVIRONMENT_SETUP.md",
+      "tests/test_yolo_model_loader.py"
+    ]
+  },
+  {
+    "full_hash": "d2b0bc6b348ba10ad46945abc4a6d4cc49c986cd",
+    "short_hash": "d2b0bc6",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 16:14:16 2026 +0530",
+    "subject": "feat: add YOLO configuration schema and YAML loader module",
+    "files": [
+      "config/yolo_config.yaml",
+      "src/detection/yolo_config.py"
+    ]
+  },
+  {
+    "full_hash": "c3de8732833c7a0f14ec99e00403fedc6569071a",
+    "short_hash": "c3de873",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 16:17:36 2026 +0530",
+    "subject": "feat: implement core detection module and YOLO model loader foundation",
+    "files": [
+      "src/detection/__init__.py",
+      "src/detection/yolo_model_loader.py",
+      "tests/detection/__init__.py",
+      "tests/detection/test_yolo_config.py",
+      "tests/test_yolo_config.py"
+    ]
+  },
+  {
+    "full_hash": "487c47bdbd69ed3da0dae5ec4a506f5e9ad63c1a",
+    "short_hash": "487c47b",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 16:38:29 2026 +0530",
+    "subject": "feat: implement advanced YOLO model configuration",
+    "files": [
+      "README.md",
+      "docs/DEVELOPMENT_PROGRESS.md",
+      "docs/YOLO_MODEL_CONFIGURATION.md",
+      "tests/detection/__init__.py",
+      "tests/detection/test_yolo_config.py",
+      "tests/test_yolo_config.py"
+    ]
+  },
+  {
+    "full_hash": "fc3e9811106a15913a5e086a5f9d864d4e2e7579",
+    "short_hash": "fc3e981",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 17:11:52 2026 +0530",
+    "subject": "feat: implement single image YOLO detection engine",
+    "files": [
+      "README.md",
+      "docs/DEVELOPMENT_PROGRESS.md",
+      "docs/SINGLE_IMAGE_DETECTION.md",
+      "docs/YOLO_MODEL_CONFIGURATION.md",
+      "src/detection/__init__.py",
+      "src/detection/single_image_detector.py",
+      "tests/detection/test_single_image_detector.py",
+      "tests/test_single_image_detector.py"
+    ]
+  },
+  {
+    "full_hash": "9dabc2293aaa0b80757a263a28a5ee5af048bd6a",
+    "short_hash": "9dabc22",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 17:28:30 2026 +0530",
+    "subject": "feat: implement YOLO batch object detection pipeline",
+    "files": [
+      "README.md",
+      "docs/BATCH_OBJECT_DETECTION.md",
+      "docs/DEVELOPMENT_PROGRESS.md",
+      "docs/SINGLE_IMAGE_DETECTION.md",
+      "src/detection/__init__.py",
+      "src/detection/batch_detector.py",
+      "tests/detection/test_batch_detector.py",
+      "tests/test_batch_detector.py",
+      "tests/test_single_image_detector.py"
+    ]
+  },
+  {
+    "full_hash": "48c3935790cd2b6f96d5b0eba4147153849ae944",
+    "short_hash": "48c3935",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 17:29:35 2026 +0530",
+    "subject": "docs: finalize commit hash metadata for batch object detection",
+    "files": [
+      "docs/DEVELOPMENT_PROGRESS.md"
+    ]
+  },
+  {
+    "full_hash": "b184841ac509a3013c07cf7b1f4eafad9483cce3",
+    "short_hash": "b184841",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 17:37:37 2026 +0530",
+    "subject": "feat: add batch object detection documentation and visualization module",
+    "files": [
+      "docs/BATCH_OBJECT_DETECTION.md",
+      "src/visualization/__init__.py",
+      "src/visualization/detection_visualizer.py"
+    ]
+  },
+  {
+    "full_hash": "142b0d7fb320accd650c08dfc78d7a9d629fe887",
+    "short_hash": "142b0d7",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 17:37:54 2026 +0530",
+    "subject": "feat: add automated test suite for detection visualizer",
+    "files": [
+      "tests/test_detection_visualizer.py",
+      "tests/visualization/test_detection_visualizer.py"
+    ]
+  },
+  {
+    "full_hash": "baf3681a55c4a186e682f69053cea1f75a99d7fb",
+    "short_hash": "baf3681",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 17:38:53 2026 +0530",
+    "subject": "feat: initialize visualization package with detection visualizer exports",
+    "files": [
+      "src/visualization/__init__.py",
+      "src/visualization/detection_visualizer.py"
+    ]
+  },
+  {
+    "full_hash": "dc9a15a0251484bb2db8aa03a018a660a02f8794",
+    "short_hash": "dc9a15a",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 17:41:46 2026 +0530",
+    "subject": "docs: add comprehensive specification for detection visualization engine",
+    "files": [
+      "docs/DETECTION_VISUALIZATION.md"
+    ]
+  },
+  {
+    "full_hash": "77cf4c5c3fc1b438a67f712a607827806a89f054",
+    "short_hash": "77cf4c5",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 17:43:36 2026 +0530",
+    "subject": "feat: implement detection visualization engine",
+    "files": [
+      "README.md",
+      "docs/DEVELOPMENT_PROGRESS.md"
+    ]
+  },
+  {
+    "full_hash": "b4bdfb8bafeeb7de3338d39a3af08aa1db345a64",
+    "short_hash": "b4bdfb8",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 17:44:43 2026 +0530",
+    "subject": "docs: finalize commit hash metadata for detection visualization",
+    "files": [
+      "docs/DEVELOPMENT_PROGRESS.md"
+    ]
+  },
+  {
+    "full_hash": "21cab9fd750de88b90653111d9b66f55617b5bb3",
+    "short_hash": "21cab9f",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 17:45:51 2026 +0530",
+    "subject": "feat: implement advanced object detection visualization engine and tests",
+    "files": [
+      "docs/DETECTION_VISUALIZATION.md",
+      "tests/test_detection_visualizer.py",
+      "tests/visualization/test_detection_visualizer.py"
+    ]
+  },
+  {
+    "full_hash": "1f9611a034544c87be7fa5a2f091e5bc8d175641",
+    "short_hash": "1f9611a",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 18:01:43 2026 +0530",
+    "subject": "feat: implement production-grade detection metrics and perception analysis engine",
+    "files": [
+      "src/analysis/__init__.py",
+      "src/analysis/detection_metrics.py",
+      "tests/analysis/test_detection_metrics.py",
+      "tests/test_detection_metrics.py"
+    ]
+  },
+  {
+    "full_hash": "4b5b3864d550746ec0379ad33a8a95bc3283b00f",
+    "short_hash": "4b5b386",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 18:05:06 2026 +0530",
+    "subject": "feat: add detection metrics",
+    "files": [
+      "README.md",
+      "docs/DETECTION_METRICS.md",
+      "docs/DEVELOPMENT_PROGRESS.md",
+      "src/analysis/__init__.py",
+      "src/analysis/detection_metrics.py",
+      "tests/analysis/test_detection_metrics.py",
+      "tests/test_detection_metrics.py"
+    ]
+  },
+  {
+    "full_hash": "daea055778c7183a7911b1a31e4236a8abaa1300",
+    "short_hash": "daea055",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 18:05:56 2026 +0530",
+    "subject": "docs: finalize commit hash metadata for detection metrics",
+    "files": [
+      "docs/DEVELOPMENT_PROGRESS.md"
+    ]
+  },
+  {
+    "full_hash": "8498daab474a717beadf1b648103297a66a2db32",
+    "short_hash": "8498daa",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 18:12:39 2026 +0530",
+    "subject": "test: add automated unit and integration tests for detection metrics and analysis engine",
+    "files": [
+      "tests/analysis/test_detection_metrics.py"
+    ]
+  },
+  {
+    "full_hash": "ca83c5ca4742135b3c15e80909966e4bc61da5ae",
+    "short_hash": "ca83c5c",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 18:16:27 2026 +0530",
+    "subject": "chore: finalize pipeline validation",
+    "files": [
+      "docs/FINAL_VALIDATION_REPORT.md"
+    ]
+  },
+  {
+    "full_hash": "cb0b02d122e7fffa6aeb4e83468b7991856e71fc",
+    "short_hash": "cb0b02d",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 18:17:38 2026 +0530",
+    "subject": "docs: add final system audit and pipeline validation report",
+    "files": [
+      "docs/FINAL_VALIDATION_REPORT.md"
+    ]
+  },
+  {
+    "full_hash": "826a97e94632eb2b92b38258a0ba66017865454b",
+    "short_hash": "826a97e",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 19:32:58 2026 +0530",
+    "subject": "feat: add tracking environment",
+    "files": [
+      "README.md",
+      "config/tracker_config.yaml",
+      "docs/DEVELOPMENT_PROGRESS.md",
+      "docs/TRACKING_ENVIRONMENT_SETUP.md",
+      "src/tracking/__init__.py",
+      "src/tracking/tracker_config.py",
+      "src/tracking/tracking_environment.py",
+      "tests/tracking/__init__.py",
+      "tests/tracking/test_tracker_config.py",
+      "tests/tracking/test_tracking_environment.py"
+    ]
+  },
+  {
+    "full_hash": "cbe6016a786ab799dc54526e904628022c7e49cd",
+    "short_hash": "cbe6016",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 20:10:48 2026 +0530",
+    "subject": "feat: integrate ByteTrack",
+    "files": [
+      "README.md",
+      "docs/BYTETRACK_INTEGRATION.md",
+      "docs/DEVELOPMENT_PROGRESS.md",
+      "src/tracking/__init__.py",
+      "src/tracking/bytetrack_engine.py",
+      "src/tracking/tracking_pipeline.py",
+      "tests/tracking/test_bytetrack_engine.py",
+      "tests/tracking/test_tracking_pipeline.py"
+    ]
+  },
+  {
+    "full_hash": "bcfef695b438d7e5819dcac257fcada2351ad030",
+    "short_hash": "bcfef69",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 21:23:46 2026 +0530",
+    "subject": "feat: add single object tracking",
+    "files": [
+      "README.md",
+      "docs/DEVELOPMENT_PROGRESS.md",
+      "docs/SINGLE_OBJECT_TRACKING.md",
+      "src/tracking/__init__.py",
+      "src/tracking/single_object_tracker.py",
+      "tests/tracking/test_single_object_tracker.py"
+    ]
+  },
+  {
+    "full_hash": "413e1a7c685388015ce614df58dc87a7718fac6d",
+    "short_hash": "413e1a7",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 21:45:16 2026 +0530",
+    "subject": "feat: add multi object tracking",
+    "files": [
+      "README.md",
+      "docs/DEVELOPMENT_PROGRESS.md",
+      "docs/MULTI_OBJECT_TRACKING.md",
+      "src/tracking/__init__.py",
+      "src/tracking/multi_object_tracker.py",
+      "tests/tracking/test_multi_object_tracker.py"
+    ]
+  },
+  {
+    "full_hash": "e51edf6cd0308b66ab4aa86c815766d1dfc54a42",
+    "short_hash": "e51edf6",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 22:13:55 2026 +0530",
+    "subject": "feat: add tracking visualization",
+    "files": [
+      "README.md",
+      "docs/DEVELOPMENT_PROGRESS.md",
+      "docs/TRACKING_VISUALIZATION.md",
+      "src/visualization/__init__.py",
+      "src/visualization/tracking_visualizer.py",
+      "tests/visualization/test_tracking_visualizer.py"
+    ]
+  },
+  {
+    "full_hash": "4eaac9e22379a12eeeb0970bb0ab3464e741b564",
+    "short_hash": "4eaac9e",
+    "author": "Jeevanantham",
+    "date": "Tue Nov 17 22:35:08 2026 +0530",
+    "subject": "test: validate object tracking pipeline",
+    "files": [
+      "docs/FINAL_VALIDATION_REPORT.md"
+    ]
+  },
+  {
+    "full_hash": "ea11ec9716308c98f09572521bec92e70c4caa14",
+    "short_hash": "ea11ec9",
+    "author": "Jeevanantham",
+    "date": "Wed Nov 18 17:55:21 2026 +0530",
+    "subject": "test: validate object tracking pipeline",
+    "files": [
+      "README.md",
+      "docs/DEVELOPMENT_PROGRESS.md",
+      "docs/FINAL_VALIDATION_REPORT.md",
+      "docs/TRACKING_METRICS_ANALYSIS.md",
+      "src/analysis/__init__.py",
+      "src/analysis/tracking_metrics.py",
+      "tests/analysis/test_tracking_metrics.py"
+    ]
+  },
+  {
+    "full_hash": "449531c8b52f844d8150c0b14cb140e750245337",
+    "short_hash": "449531c",
+    "author": "Jeevanantham",
+    "date": "Wed Nov 18 18:08:35 2026 +0530",
+    "subject": "docs: add technical documentation for tracking metrics and perception analysis engine",
+    "files": [
+      "docs/TRACKING_METRICS_ANALYSIS.md"
+    ]
+  },
+  {
+    "full_hash": "a9d74a6749aeb189d00b548816f1f7b9387f73a8",
+    "short_hash": "a9d74a6",
+    "author": "Jeevanantham",
+    "date": "Wed Nov 18 18:51:11 2026 +0530",
+    "subject": "feat: add feature engineering setup",
+    "files": [
+      "README.md",
+      "config/feature_config.yaml",
+      "docs/DEVELOPMENT_PROGRESS.md",
+      "docs/FEATURE_ENGINEERING_SETUP.md",
+      "src/features/__init__.py",
+      "src/features/feature_config.py",
+      "src/features/feature_environment.py",
+      "src/features/feature_schema.py",
+      "tests/features/test_feature_config.py",
+      "tests/features/test_feature_environment.py",
+      "tests/features/test_feature_schema.py"
+    ]
+  },
+  {
+    "full_hash": "699b6bf15edc308d8c5707cee56b27cea72efbd5",
+    "short_hash": "699b6bf",
+    "author": "Jeevanantham",
+    "date": "Wed Nov 18 19:47:07 2026 +0530",
+    "subject": "feat: add detection feature extraction",
+    "files": [
+      "README.md",
+      "docs/DETECTION_FEATURE_EXTRACTION.md",
+      "docs/DEVELOPMENT_PROGRESS.md",
+      "src/features/__init__.py",
+      "src/features/detection_feature_extractor.py",
+      "tests/features/test_detection_feature_extractor.py"
+    ]
+  },
+  {
+    "full_hash": "b31517fcb0b1598e80f2d0af188068f90f32da68",
+    "short_hash": "b31517f",
+    "author": "Jeevanantham",
+    "date": "Wed Nov 18 20:01:50 2026 +0530",
+    "subject": "feat: add motion feature extraction",
+    "files": [
+      "README.md",
+      "docs/DEVELOPMENT_PROGRESS.md",
+      "docs/MOTION_FEATURE_EXTRACTION.md",
+      "src/features/__init__.py",
+      "src/features/motion_feature_extractor.py",
+      "tests/features/test_motion_feature_extractor.py"
+    ]
+  },
+  {
+    "full_hash": "2500da01d6a4d0ba79e7d862d74ed20147856ed9",
+    "short_hash": "2500da0",
+    "author": "Jeevanantham",
+    "date": "Wed Nov 18 20:30:11 2026 +0530",
+    "subject": "feat: add visual quality features",
+    "files": [
+      "README.md",
+      "docs/DEVELOPMENT_PROGRESS.md",
+      "docs/VISUAL_QUALITY_FEATURE_EXTRACTION.md",
+      "src/features/__init__.py",
+      "src/features/feature_config.py",
+      "src/features/visual_quality_extractor.py",
+      "tests/features/test_visual_quality_extractor.py"
+    ]
+  },
+  {
+    "full_hash": "d2c36893b7dfd9ca48bebe095cfb42676306a096",
+    "short_hash": "d2c3689",
+    "author": "Jeevanantham",
+    "date": "Wed Nov 18 21:20:12 2026 +0530",
+    "subject": "feat: add temporal feature aggregation",
+    "files": [
+      "README.md",
+      "config/feature_config.yaml",
+      "docs/DEVELOPMENT_PROGRESS.md",
+      "docs/TEMPORAL_FEATURE_AGGREGATION.md",
+      "src/features/__init__.py",
+      "src/features/feature_config.py",
+      "src/features/temporal_feature_aggregator.py",
+      "tests/features/test_temporal_feature_aggregator.py"
+    ]
+  },
+  {
+    "full_hash": "5c43d17c4c22818d3fda5956a88d6864bceaecd1",
+    "short_hash": "5c43d17",
+    "author": "Jeevanantham",
+    "date": "Thu Nov 19 10:17:33 2026 +0530",
+    "subject": "feat: add temporal sequence builder",
+    "files": [
+      "README.md",
+      "config/feature_config.yaml",
+      "docs/DEVELOPMENT_PROGRESS.md",
+      "docs/TEMPORAL_SEQUENCE_CONSTRUCTION.md",
+      "src/features/__init__.py",
+      "src/features/feature_config.py",
+      "src/features/temporal_sequence_builder.py",
+      "tests/features/test_temporal_sequence_builder.py"
+    ]
+  },
+  {
+    "full_hash": "04c8f4857f01142ed76a6bb64365946a73197a93",
+    "short_hash": "04c8f48",
+    "author": "Jeevanantham",
+    "date": "Thu Nov 19 10:33:25 2026 +0530",
+    "subject": "test: validate temporal feature pipeline",
+    "files": [
+      "README.md",
+      "docs/DEVELOPMENT_PROGRESS.md",
+      "docs/FINAL_VALIDATION_REPORT.md"
+    ]
+  },
+  {
+    "full_hash": "a7db39168d6daed6a74db9b80833c87e4e9ca4e3",
+    "short_hash": "a7db391",
+    "author": "Jeevanantham",
+    "date": "Thu Nov 19 10:45:57 2026 +0530",
+    "subject": "test: validate temporal feature pipeline",
+    "files": [
+      "reports/day5_audit/audit_report.json",
+      "reports/day5_audit/audit_report.md",
+      "scripts/audit_day5.py",
+      "tests/test_day5_audit.py"
+    ]
+  },
+  {
+    "full_hash": "6e2097a1db17a3a1a549cb1a2610aaa1dffa3158",
+    "short_hash": "6e2097a",
+    "author": "Jeevanantham",
+    "date": "Thu Nov 19 11:28:27 2026 +0530",
+    "subject": "feat: add forecasting environment",
+    "files": [
+      ".gitignore",
+      "README.md",
+      "config/forecasting_config.yaml",
+      "docs/DEVELOPMENT_PROGRESS.md",
+      "docs/FORECASTING_ENVIRONMENT_SETUP.md",
+      "experiments/forecasting/.gitkeep",
+      "models/forecasting/.gitkeep",
+      "src/forecasting/__init__.py",
+      "src/forecasting/forecasting_config.py",
+      "src/forecasting/forecasting_data_contract.py",
+      "src/forecasting/forecasting_environment.py",
+      "tests/forecasting/test_forecasting_config.py",
+      "tests/forecasting/test_forecasting_data_contract.py",
+      "tests/forecasting/test_forecasting_environment.py"
+    ]
+  },
+  {
+    "full_hash": "d5f4efac3230f2be82978999cfa7df50a43faff1",
+    "short_hash": "d5f4efa",
+    "author": "Jeevanantham",
+    "date": "Thu Nov 19 14:03:10 2026 +0530",
+    "subject": "feat: add baseline forecasting model",
+    "files": [
+      ".gitignore",
+      "README.md",
+      "docs/BASELINE_FORECASTING_MODEL.md",
+      "docs/DEVELOPMENT_PROGRESS.md",
+      "src/forecasting/__init__.py",
+      "src/forecasting/baseline_data_loader.py",
+      "src/forecasting/baseline_experiment.py",
+      "src/forecasting/baseline_forecaster.py",
+      "src/forecasting/baseline_metrics.py",
+      "tests/forecasting/test_baseline_data_loader.py",
+      "tests/forecasting/test_baseline_experiment.py",
+      "tests/forecasting/test_baseline_forecaster.py",
+      "tests/forecasting/test_baseline_metrics.py"
+    ]
+  },
+  {
+    "full_hash": "64009de15697d63a22e07d54612cc887c2509b87",
+    "short_hash": "64009de",
+    "author": "Jeevanantham",
+    "date": "Thu Nov 19 14:47:58 2026 +0530",
+    "subject": "feat: implement advanced LSTM forecasting architecture and model factory",
+    "files": [
+      "README.md",
+      "docs/DEVELOPMENT_PROGRESS.md",
+      "docs/LSTM_ARCHITECTURE.md",
+      "reports/day5_audit/audit_report.json",
+      "reports/day5_audit/audit_report.md",
+      "src/forecasting/__init__.py",
+      "src/forecasting/forecasting_config.py",
+      "src/forecasting/lstm_forecaster.py",
+      "src/forecasting/model_factory.py",
+      "tests/forecasting/test_lstm_forecaster.py",
+      "tests/forecasting/test_model_factory.py",
+      "tests/forecasting/test_model_output_contract.py"
+    ]
+  },
+  {
+    "full_hash": "368cb4cedc480df4e7fc116e1a504bbf27b949c2",
+    "short_hash": "368cb4c",
+    "author": "Jeevanantham",
+    "date": "Thu Nov 19 16:21:25 2026 +0530",
+    "subject": "feat: implement LSTM forecasting package with training engine, checkpointing, and early stopping",
+    "files": [
+      "src/forecasting/__init__.py",
+      "src/forecasting/checkpoint_manager.py",
+      "src/forecasting/early_stopping.py",
+      "src/forecasting/train_lstm.py",
+      "src/forecasting/training_data.py",
+      "src/forecasting/training_engine.py",
+      "src/forecasting/training_logger.py"
+    ]
+  },
+  {
+    "full_hash": "66b8ac778fb3f44d8f7872a468571d1b069930b1",
+    "short_hash": "66b8ac7",
+    "author": "Jeevanantham",
+    "date": "Thu Nov 19 16:23:09 2026 +0530",
+    "subject": "test: add unit tests for forecasting early stopping and training data modules",
+    "files": [
+      "tests/forecasting/test_checkpoint_manager.py",
+      "tests/forecasting/test_early_stopping.py",
+      "tests/forecasting/test_train_lstm_cli.py",
+      "tests/forecasting/test_training_data.py",
+      "tests/forecasting/test_training_engine.py",
+      "tests/forecasting/test_training_logger.py"
+    ]
+  },
+  {
+    "full_hash": "8210b19766b500723301d24fd02177651ceec503",
+    "short_hash": "8210b19",
+    "author": "Jeevanantham",
+    "date": "Thu Nov 19 16:37:30 2026 +0530",
+    "subject": "feat: add LSTM training pipeline",
+    "files": [
+      "README.md",
+      "docs/DEVELOPMENT_PROGRESS.md",
+      "docs/LSTM_TRAINING_PIPELINE.md",
+      "reports/day5_audit/audit_report.json",
+      "reports/day5_audit/audit_report.md",
+      "tests/forecasting/test_training_engine.py"
+    ]
+  },
+  {
+    "full_hash": "f80c59e428dd0b2de178849e1e4afe501ef6e44e",
+    "short_hash": "f80c59e",
+    "author": "Jeevanantham",
+    "date": "Thu Nov 19 17:03:18 2026 +0530",
+    "subject": "feat: add multi-horizon forecasting",
+    "files": [
+      "README.md",
+      "docs/DEVELOPMENT_PROGRESS.md",
+      "docs/MULTI_HORIZON_FORECASTING.md",
+      "docs/TASK_5_VALIDATION_REPORT.md",
+      "reports/day5_audit/audit_report.json",
+      "reports/day5_audit/audit_report.md",
+      "src/forecasting/__init__.py",
+      "src/forecasting/multi_horizon_forecaster.py",
+      "tests/forecasting/test_multi_horizon_forecaster.py"
+    ]
+  },
+  {
+    "full_hash": "f41445ad469f3cba6ed31cbad9c73e5a350f0b96",
+    "short_hash": "f41445a",
+    "author": "Jeevanantham",
+    "date": "Thu Nov 19 17:27:13 2026 +0530",
+    "subject": "feat: add forecasting model evaluator and visualizer modules with unit tests",
+    "files": [
+      "src/forecasting/evaluation_visualizer.py",
+      "src/forecasting/model_evaluator.py",
+      "tests/forecasting/test_evaluation_visualizer.py",
+      "tests/forecasting/test_model_evaluator.py"
+    ]
+  },
+  {
+    "full_hash": "5223a516cf9b840e8a7725a665581330fbaa8365",
+    "short_hash": "5223a51",
+    "author": "Jeevanantham",
+    "date": "Thu Nov 19 17:38:54 2026 +0530",
+    "subject": "feat: add model evaluation",
+    "files": [
+      "README.md",
+      "docs/DEVELOPMENT_PROGRESS.md",
+      "docs/MODEL_EVALUATION_ANALYSIS.md",
+      "docs/TASK_6_VALIDATION_REPORT.md",
+      "src/forecasting/__init__.py"
+    ]
+  },
+  {
+    "full_hash": "022c8f5ad2eaaedb451c90381ed3b1beb8c3b4a3",
+    "short_hash": "022c8f5",
+    "author": "Jeevanantham",
+    "date": "Thu Nov 19 19:46:04 2026 +0530",
+    "subject": "docs: add day 5 final validation report and day 6 audit infrastructure and tests",
+    "files": [
+      "docs/DAY5_FINAL_VALIDATION_REPORT.md",
+      "reports/day6_audit/day6_audit.json",
+      "reports/day6_audit/day6_audit_summary.md",
+      "scripts/audit_day6.py",
+      "tests/test_day6_audit.py"
+    ]
+  },
+  {
+    "full_hash": "1dabfb6f4e3371563ea2d038d3fa0fcba4f187ac",
+    "short_hash": "1dabfb6",
+    "author": "Jeevanantham",
+    "date": "Thu Nov 19 19:49:49 2026 +0530",
+    "subject": "feat: add day 6 audit report and summary metrics",
+    "files": [
+      "reports/day5_audit/audit_report.json",
+      "reports/day5_audit/audit_report.md",
+      "reports/day6_audit/day6_audit.json",
+      "reports/day6_audit/day6_audit_summary.md"
+    ]
+  },
+  {
+    "full_hash": "97e3aeddef6f7e8854c341a0207064fe57388a1a",
+    "short_hash": "97e3aed",
+    "author": "Jeevanantham",
+    "date": "Thu Nov 19 20:12:15 2026 +0530",
+    "subject": "test: validate forecasting pipeline",
+    "files": [
+      "README.md",
+      "docs/DEVELOPMENT_PROGRESS.md",
+      "docs/FINAL_VALIDATION_REPORT.md"
+    ]
+  },
+  {
+    "full_hash": "11b16694ab1922c3bd3a22d6e029ae6a29885604",
+    "short_hash": "11b1669",
+    "author": "Jeevanantham",
+    "date": "Thu Nov 19 21:09:17 2026 +0530",
+    "subject": "docs: add final validation report and development progress tracker with updated readme task completion",
+    "files": [
+      "reports/final_audit/data_integrity_report.json",
+      "reports/final_audit/integration_audit.json",
+      "reports/final_audit/missing_files_report.json",
+      "reports/final_audit/project_audit.json",
+      "reports/final_audit/project_audit_summary.md",
+      "scripts/audit_project.py",
+      "src/evaluation/__init__.py",
+      "src/prediction/__init__.py"
+    ]
+  },
+  {
+    "full_hash": "9600f70b97f671afd7369546bc64a72ebd7c3a87",
+    "short_hash": "9600f70",
+    "author": "Jeevanantham",
+    "date": "Thu Nov 19 21:10:34 2026 +0530",
+    "subject": "test: add comprehensive test suite for master project auditor script",
+    "files": [
+      "reports/final_audit/data_integrity_report.json",
+      "reports/final_audit/integration_audit.json",
+      "reports/final_audit/missing_files_report.json",
+      "reports/final_audit/project_audit.json",
+      "reports/final_audit/project_audit_summary.md",
+      "tests/test_audit_project.py"
+    ]
+  },
+  {
+    "full_hash": "44eed3717e82fb196e9ff4a6f9106fbf42554ece",
+    "short_hash": "44eed37",
+    "author": "Jeevanantham",
+    "date": "Thu Nov 19 21:10:46 2026 +0530",
+    "subject": "feat: add project audit script for comprehensive repository verification",
+    "files": [
+      "scripts/audit_project.py"
+    ]
+  },
+  {
+    "full_hash": "6be8c22b9ad86b0203f597f5e63ebbfa87ceec70",
+    "short_hash": "6be8c22",
+    "author": "Jeevanantham",
+    "date": "Thu Nov 19 21:14:13 2026 +0530",
+    "subject": "docs: add comprehensive Day 7 independent engineering audit report and audit artifact summaries",
+    "files": [
+      "docs/DAY_7_INDEPENDENT_AUDIT_REPORT.md",
+      "reports/day5_audit/audit_report.json",
+      "reports/day5_audit/audit_report.md",
+      "reports/day6_audit/day6_audit.json",
+      "reports/day6_audit/day6_audit_summary.md",
+      "reports/final_audit/integration_audit.json",
+      "reports/final_audit/missing_files_report.json",
+      "reports/final_audit/project_audit.json",
+      "reports/final_audit/project_audit_summary.md"
+    ]
+  },
+  {
+    "full_hash": "6c1ca407e4dac98efdb3e07bd58d037427ef1c6d",
+    "short_hash": "6c1ca40",
+    "author": "Jeevanantham",
+    "date": "Thu Nov 19 21:16:21 2026 +0530",
+    "subject": "docs: update README with project audit and add development progress tracker",
+    "files": [
+      "README.md",
+      "docs/DEVELOPMENT_PROGRESS.md"
+    ]
+  },
+  {
+    "full_hash": "09185629f354d561826bb4250b04dde3e85541f5",
+    "short_hash": "0918562",
+    "author": "Jeevanantham",
+    "date": "Thu Nov 19 21:18:19 2026 +0530",
+    "subject": "test: add comprehensive test suite for master project auditor script",
+    "files": [
+      "tests/test_audit_project.py"
+    ]
+  },
+  {
+    "full_hash": "d106cfe952d7583c37ef9748a943411742861f0b",
+    "short_hash": "d106cfe",
+    "author": "Jeevanantham",
+    "date": "Thu Nov 19 21:20:18 2026 +0530",
+    "subject": "test: complete end-to-end project audit",
+    "files": [
+      "reports/final_audit/data_integrity_report.json",
+      "reports/final_audit/integration_audit.json",
+      "reports/final_audit/missing_files_report.json",
+      "reports/final_audit/project_audit.json",
+      "reports/final_audit/project_audit_summary.md"
+    ]
+  }
+]
