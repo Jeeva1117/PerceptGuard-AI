@@ -1843,3 +1843,43 @@ Conducted an exhaustive, independent, evidence-based engineering audit of the en
    - Published [docs/ENVIRONMENT_DEPENDENCY_AUDIT.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/ENVIRONMENT_DEPENDENCY_AUDIT.md)
    - Published [reports/final_audit/environment_dependency_audit.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/final_audit/environment_dependency_audit.md)
    - Published [reports/final_audit/environment_dependency_audit.json](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/final_audit/environment_dependency_audit.json)
+
+---
+
+## Module-Level Functional Audit
+- **Date:** 2026-11-19
+- **Auditor Role:** Senior Software Engineer, Senior Machine Learning Engineer, Computer Vision Architect, and ML Systems Validation Specialist
+- **Hardware Profile:** Intel Core i3 (CPU Only), 8 GB RAM (7.75 GB usable), Windows 11 Build 26200
+- **Status:** **PASS (All 10 Modules Functionally Validated)**
+
+### Completed Functional Audit & Verification
+1. **Video Ingestion & QA (`src/video_processing/`):**
+   - Ingested real 40s raw MP4 driving video (`converted_026c7465-309f6d33.mp4`, 1204 frames, 720x1280 at 30.09 FPS).
+   - Extracted 5 frames at 5 FPS and preprocessed into 640x640 with calculated blur, brightness, and contrast scores.
+   - Verified `VideoNotFoundError` exception propagation on missing video files.
+2. **YOLO Object Detection (`src/detection/`):**
+   - Ran CPU inference using `models/yolo/yolo11n.pt` on real preprocessed frame 1.
+   - Successfully identified traffic light (conf 0.438) and truck (conf 0.296) with valid `bbox_xyxy` bounds.
+   - Batch detection on 3 frames and all-black zero-detection frame verified.
+3. **ByteTrack Object Tracking (`src/tracking/`):**
+   - Executed sequential 5-frame tracking pipeline on real detection outputs.
+   - Verified track persistence across consecutive frames: Track ID 1 (`traffic light`) and Track ID 2 (`truck`) maintained track continuity and reassociation.
+4. **Feature Engineering & Sequences (`src/features/`):**
+   - Verified 27 continuous features across bounding box geometry (7), kinematics (9), pixel quality (7), and temporal slopes (4).
+   - Validated real sequence arrays ($L \in \{5, 10, 15, 20\}$) loaded from `datasets/processed/driving_sample/features/sequences/run_official/`.
+   - Verified train/val/test disjointness and $G=25$ embargo gap.
+5. **Forecasting Models (`src/forecasting/`):**
+   - Tested Persistence, Historical Mean, and Linear Trend baseline models.
+   - Evaluated `LSTMForecaster` CPU forward pass with $(4, 10, 27) \to (4, 3)$ tensor propagation.
+   - Verified honest reporting: `NOT AVAILABLE: No ground-truth reliability targets available`.
+6. **Headless Visualizations (`src/visualization/`):**
+   - Successfully rendered detection bounding boxes and tracking IDs onto real driving frames, generating valid (360, 640, 3) JPEG images in ~59 ms.
+7. **Cross-Module Contract Validation:**
+   - Validated all 9 data contract transitions from raw video through forecasting and visualization against Schema v1.0.
+8. **Automated Regression & Test Results:**
+   - Full repository regression suite: **1,201 / 1,201 Passed (100% Pass Rate)** across 41 test files in ~159s.
+   - Master project audit: **178 / 178 checks passed (100% Pass Rate)**.
+9. **Documentation & Reports:**
+   - Published [docs/MODULE_FUNCTIONAL_AUDIT.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/MODULE_FUNCTIONAL_AUDIT.md)
+   - Published [reports/final_audit/module_functional_audit.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/final_audit/module_functional_audit.md)
+   - Published [reports/final_audit/module_functional_audit.json](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/final_audit/module_functional_audit.json)

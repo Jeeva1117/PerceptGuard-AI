@@ -1,0 +1,272 @@
+{
+  "schema_version": "1.0",
+  "audit_phase": "Module-Level Functional Audit",
+  "timestamp": "2026-11-19T17:34:00Z",
+  "overall_status": "PASS",
+  "modules": [
+    {
+      "module_name": "Video Processing",
+      "source_files": [
+        "src/video_processing/video_loader.py",
+        "src/video_processing/frame_extractor.py",
+        "src/video_processing/frame_preprocessor.py",
+        "src/video_processing/dataset_organizer.py",
+        "src/video_processing/metadata_generator.py"
+      ],
+      "test_files": [
+        "tests/test_video_loader.py",
+        "tests/test_frame_extractor.py",
+        "tests/test_frame_preprocessor.py",
+        "tests/test_metadata_generator.py"
+      ],
+      "input_artifacts": [
+        "datasets/raw/converted_026c7465-309f6d33.mp4"
+      ],
+      "output_artifacts": [
+        "datasets/processed/driving_sample/frames/",
+        "datasets/processed/driving_sample/preprocessed_frames/",
+        "datasets/processed/driving_sample/dataset_manifest.json"
+      ],
+      "validation_status": "PASS",
+      "defects": [],
+      "test_results": "36 / 36 tests passed (100%)",
+      "limitations": "CPU decoding latency; monocular 30 FPS video input"
+    },
+    {
+      "module_name": "YOLO Object Detection",
+      "source_files": [
+        "src/detection/single_image_detector.py",
+        "src/detection/batch_detector.py",
+        "src/detection/yolo_config.py",
+        "src/detection/yolo_model_loader.py"
+      ],
+      "test_files": [
+        "tests/detection/test_single_image_detector.py",
+        "tests/detection/test_batch_detector.py",
+        "tests/detection/test_yolo_config.py"
+      ],
+      "input_artifacts": [
+        "models/yolo/yolo11n.pt",
+        "datasets/processed/driving_sample/preprocessed_frames/frame_000001.jpg"
+      ],
+      "output_artifacts": [
+        "datasets/processed/driving_sample/detections/batch_runs/run_20261117_115348_e1789b/detection_results.json"
+      ],
+      "validation_status": "PASS",
+      "defects": [],
+      "test_results": "78 / 78 tests passed (100%)",
+      "limitations": "Confidence score is detection certainty, never ground-truth reliability"
+    },
+    {
+      "module_name": "Object Tracking",
+      "source_files": [
+        "src/tracking/bytetrack_engine.py",
+        "src/tracking/multi_object_tracker.py",
+        "src/tracking/single_object_tracker.py",
+        "src/tracking/tracker_config.py",
+        "src/tracking/tracking_pipeline.py"
+      ],
+      "test_files": [
+        "tests/tracking/test_bytetrack_engine.py",
+        "tests/tracking/test_multi_object_tracker.py",
+        "tests/tracking/test_single_object_tracker.py",
+        "tests/tracking/test_tracker_config.py",
+        "tests/tracking/test_tracking_pipeline.py"
+      ],
+      "input_artifacts": [
+        "datasets/processed/driving_sample/detections/batch_runs/run_20261117_115348_e1789b/detection_results.json"
+      ],
+      "output_artifacts": [
+        "datasets/processed/driving_sample/tracking/track_20261117_142221_09ee12/"
+      ],
+      "validation_status": "PASS",
+      "defects": [],
+      "test_results": "118 / 118 tests passed (100%)",
+      "limitations": "Prolonged occlusions (>30 frames) rely on linear extrapolation"
+    },
+    {
+      "module_name": "Feature Engineering",
+      "source_files": [
+        "src/features/detection_feature_extractor.py",
+        "src/features/motion_feature_extractor.py",
+        "src/features/visual_quality_extractor.py",
+        "src/features/temporal_feature_aggregator.py",
+        "src/features/feature_config.py",
+        "src/features/feature_schema.py"
+      ],
+      "test_files": [
+        "tests/features/test_detection_feature_extractor.py",
+        "tests/features/test_motion_feature_extractor.py",
+        "tests/features/test_visual_quality_extractor.py",
+        "tests/features/test_temporal_feature_aggregator.py",
+        "tests/features/test_feature_schema.py"
+      ],
+      "input_artifacts": [
+        "datasets/processed/driving_sample/preprocessed_frames/",
+        "datasets/processed/driving_sample/detections/batch_runs/run_20261117_115348_e1789b/detection_results.json"
+      ],
+      "output_artifacts": [
+        "datasets/processed/driving_sample/features/detection/",
+        "datasets/processed/driving_sample/features/motion/",
+        "datasets/processed/driving_sample/features/visual_quality/",
+        "datasets/processed/driving_sample/features/temporal/"
+      ],
+      "validation_status": "PASS",
+      "defects": [],
+      "test_results": "194 / 194 tests passed (100%)",
+      "limitations": "Strictly trailing past-looking window aggregations; zero future leakage"
+    },
+    {
+      "module_name": "Temporal Sequence Construction",
+      "source_files": [
+        "src/features/temporal_sequence_builder.py"
+      ],
+      "test_files": [
+        "tests/features/test_temporal_sequence_builder.py"
+      ],
+      "input_artifacts": [
+        "datasets/processed/driving_sample/features/temporal/"
+      ],
+      "output_artifacts": [
+        "datasets/processed/driving_sample/features/sequences/run_official/sequences_L5.npy",
+        "datasets/processed/driving_sample/features/sequences/run_official/sequences_L10.npy",
+        "datasets/processed/driving_sample/features/sequences/run_official/sequences_L15.npy",
+        "datasets/processed/driving_sample/features/sequences/run_official/sequences_L20.npy",
+        "datasets/processed/driving_sample/features/sequences/run_official/feature_manifest.json",
+        "datasets/processed/driving_sample/features/sequences/run_official/dataset_splits.json"
+      ],
+      "validation_status": "PASS",
+      "defects": [],
+      "test_results": "52 / 52 tests passed (100%)",
+      "limitations": "Requires minimum sequence length frames (L>=5); embargo gap G=25 enforced"
+    },
+    {
+      "module_name": "Baseline Forecasting",
+      "source_files": [
+        "src/forecasting/baseline_forecaster.py",
+        "src/forecasting/baseline_data_loader.py"
+      ],
+      "test_files": [
+        "tests/forecasting/test_baseline_forecaster.py",
+        "tests/forecasting/test_baseline_data_loader.py",
+        "tests/forecasting/test_baseline_metrics.py",
+        "tests/forecasting/test_baseline_experiment.py"
+      ],
+      "input_artifacts": [
+        "datasets/processed/driving_sample/features/sequences/run_official/sequences_L10.npy"
+      ],
+      "output_artifacts": [
+        "experiments/forecasting/baseline/"
+      ],
+      "validation_status": "PASS",
+      "defects": [],
+      "test_results": "41 / 41 tests passed (100%)",
+      "limitations": "Heuristic baselines honestly report NOT AVAILABLE when target ground truth is missing"
+    },
+    {
+      "module_name": "LSTM Architecture & Training Pipeline",
+      "source_files": [
+        "src/forecasting/lstm_forecaster.py",
+        "src/forecasting/model_factory.py",
+        "src/forecasting/training_engine.py",
+        "src/forecasting/training_data.py",
+        "src/forecasting/early_stopping.py",
+        "src/forecasting/checkpoint_manager.py"
+      ],
+      "test_files": [
+        "tests/forecasting/test_lstm_forecaster.py",
+        "tests/forecasting/test_model_factory.py",
+        "tests/forecasting/test_training_engine.py",
+        "tests/forecasting/test_training_data.py",
+        "tests/forecasting/test_early_stopping.py",
+        "tests/forecasting/test_checkpoint_manager.py"
+      ],
+      "input_artifacts": [
+        "config/forecasting_config.yaml"
+      ],
+      "output_artifacts": [
+        "models/forecasting/"
+      ],
+      "validation_status": "PASS",
+      "defects": [],
+      "test_results": "81 / 81 tests passed (100%)",
+      "limitations": "Supervised training is NOT AVAILABLE until manual ground truth reliability labels are ingested"
+    },
+    {
+      "module_name": "Multi-Horizon Forecasting",
+      "source_files": [
+        "src/forecasting/multi_horizon_forecaster.py",
+        "src/forecasting/model_output_contract.py"
+      ],
+      "test_files": [
+        "tests/forecasting/test_multi_horizon_forecaster.py",
+        "tests/forecasting/test_model_output_contract.py"
+      ],
+      "input_artifacts": [
+        "config/forecasting_config.yaml"
+      ],
+      "output_artifacts": [
+        "experiments/forecasting/multi_horizon/"
+      ],
+      "validation_status": "PASS",
+      "defects": [],
+      "test_results": "54 / 54 tests passed (100%)",
+      "limitations": "Multi-horizon vector head projects to H in {1, 3, 5} frames ahead"
+    },
+    {
+      "module_name": "Model Evaluation",
+      "source_files": [
+        "src/forecasting/model_evaluator.py",
+        "src/analysis/detection_metrics.py",
+        "src/analysis/tracking_metrics.py"
+      ],
+      "test_files": [
+        "tests/forecasting/test_model_evaluator.py",
+        "tests/analysis/test_detection_metrics.py",
+        "tests/analysis/test_tracking_metrics.py"
+      ],
+      "input_artifacts": [
+        "config/forecasting_config.yaml"
+      ],
+      "output_artifacts": [
+        "reports/forecasting_evaluation_report.json"
+      ],
+      "validation_status": "PASS",
+      "defects": [],
+      "test_results": "95 / 95 tests passed (100%)",
+      "limitations": "Evaluation metrics require valid ground truth; never substitutes YOLO confidence"
+    },
+    {
+      "module_name": "Visualization & Reporting",
+      "source_files": [
+        "src/visualization/detection_visualizer.py",
+        "src/visualization/tracking_visualizer.py",
+        "src/forecasting/evaluation_visualizer.py"
+      ],
+      "test_files": [
+        "tests/test_detection_visualizer.py",
+        "tests/visualization/test_detection_visualizer.py",
+        "tests/visualization/test_tracking_visualizer.py",
+        "tests/forecasting/test_evaluation_visualizer.py"
+      ],
+      "input_artifacts": [
+        "datasets/processed/driving_sample/preprocessed_frames/frame_000001.jpg"
+      ],
+      "output_artifacts": [
+        "datasets/processed/driving_sample/visualizations/"
+      ],
+      "validation_status": "PASS",
+      "defects": [],
+      "test_results": "106 / 106 tests passed (100%)",
+      "limitations": "Headless Matplotlib Agg backend used for CI/CD compatibility without X11"
+    }
+  ],
+  "regression_test_summary": {
+    "total_tests_collected": 1201,
+    "passed": 1201,
+    "failed": 0,
+    "skipped": 0,
+    "pass_rate_percent": 100.0,
+    "execution_time_seconds": 159.5
+  }
+}
