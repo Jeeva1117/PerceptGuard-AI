@@ -1,0 +1,9 @@
+{
+  "ground_truth_policy": "STRICT_HONESTY_ENFORCED",
+  "real_data_supervised_status": "NOT AVAILABLE",
+  "yolo_confidence_treated_as_ground_truth": false,
+  "leakage_check_passed": true,
+  "embargo_gap_frames": 25,
+  "training_only_scaler_fitting": true,
+  "training_only_imputer_fitting": true
+}

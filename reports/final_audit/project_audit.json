@@ -1,0 +1,1451 @@
+{
+  "schema_version": "1.0",
+  "audit_date": "2026-11-19T15:38:44.086298+00:00",
+  "overall_status": "PASS",
+  "day_statuses": {
+    "Day 1: Project Foundation": "PASS",
+    "Day 2: Video Processing": "PASS",
+    "Day 3: YOLO Object Detection": "PASS",
+    "Day 4: Object Tracking": "PASS",
+    "Day 5: Feature Engineering & Sequences": "PASS",
+    "Day 6: Predictive Reliability Forecasting": "PASS"
+  },
+  "summary": {
+    "total_checks": 178,
+    "passed_checks": 178,
+    "failed_checks": 0,
+    "missing_files_count": 0,
+    "integration_stages_audited": 3
+  },
+  "checks": [
+    {
+      "id": "file_valid:src/__init__.py",
+      "phase": "Day 1: Project Foundation",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/__init__.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:config/settings.py",
+      "phase": "Day 1: Project Foundation",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: config/settings.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:config/settings.py",
+      "phase": "Day 1: Project Foundation",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: config/settings.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/verify_environment.py",
+      "phase": "Day 1: Project Foundation",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/verify_environment.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:README.md",
+      "phase": "Day 1: Project Foundation",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: README.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/DATASET_SOURCES.md",
+      "phase": "Day 1: Project Foundation",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/DATASET_SOURCES.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/DATASET_STRUCTURE.md",
+      "phase": "Day 1: Project Foundation",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/DATASET_STRUCTURE.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/video_processing/__init__.py",
+      "phase": "Day 2: Video Processing",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/video_processing/__init__.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/video_processing/video_loader.py",
+      "phase": "Day 2: Video Processing",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/video_processing/video_loader.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/video_processing/frame_extractor.py",
+      "phase": "Day 2: Video Processing",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/video_processing/frame_extractor.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/video_processing/frame_preprocessor.py",
+      "phase": "Day 2: Video Processing",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/video_processing/frame_preprocessor.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/video_processing/metadata_generator.py",
+      "phase": "Day 2: Video Processing",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/video_processing/metadata_generator.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/validation/dataset_validator.py",
+      "phase": "Day 2: Video Processing",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/validation/dataset_validator.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:config/video_config.yaml",
+      "phase": "Day 2: Video Processing",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: config/video_config.yaml",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/test_video_loader.py",
+      "phase": "Day 2: Video Processing",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/test_video_loader.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/test_frame_extractor.py",
+      "phase": "Day 2: Video Processing",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/test_frame_extractor.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/test_frame_preprocessor.py",
+      "phase": "Day 2: Video Processing",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/test_frame_preprocessor.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/test_metadata_generator.py",
+      "phase": "Day 2: Video Processing",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/test_metadata_generator.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/test_dataset_structure.py",
+      "phase": "Day 2: Video Processing",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/test_dataset_structure.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/test_dataset_validator.py",
+      "phase": "Day 2: Video Processing",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/test_dataset_validator.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/VIDEO_LOADING.md",
+      "phase": "Day 2: Video Processing",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/VIDEO_LOADING.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/FRAME_EXTRACTION.md",
+      "phase": "Day 2: Video Processing",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/FRAME_EXTRACTION.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/FRAME_PREPROCESSING.md",
+      "phase": "Day 2: Video Processing",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/FRAME_PREPROCESSING.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/METADATA_GENERATION.md",
+      "phase": "Day 2: Video Processing",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/METADATA_GENERATION.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/DATASET_VALIDATION.md",
+      "phase": "Day 2: Video Processing",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/DATASET_VALIDATION.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/detection/__init__.py",
+      "phase": "Day 3: YOLO Object Detection",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/detection/__init__.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/detection/yolo_config.py",
+      "phase": "Day 3: YOLO Object Detection",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/detection/yolo_config.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/detection/yolo_model_loader.py",
+      "phase": "Day 3: YOLO Object Detection",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/detection/yolo_model_loader.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/detection/single_image_detector.py",
+      "phase": "Day 3: YOLO Object Detection",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/detection/single_image_detector.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/detection/batch_detector.py",
+      "phase": "Day 3: YOLO Object Detection",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/detection/batch_detector.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/visualization/detection_visualizer.py",
+      "phase": "Day 3: YOLO Object Detection",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/visualization/detection_visualizer.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/analysis/detection_metrics.py",
+      "phase": "Day 3: YOLO Object Detection",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/analysis/detection_metrics.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:config/yolo_config.yaml",
+      "phase": "Day 3: YOLO Object Detection",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: config/yolo_config.yaml",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/detection/test_yolo_config.py",
+      "phase": "Day 3: YOLO Object Detection",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/detection/test_yolo_config.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/test_yolo_model_loader.py",
+      "phase": "Day 3: YOLO Object Detection",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/test_yolo_model_loader.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/detection/test_single_image_detector.py",
+      "phase": "Day 3: YOLO Object Detection",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/detection/test_single_image_detector.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/detection/test_batch_detector.py",
+      "phase": "Day 3: YOLO Object Detection",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/detection/test_batch_detector.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/visualization/test_detection_visualizer.py",
+      "phase": "Day 3: YOLO Object Detection",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/visualization/test_detection_visualizer.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/analysis/test_detection_metrics.py",
+      "phase": "Day 3: YOLO Object Detection",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/analysis/test_detection_metrics.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/YOLO_ENVIRONMENT_SETUP.md",
+      "phase": "Day 3: YOLO Object Detection",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/YOLO_ENVIRONMENT_SETUP.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/YOLO_MODEL_CONFIGURATION.md",
+      "phase": "Day 3: YOLO Object Detection",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/YOLO_MODEL_CONFIGURATION.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/SINGLE_IMAGE_DETECTION.md",
+      "phase": "Day 3: YOLO Object Detection",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/SINGLE_IMAGE_DETECTION.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/BATCH_OBJECT_DETECTION.md",
+      "phase": "Day 3: YOLO Object Detection",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/BATCH_OBJECT_DETECTION.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/DETECTION_VISUALIZATION.md",
+      "phase": "Day 3: YOLO Object Detection",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/DETECTION_VISUALIZATION.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/DETECTION_METRICS.md",
+      "phase": "Day 3: YOLO Object Detection",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/DETECTION_METRICS.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/tracking/__init__.py",
+      "phase": "Day 4: Object Tracking",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/tracking/__init__.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/tracking/tracker_config.py",
+      "phase": "Day 4: Object Tracking",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/tracking/tracker_config.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/tracking/tracking_environment.py",
+      "phase": "Day 4: Object Tracking",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/tracking/tracking_environment.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/tracking/bytetrack_engine.py",
+      "phase": "Day 4: Object Tracking",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/tracking/bytetrack_engine.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/tracking/single_object_tracker.py",
+      "phase": "Day 4: Object Tracking",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/tracking/single_object_tracker.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/tracking/multi_object_tracker.py",
+      "phase": "Day 4: Object Tracking",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/tracking/multi_object_tracker.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/tracking/tracking_pipeline.py",
+      "phase": "Day 4: Object Tracking",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/tracking/tracking_pipeline.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/visualization/tracking_visualizer.py",
+      "phase": "Day 4: Object Tracking",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/visualization/tracking_visualizer.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/analysis/tracking_metrics.py",
+      "phase": "Day 4: Object Tracking",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/analysis/tracking_metrics.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:config/tracker_config.yaml",
+      "phase": "Day 4: Object Tracking",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: config/tracker_config.yaml",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/tracking/test_tracker_config.py",
+      "phase": "Day 4: Object Tracking",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/tracking/test_tracker_config.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/tracking/test_tracking_environment.py",
+      "phase": "Day 4: Object Tracking",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/tracking/test_tracking_environment.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/tracking/test_bytetrack_engine.py",
+      "phase": "Day 4: Object Tracking",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/tracking/test_bytetrack_engine.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/tracking/test_single_object_tracker.py",
+      "phase": "Day 4: Object Tracking",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/tracking/test_single_object_tracker.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/tracking/test_multi_object_tracker.py",
+      "phase": "Day 4: Object Tracking",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/tracking/test_multi_object_tracker.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/tracking/test_tracking_pipeline.py",
+      "phase": "Day 4: Object Tracking",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/tracking/test_tracking_pipeline.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/visualization/test_tracking_visualizer.py",
+      "phase": "Day 4: Object Tracking",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/visualization/test_tracking_visualizer.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/analysis/test_tracking_metrics.py",
+      "phase": "Day 4: Object Tracking",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/analysis/test_tracking_metrics.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/TRACKING_ENVIRONMENT_SETUP.md",
+      "phase": "Day 4: Object Tracking",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/TRACKING_ENVIRONMENT_SETUP.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/BYTETRACK_INTEGRATION.md",
+      "phase": "Day 4: Object Tracking",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/BYTETRACK_INTEGRATION.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/SINGLE_OBJECT_TRACKING.md",
+      "phase": "Day 4: Object Tracking",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/SINGLE_OBJECT_TRACKING.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/MULTI_OBJECT_TRACKING.md",
+      "phase": "Day 4: Object Tracking",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/MULTI_OBJECT_TRACKING.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/TRACKING_VISUALIZATION.md",
+      "phase": "Day 4: Object Tracking",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/TRACKING_VISUALIZATION.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/TRACKING_METRICS_ANALYSIS.md",
+      "phase": "Day 4: Object Tracking",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/TRACKING_METRICS_ANALYSIS.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/features/__init__.py",
+      "phase": "Day 5: Feature Engineering & Sequences",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/features/__init__.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/features/feature_config.py",
+      "phase": "Day 5: Feature Engineering & Sequences",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/features/feature_config.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/features/feature_schema.py",
+      "phase": "Day 5: Feature Engineering & Sequences",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/features/feature_schema.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/features/feature_environment.py",
+      "phase": "Day 5: Feature Engineering & Sequences",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/features/feature_environment.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/features/detection_feature_extractor.py",
+      "phase": "Day 5: Feature Engineering & Sequences",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/features/detection_feature_extractor.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/features/motion_feature_extractor.py",
+      "phase": "Day 5: Feature Engineering & Sequences",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/features/motion_feature_extractor.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/features/visual_quality_extractor.py",
+      "phase": "Day 5: Feature Engineering & Sequences",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/features/visual_quality_extractor.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/features/temporal_feature_aggregator.py",
+      "phase": "Day 5: Feature Engineering & Sequences",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/features/temporal_feature_aggregator.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/features/temporal_sequence_builder.py",
+      "phase": "Day 5: Feature Engineering & Sequences",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/features/temporal_sequence_builder.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:config/feature_config.yaml",
+      "phase": "Day 5: Feature Engineering & Sequences",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: config/feature_config.yaml",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/features/test_feature_config.py",
+      "phase": "Day 5: Feature Engineering & Sequences",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/features/test_feature_config.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/features/test_feature_schema.py",
+      "phase": "Day 5: Feature Engineering & Sequences",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/features/test_feature_schema.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/features/test_feature_environment.py",
+      "phase": "Day 5: Feature Engineering & Sequences",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/features/test_feature_environment.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/features/test_detection_feature_extractor.py",
+      "phase": "Day 5: Feature Engineering & Sequences",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/features/test_detection_feature_extractor.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/features/test_motion_feature_extractor.py",
+      "phase": "Day 5: Feature Engineering & Sequences",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/features/test_motion_feature_extractor.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/features/test_visual_quality_extractor.py",
+      "phase": "Day 5: Feature Engineering & Sequences",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/features/test_visual_quality_extractor.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/features/test_temporal_feature_aggregator.py",
+      "phase": "Day 5: Feature Engineering & Sequences",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/features/test_temporal_feature_aggregator.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/features/test_temporal_sequence_builder.py",
+      "phase": "Day 5: Feature Engineering & Sequences",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/features/test_temporal_sequence_builder.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/test_day5_audit.py",
+      "phase": "Day 5: Feature Engineering & Sequences",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/test_day5_audit.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/FEATURE_ENGINEERING_SETUP.md",
+      "phase": "Day 5: Feature Engineering & Sequences",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/FEATURE_ENGINEERING_SETUP.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/DETECTION_FEATURE_EXTRACTION.md",
+      "phase": "Day 5: Feature Engineering & Sequences",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/DETECTION_FEATURE_EXTRACTION.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/MOTION_FEATURE_EXTRACTION.md",
+      "phase": "Day 5: Feature Engineering & Sequences",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/MOTION_FEATURE_EXTRACTION.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/VISUAL_QUALITY_FEATURE_EXTRACTION.md",
+      "phase": "Day 5: Feature Engineering & Sequences",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/VISUAL_QUALITY_FEATURE_EXTRACTION.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/TEMPORAL_FEATURE_AGGREGATION.md",
+      "phase": "Day 5: Feature Engineering & Sequences",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/TEMPORAL_FEATURE_AGGREGATION.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/TEMPORAL_SEQUENCE_CONSTRUCTION.md",
+      "phase": "Day 5: Feature Engineering & Sequences",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/TEMPORAL_SEQUENCE_CONSTRUCTION.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/DAY5_FINAL_VALIDATION_REPORT.md",
+      "phase": "Day 5: Feature Engineering & Sequences",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/DAY5_FINAL_VALIDATION_REPORT.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/forecasting/__init__.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/forecasting/__init__.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/forecasting/forecasting_config.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/forecasting/forecasting_config.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/forecasting/forecasting_environment.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/forecasting/forecasting_environment.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/forecasting/forecasting_data_contract.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/forecasting/forecasting_data_contract.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/forecasting/baseline_forecaster.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/forecasting/baseline_forecaster.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/forecasting/baseline_data_loader.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/forecasting/baseline_data_loader.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/forecasting/baseline_experiment.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/forecasting/baseline_experiment.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/forecasting/baseline_metrics.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/forecasting/baseline_metrics.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/forecasting/lstm_forecaster.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/forecasting/lstm_forecaster.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/forecasting/model_factory.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/forecasting/model_factory.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/forecasting/training_data.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/forecasting/training_data.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/forecasting/training_engine.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/forecasting/training_engine.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/forecasting/early_stopping.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/forecasting/early_stopping.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/forecasting/checkpoint_manager.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/forecasting/checkpoint_manager.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/forecasting/training_logger.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/forecasting/training_logger.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/forecasting/train_lstm.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/forecasting/train_lstm.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/forecasting/multi_horizon_forecaster.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/forecasting/multi_horizon_forecaster.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/forecasting/model_evaluator.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/forecasting/model_evaluator.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/forecasting/evaluation_visualizer.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/forecasting/evaluation_visualizer.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/prediction/__init__.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/prediction/__init__.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:src/evaluation/__init__.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: src/evaluation/__init__.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:config/forecasting_config.yaml",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: config/forecasting_config.yaml",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/forecasting/test_forecasting_config.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/forecasting/test_forecasting_config.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/forecasting/test_forecasting_environment.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/forecasting/test_forecasting_environment.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/forecasting/test_forecasting_data_contract.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/forecasting/test_forecasting_data_contract.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/forecasting/test_baseline_forecaster.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/forecasting/test_baseline_forecaster.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/forecasting/test_baseline_data_loader.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/forecasting/test_baseline_data_loader.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/forecasting/test_baseline_experiment.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/forecasting/test_baseline_experiment.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/forecasting/test_baseline_metrics.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/forecasting/test_baseline_metrics.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/forecasting/test_lstm_forecaster.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/forecasting/test_lstm_forecaster.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/forecasting/test_model_factory.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/forecasting/test_model_factory.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/forecasting/test_model_output_contract.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/forecasting/test_model_output_contract.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/forecasting/test_training_data.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/forecasting/test_training_data.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/forecasting/test_training_engine.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/forecasting/test_training_engine.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/forecasting/test_early_stopping.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/forecasting/test_early_stopping.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/forecasting/test_checkpoint_manager.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/forecasting/test_checkpoint_manager.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/forecasting/test_training_logger.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/forecasting/test_training_logger.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/forecasting/test_train_lstm_cli.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/forecasting/test_train_lstm_cli.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/forecasting/test_multi_horizon_forecaster.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/forecasting/test_multi_horizon_forecaster.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/forecasting/test_model_evaluator.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/forecasting/test_model_evaluator.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/forecasting/test_evaluation_visualizer.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/forecasting/test_evaluation_visualizer.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:tests/test_day6_audit.py",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "Valid syntax: tests/test_day6_audit.py",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/FORECASTING_ENVIRONMENT_SETUP.md",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/FORECASTING_ENVIRONMENT_SETUP.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/BASELINE_FORECASTING_MODEL.md",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/BASELINE_FORECASTING_MODEL.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/LSTM_ARCHITECTURE.md",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/LSTM_ARCHITECTURE.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/LSTM_TRAINING_PIPELINE.md",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/LSTM_TRAINING_PIPELINE.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/MULTI_HORIZON_FORECASTING.md",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/MULTI_HORIZON_FORECASTING.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/MODEL_EVALUATION_ANALYSIS.md",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/MODEL_EVALUATION_ANALYSIS.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/TASK_5_VALIDATION_REPORT.md",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/TASK_5_VALIDATION_REPORT.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/TASK_6_VALIDATION_REPORT.md",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/TASK_6_VALIDATION_REPORT.md",
+      "details": null
+    },
+    {
+      "id": "file_valid:docs/FINAL_VALIDATION_REPORT.md",
+      "phase": "Day 6: Predictive Reliability Forecasting",
+      "category": "File Inventory",
+      "status": "PASS",
+      "message": "File exists and valid: docs/FINAL_VALIDATION_REPORT.md",
+      "details": null
+    },
+    {
+      "id": "import_clean:src.video_processing",
+      "phase": "All Days",
+      "category": "Imports",
+      "status": "PASS",
+      "message": "Successfully imported src.video_processing with 4 symbols.",
+      "details": null
+    },
+    {
+      "id": "import_clean:src.validation",
+      "phase": "All Days",
+      "category": "Imports",
+      "status": "PASS",
+      "message": "Successfully imported src.validation with 1 symbols.",
+      "details": null
+    },
+    {
+      "id": "import_clean:src.detection",
+      "phase": "All Days",
+      "category": "Imports",
+      "status": "PASS",
+      "message": "Successfully imported src.detection with 4 symbols.",
+      "details": null
+    },
+    {
+      "id": "import_clean:src.tracking",
+      "phase": "All Days",
+      "category": "Imports",
+      "status": "PASS",
+      "message": "Successfully imported src.tracking with 5 symbols.",
+      "details": null
+    },
+    {
+      "id": "import_clean:src.visualization",
+      "phase": "All Days",
+      "category": "Imports",
+      "status": "PASS",
+      "message": "Successfully imported src.visualization with 2 symbols.",
+      "details": null
+    },
+    {
+      "id": "import_clean:src.analysis",
+      "phase": "All Days",
+      "category": "Imports",
+      "status": "PASS",
+      "message": "Successfully imported src.analysis with 2 symbols.",
+      "details": null
+    },
+    {
+      "id": "import_clean:src.features",
+      "phase": "All Days",
+      "category": "Imports",
+      "status": "PASS",
+      "message": "Successfully imported src.features with 6 symbols.",
+      "details": null
+    },
+    {
+      "id": "import_clean:src.forecasting",
+      "phase": "All Days",
+      "category": "Imports",
+      "status": "PASS",
+      "message": "Successfully imported src.forecasting with 10 symbols.",
+      "details": null
+    },
+    {
+      "id": "import_clean:src.prediction",
+      "phase": "All Days",
+      "category": "Imports",
+      "status": "PASS",
+      "message": "Successfully imported src.prediction with 3 symbols.",
+      "details": null
+    },
+    {
+      "id": "import_clean:src.evaluation",
+      "phase": "All Days",
+      "category": "Imports",
+      "status": "PASS",
+      "message": "Successfully imported src.evaluation with 2 symbols.",
+      "details": null
+    },
+    {
+      "id": "config_valid:config/video_config.yaml",
+      "phase": "Configuration",
+      "category": "Config",
+      "status": "PASS",
+      "message": "Valid YAML config with keys ['video', 'frame_extraction', 'preprocessing', 'dataset']: config/video_config.yaml",
+      "details": null
+    },
+    {
+      "id": "config_valid:config/yolo_config.yaml",
+      "phase": "Configuration",
+      "category": "Config",
+      "status": "PASS",
+      "message": "Valid YAML config with keys ['version', 'model', 'runtime', 'inference', 'performance', 'validation', 'presets', 'yolo']: config/yolo_config.yaml",
+      "details": null
+    },
+    {
+      "id": "config_valid:config/tracker_config.yaml",
+      "phase": "Configuration",
+      "category": "Config",
+      "status": "PASS",
+      "message": "Valid YAML config with keys ['tracker_type', 'track_high_thresh', 'track_low_thresh', 'new_track_thresh', 'track_buffer', 'match_thresh', 'fuse_score']: config/tracker_config.yaml",
+      "details": null
+    },
+    {
+      "id": "config_valid:config/feature_config.yaml",
+      "phase": "Configuration",
+      "category": "Config",
+      "status": "PASS",
+      "message": "Valid YAML config with keys ['schema_version', 'feature_set_name', 'inputs', 'outputs', 'feature_groups', 'temporal_alignment', 'temporal_windows', 'temporal_sequences', 'missing_value_policy', 'precision', 'processing', 'logging']: config/feature_config.yaml",
+      "details": null
+    },
+    {
+      "id": "config_valid:config/forecasting_config.yaml",
+      "phase": "Configuration",
+      "category": "Config",
+      "status": "PASS",
+      "message": "Valid YAML config with keys ['project', 'runtime', 'data', 'model', 'training', 'evaluation', 'artifacts']: config/forecasting_config.yaml",
+      "details": null
+    },
+    {
+      "id": "art_valid:datasets/processed/driving_sample/metadata.csv",
+      "phase": "Artifacts",
+      "category": "Artifact Integrity",
+      "status": "PASS",
+      "message": "Artifact exists and valid: datasets/processed/driving_sample/metadata.csv",
+      "details": null
+    },
+    {
+      "id": "art_json:datasets/processed/driving_sample/summary.json",
+      "phase": "Artifacts",
+      "category": "Artifact Integrity",
+      "status": "PASS",
+      "message": "Valid JSON artifact (14 items)",
+      "details": null
+    },
+    {
+      "id": "art_json:datasets/processed/driving_sample/validation_report.json",
+      "phase": "Artifacts",
+      "category": "Artifact Integrity",
+      "status": "PASS",
+      "message": "Valid JSON artifact (9 items)",
+      "details": null
+    },
+    {
+      "id": "art_valid:datasets/processed/driving_sample/features/sequences/run_official/sequences_L5.npy",
+      "phase": "Artifacts",
+      "category": "Artifact Integrity",
+      "status": "PASS",
+      "message": "Valid NPY tensor (138, 5, 27), dtype float32",
+      "details": null
+    },
+    {
+      "id": "art_valid:datasets/processed/driving_sample/features/sequences/run_official/sequences_L10.npy",
+      "phase": "Artifacts",
+      "category": "Artifact Integrity",
+      "status": "PASS",
+      "message": "Valid NPY tensor (123, 10, 27), dtype float32",
+      "details": null
+    },
+    {
+      "id": "art_valid:datasets/processed/driving_sample/features/sequences/run_official/sequences_L15.npy",
+      "phase": "Artifacts",
+      "category": "Artifact Integrity",
+      "status": "PASS",
+      "message": "Valid NPY tensor (108, 15, 27), dtype float32",
+      "details": null
+    },
+    {
+      "id": "art_valid:datasets/processed/driving_sample/features/sequences/run_official/sequences_L20.npy",
+      "phase": "Artifacts",
+      "category": "Artifact Integrity",
+      "status": "PASS",
+      "message": "Valid NPY tensor (93, 20, 27), dtype float32",
+      "details": null
+    },
+    {
+      "id": "art_json:datasets/processed/driving_sample/features/sequences/run_official/sequence_metadata.json",
+      "phase": "Artifacts",
+      "category": "Artifact Integrity",
+      "status": "PASS",
+      "message": "Valid JSON artifact (6 items)",
+      "details": null
+    },
+    {
+      "id": "art_json:datasets/processed/driving_sample/features/sequences/run_official/feature_manifest.json",
+      "phase": "Artifacts",
+      "category": "Artifact Integrity",
+      "status": "PASS",
+      "message": "Valid JSON artifact (5 items)",
+      "details": null
+    },
+    {
+      "id": "art_json:datasets/processed/driving_sample/features/sequences/run_official/dataset_splits.json",
+      "phase": "Artifacts",
+      "category": "Artifact Integrity",
+      "status": "PASS",
+      "message": "Valid JSON artifact (9 items)",
+      "details": null
+    },
+    {
+      "id": "art_json:datasets/processed/driving_sample/features/sequences/run_official/scaler_parameters.json",
+      "phase": "Artifacts",
+      "category": "Artifact Integrity",
+      "status": "PASS",
+      "message": "Valid JSON artifact (5 items)",
+      "details": null
+    },
+    {
+      "id": "art_json:datasets/processed/driving_sample/features/sequences/run_official/imputation_parameters.json",
+      "phase": "Artifacts",
+      "category": "Artifact Integrity",
+      "status": "PASS",
+      "message": "Valid JSON artifact (7 items)",
+      "details": null
+    },
+    {
+      "id": "integration_feature_dim",
+      "phase": "Integration",
+      "category": "Module Integration",
+      "status": "PASS",
+      "message": "Feature manifest (27) matches model input dimension (27).",
+      "details": null
+    },
+    {
+      "id": "integration_data_module",
+      "phase": "Integration",
+      "category": "Module Integration",
+      "status": "PASS",
+      "message": "ForecastingDataModule successfully loaded 101 train, 18 val samples.",
+      "details": null
+    },
+    {
+      "id": "integration_model_forward",
+      "phase": "Integration",
+      "category": "Module Integration",
+      "status": "PASS",
+      "message": "LSTM forward pass produced valid (2, 3) continuous reliability scores in [0, 1].",
+      "details": null
+    },
+    {
+      "id": "integrity_target_policy",
+      "phase": "Scientific Integrity",
+      "category": "Ground-Truth Policy",
+      "status": "PASS",
+      "message": "Target honesty certified: real Day 5 driving sequences correctly report 'NOT AVAILABLE'. YOLO confidence is NOT ground truth.",
+      "details": null
+    },
+    {
+      "id": "integrity_zero_leakage",
+      "phase": "Scientific Integrity",
+      "category": "Data Leakage",
+      "status": "PASS",
+      "message": "Zero cross-split leakage certified with G=25 frame temporal embargo gap.",
+      "details": null
+    }
+  ],
+  "git_info": {
+    "branch": "main",
+    "latest_commit": "97e3aed test: validate forecasting pipeline",
+    "working_tree": "Dirty (4 modified files)"
+  }
+}
