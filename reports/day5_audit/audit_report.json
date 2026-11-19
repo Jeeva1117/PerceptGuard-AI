@@ -1,0 +1,544 @@
+{
+  "schema_version": "1.0",
+  "audit_date": "2026-11-19T05:13:20.079554+00:00",
+  "overall_status": "PASS",
+  "task_statuses": {
+    "Task 1": "PASS",
+    "Task 2": "PASS",
+    "Task 3": "PASS",
+    "Task 4": "PASS",
+    "Task 5": "PASS",
+    "Task 6": "PASS",
+    "Task 7": "PASS"
+  },
+  "summary": {
+    "total_checks": 74,
+    "passed_checks": 74,
+    "failed_checks": 0
+  },
+  "checks": [
+    {
+      "name": "file_valid_src/features/__init__.py",
+      "category": "File Integrity",
+      "status": "PASS",
+      "message": "Present and valid: 'src/features/__init__.py' (6,926 bytes)",
+      "details": null
+    },
+    {
+      "name": "file_valid_src/features/feature_config.py",
+      "category": "File Integrity",
+      "status": "PASS",
+      "message": "Present and valid: 'src/features/feature_config.py' (28,282 bytes)",
+      "details": null
+    },
+    {
+      "name": "file_valid_src/features/feature_schema.py",
+      "category": "File Integrity",
+      "status": "PASS",
+      "message": "Present and valid: 'src/features/feature_schema.py' (25,181 bytes)",
+      "details": null
+    },
+    {
+      "name": "file_valid_src/features/feature_environment.py",
+      "category": "File Integrity",
+      "status": "PASS",
+      "message": "Present and valid: 'src/features/feature_environment.py' (12,420 bytes)",
+      "details": null
+    },
+    {
+      "name": "file_valid_config/feature_config.yaml",
+      "category": "File Integrity",
+      "status": "PASS",
+      "message": "Present and valid: 'config/feature_config.yaml' (2,809 bytes)",
+      "details": null
+    },
+    {
+      "name": "file_valid_tests/features/test_feature_config.py",
+      "category": "File Integrity",
+      "status": "PASS",
+      "message": "Present and valid: 'tests/features/test_feature_config.py' (9,559 bytes)",
+      "details": null
+    },
+    {
+      "name": "file_valid_tests/features/test_feature_schema.py",
+      "category": "File Integrity",
+      "status": "PASS",
+      "message": "Present and valid: 'tests/features/test_feature_schema.py' (14,005 bytes)",
+      "details": null
+    },
+    {
+      "name": "file_valid_tests/features/test_feature_environment.py",
+      "category": "File Integrity",
+      "status": "PASS",
+      "message": "Present and valid: 'tests/features/test_feature_environment.py' (9,755 bytes)",
+      "details": null
+    },
+    {
+      "name": "file_valid_docs/FEATURE_ENGINEERING_SETUP.md",
+      "category": "File Integrity",
+      "status": "PASS",
+      "message": "Present and valid: 'docs/FEATURE_ENGINEERING_SETUP.md' (12,682 bytes)",
+      "details": null
+    },
+    {
+      "name": "file_valid_src/features/detection_feature_extractor.py",
+      "category": "File Integrity",
+      "status": "PASS",
+      "message": "Present and valid: 'src/features/detection_feature_extractor.py' (40,140 bytes)",
+      "details": null
+    },
+    {
+      "name": "file_valid_tests/features/test_detection_feature_extractor.py",
+      "category": "File Integrity",
+      "status": "PASS",
+      "message": "Present and valid: 'tests/features/test_detection_feature_extractor.py' (27,479 bytes)",
+      "details": null
+    },
+    {
+      "name": "file_valid_docs/DETECTION_FEATURE_EXTRACTION.md",
+      "category": "File Integrity",
+      "status": "PASS",
+      "message": "Present and valid: 'docs/DETECTION_FEATURE_EXTRACTION.md' (11,076 bytes)",
+      "details": null
+    },
+    {
+      "name": "file_valid_src/features/motion_feature_extractor.py",
+      "category": "File Integrity",
+      "status": "PASS",
+      "message": "Present and valid: 'src/features/motion_feature_extractor.py' (56,517 bytes)",
+      "details": null
+    },
+    {
+      "name": "file_valid_tests/features/test_motion_feature_extractor.py",
+      "category": "File Integrity",
+      "status": "PASS",
+      "message": "Present and valid: 'tests/features/test_motion_feature_extractor.py' (30,645 bytes)",
+      "details": null
+    },
+    {
+      "name": "file_valid_docs/MOTION_FEATURE_EXTRACTION.md",
+      "category": "File Integrity",
+      "status": "PASS",
+      "message": "Present and valid: 'docs/MOTION_FEATURE_EXTRACTION.md' (12,776 bytes)",
+      "details": null
+    },
+    {
+      "name": "file_valid_src/features/visual_quality_extractor.py",
+      "category": "File Integrity",
+      "status": "PASS",
+      "message": "Present and valid: 'src/features/visual_quality_extractor.py' (46,512 bytes)",
+      "details": null
+    },
+    {
+      "name": "file_valid_tests/features/test_visual_quality_extractor.py",
+      "category": "File Integrity",
+      "status": "PASS",
+      "message": "Present and valid: 'tests/features/test_visual_quality_extractor.py' (32,995 bytes)",
+      "details": null
+    },
+    {
+      "name": "file_valid_docs/VISUAL_QUALITY_FEATURE_EXTRACTION.md",
+      "category": "File Integrity",
+      "status": "PASS",
+      "message": "Present and valid: 'docs/VISUAL_QUALITY_FEATURE_EXTRACTION.md' (12,530 bytes)",
+      "details": null
+    },
+    {
+      "name": "file_valid_src/features/temporal_feature_aggregator.py",
+      "category": "File Integrity",
+      "status": "PASS",
+      "message": "Present and valid: 'src/features/temporal_feature_aggregator.py' (60,715 bytes)",
+      "details": null
+    },
+    {
+      "name": "file_valid_tests/features/test_temporal_feature_aggregator.py",
+      "category": "File Integrity",
+      "status": "PASS",
+      "message": "Present and valid: 'tests/features/test_temporal_feature_aggregator.py' (41,913 bytes)",
+      "details": null
+    },
+    {
+      "name": "file_valid_docs/TEMPORAL_FEATURE_AGGREGATION.md",
+      "category": "File Integrity",
+      "status": "PASS",
+      "message": "Present and valid: 'docs/TEMPORAL_FEATURE_AGGREGATION.md' (13,570 bytes)",
+      "details": null
+    },
+    {
+      "name": "file_valid_src/features/temporal_sequence_builder.py",
+      "category": "File Integrity",
+      "status": "PASS",
+      "message": "Present and valid: 'src/features/temporal_sequence_builder.py' (67,497 bytes)",
+      "details": null
+    },
+    {
+      "name": "file_valid_tests/features/test_temporal_sequence_builder.py",
+      "category": "File Integrity",
+      "status": "PASS",
+      "message": "Present and valid: 'tests/features/test_temporal_sequence_builder.py' (35,376 bytes)",
+      "details": null
+    },
+    {
+      "name": "file_valid_docs/TEMPORAL_SEQUENCE_CONSTRUCTION.md",
+      "category": "File Integrity",
+      "status": "PASS",
+      "message": "Present and valid: 'docs/TEMPORAL_SEQUENCE_CONSTRUCTION.md' (10,725 bytes)",
+      "details": null
+    },
+    {
+      "name": "file_valid_scripts/audit_day5.py",
+      "category": "File Integrity",
+      "status": "PASS",
+      "message": "Present and valid: 'scripts/audit_day5.py' (28,886 bytes)",
+      "details": null
+    },
+    {
+      "name": "file_valid_tests/test_day5_audit.py",
+      "category": "File Integrity",
+      "status": "PASS",
+      "message": "Present and valid: 'tests/test_day5_audit.py' (6,959 bytes)",
+      "details": null
+    },
+    {
+      "name": "file_valid_docs/FINAL_VALIDATION_REPORT.md",
+      "category": "File Integrity",
+      "status": "PASS",
+      "message": "Present and valid: 'docs/FINAL_VALIDATION_REPORT.md' (19,107 bytes)",
+      "details": null
+    },
+    {
+      "name": "file_valid_docs/DEVELOPMENT_PROGRESS.md",
+      "category": "File Integrity",
+      "status": "PASS",
+      "message": "Present and valid: 'docs/DEVELOPMENT_PROGRESS.md' (125,933 bytes)",
+      "details": null
+    },
+    {
+      "name": "file_valid_README.md",
+      "category": "File Integrity",
+      "status": "PASS",
+      "message": "Present and valid: 'README.md' (39,717 bytes)",
+      "details": null
+    },
+    {
+      "name": "symbol_src.features.feature_config.FeatureConfig",
+      "category": "Module Imports",
+      "status": "PASS",
+      "message": "Successfully imported FeatureConfig from src.features.feature_config",
+      "details": null
+    },
+    {
+      "name": "symbol_src.features.feature_config.FeatureConfigError",
+      "category": "Module Imports",
+      "status": "PASS",
+      "message": "Successfully imported FeatureConfigError from src.features.feature_config",
+      "details": null
+    },
+    {
+      "name": "symbol_src.features.feature_config.FEATURE_PRESETS",
+      "category": "Module Imports",
+      "status": "PASS",
+      "message": "Successfully imported FEATURE_PRESETS from src.features.feature_config",
+      "details": null
+    },
+    {
+      "name": "symbol_src.features.feature_schema.FEATURE_SCHEMA_VERSION",
+      "category": "Module Imports",
+      "status": "PASS",
+      "message": "Successfully imported FEATURE_SCHEMA_VERSION from src.features.feature_schema",
+      "details": null
+    },
+    {
+      "name": "symbol_src.features.feature_schema.FeatureFieldDescriptor",
+      "category": "Module Imports",
+      "status": "PASS",
+      "message": "Successfully imported FeatureFieldDescriptor from src.features.feature_schema",
+      "details": null
+    },
+    {
+      "name": "symbol_src.features.feature_schema.validate_feature_record",
+      "category": "Module Imports",
+      "status": "PASS",
+      "message": "Successfully imported validate_feature_record from src.features.feature_schema",
+      "details": null
+    },
+    {
+      "name": "symbol_src.features.feature_environment.FeatureEnvironmentVerifier",
+      "category": "Module Imports",
+      "status": "PASS",
+      "message": "Successfully imported FeatureEnvironmentVerifier from src.features.feature_environment",
+      "details": null
+    },
+    {
+      "name": "symbol_src.features.feature_environment.FeatureEnvironmentReport",
+      "category": "Module Imports",
+      "status": "PASS",
+      "message": "Successfully imported FeatureEnvironmentReport from src.features.feature_environment",
+      "details": null
+    },
+    {
+      "name": "symbol_src.features.detection_feature_extractor.DetectionFeatureExtractor",
+      "category": "Module Imports",
+      "status": "PASS",
+      "message": "Successfully imported DetectionFeatureExtractor from src.features.detection_feature_extractor",
+      "details": null
+    },
+    {
+      "name": "symbol_src.features.detection_feature_extractor.categorize_confidence",
+      "category": "Module Imports",
+      "status": "PASS",
+      "message": "Successfully imported categorize_confidence from src.features.detection_feature_extractor",
+      "details": null
+    },
+    {
+      "name": "symbol_src.features.motion_feature_extractor.MotionFeatureExtractor",
+      "category": "Module Imports",
+      "status": "PASS",
+      "message": "Successfully imported MotionFeatureExtractor from src.features.motion_feature_extractor",
+      "details": null
+    },
+    {
+      "name": "symbol_src.features.motion_feature_extractor.calculate_direction",
+      "category": "Module Imports",
+      "status": "PASS",
+      "message": "Successfully imported calculate_direction from src.features.motion_feature_extractor",
+      "details": null
+    },
+    {
+      "name": "symbol_src.features.visual_quality_extractor.VisualQualityExtractor",
+      "category": "Module Imports",
+      "status": "PASS",
+      "message": "Successfully imported VisualQualityExtractor from src.features.visual_quality_extractor",
+      "details": null
+    },
+    {
+      "name": "symbol_src.features.visual_quality_extractor.classify_blur",
+      "category": "Module Imports",
+      "status": "PASS",
+      "message": "Successfully imported classify_blur from src.features.visual_quality_extractor",
+      "details": null
+    },
+    {
+      "name": "symbol_src.features.visual_quality_extractor.classify_brightness",
+      "category": "Module Imports",
+      "status": "PASS",
+      "message": "Successfully imported classify_brightness from src.features.visual_quality_extractor",
+      "details": null
+    },
+    {
+      "name": "symbol_src.features.visual_quality_extractor.classify_contrast",
+      "category": "Module Imports",
+      "status": "PASS",
+      "message": "Successfully imported classify_contrast from src.features.visual_quality_extractor",
+      "details": null
+    },
+    {
+      "name": "symbol_src.features.temporal_feature_aggregator.TemporalFeatureAggregator",
+      "category": "Module Imports",
+      "status": "PASS",
+      "message": "Successfully imported TemporalFeatureAggregator from src.features.temporal_feature_aggregator",
+      "details": null
+    },
+    {
+      "name": "symbol_src.features.temporal_feature_aggregator.calculate_ols_trend",
+      "category": "Module Imports",
+      "status": "PASS",
+      "message": "Successfully imported calculate_ols_trend from src.features.temporal_feature_aggregator",
+      "details": null
+    },
+    {
+      "name": "symbol_src.features.temporal_sequence_builder.TemporalSequenceBuilder",
+      "category": "Module Imports",
+      "status": "PASS",
+      "message": "Successfully imported TemporalSequenceBuilder from src.features.temporal_sequence_builder",
+      "details": null
+    },
+    {
+      "name": "symbol_src.features.temporal_sequence_builder.HorizonTargetRecord",
+      "category": "Module Imports",
+      "status": "PASS",
+      "message": "Successfully imported HorizonTargetRecord from src.features.temporal_sequence_builder",
+      "details": null
+    },
+    {
+      "name": "symbol_src.features.temporal_sequence_builder.SequenceMetadataRecord",
+      "category": "Module Imports",
+      "status": "PASS",
+      "message": "Successfully imported SequenceMetadataRecord from src.features.temporal_sequence_builder",
+      "details": null
+    },
+    {
+      "name": "artifact_json_datasets/processed/driving_sample/features/detection/det_features_driving_sample_20261118_141511_9e022a/frame_detection_features.json",
+      "category": "Generated Artifacts",
+      "status": "PASS",
+      "message": "Valid JSON artifact 'datasets/processed/driving_sample/features/detection/det_features_driving_sample_20261118_141511_9e022a/frame_detection_features.json'",
+      "details": null
+    },
+    {
+      "name": "artifact_json_datasets/processed/driving_sample/features/detection/det_features_driving_sample_20261118_141511_9e022a/detection_feature_summary.json",
+      "category": "Generated Artifacts",
+      "status": "PASS",
+      "message": "Valid JSON artifact 'datasets/processed/driving_sample/features/detection/det_features_driving_sample_20261118_141511_9e022a/detection_feature_summary.json'",
+      "details": null
+    },
+    {
+      "name": "artifact_json_datasets/processed/driving_sample/features/motion/motion_features_driving_sample_20261118_143109_bb4a56/frame_motion_features.json",
+      "category": "Generated Artifacts",
+      "status": "PASS",
+      "message": "Valid JSON artifact 'datasets/processed/driving_sample/features/motion/motion_features_driving_sample_20261118_143109_bb4a56/frame_motion_features.json'",
+      "details": null
+    },
+    {
+      "name": "artifact_json_datasets/processed/driving_sample/features/motion/motion_features_driving_sample_20261118_143109_bb4a56/motion_feature_summary.json",
+      "category": "Generated Artifacts",
+      "status": "PASS",
+      "message": "Valid JSON artifact 'datasets/processed/driving_sample/features/motion/motion_features_driving_sample_20261118_143109_bb4a56/motion_feature_summary.json'",
+      "details": null
+    },
+    {
+      "name": "artifact_json_datasets/processed/driving_sample/features/visual_quality/run_official/visual_quality_features.json",
+      "category": "Generated Artifacts",
+      "status": "PASS",
+      "message": "Valid JSON artifact 'datasets/processed/driving_sample/features/visual_quality/run_official/visual_quality_features.json'",
+      "details": null
+    },
+    {
+      "name": "artifact_json_datasets/processed/driving_sample/features/visual_quality/run_official/visual_quality_summary.json",
+      "category": "Generated Artifacts",
+      "status": "PASS",
+      "message": "Valid JSON artifact 'datasets/processed/driving_sample/features/visual_quality/run_official/visual_quality_summary.json'",
+      "details": null
+    },
+    {
+      "name": "artifact_json_datasets/processed/driving_sample/features/temporal/run_official/temporal_features.json",
+      "category": "Generated Artifacts",
+      "status": "PASS",
+      "message": "Valid JSON artifact 'datasets/processed/driving_sample/features/temporal/run_official/temporal_features.json'",
+      "details": null
+    },
+    {
+      "name": "artifact_json_datasets/processed/driving_sample/features/temporal/run_official/aggregated_frame_features.json",
+      "category": "Generated Artifacts",
+      "status": "PASS",
+      "message": "Valid JSON artifact 'datasets/processed/driving_sample/features/temporal/run_official/aggregated_frame_features.json'",
+      "details": null
+    },
+    {
+      "name": "artifact_json_datasets/processed/driving_sample/features/temporal/run_official/temporal_feature_summary.json",
+      "category": "Generated Artifacts",
+      "status": "PASS",
+      "message": "Valid JSON artifact 'datasets/processed/driving_sample/features/temporal/run_official/temporal_feature_summary.json'",
+      "details": null
+    },
+    {
+      "name": "artifact_npy_datasets/processed/driving_sample/features/sequences/run_official/sequences_L5.npy",
+      "category": "Generated Artifacts",
+      "status": "PASS",
+      "message": "Valid finite tensor 'datasets/processed/driving_sample/features/sequences/run_official/sequences_L5.npy' shape=(138, 5, 27), dtype=float32",
+      "details": null
+    },
+    {
+      "name": "artifact_npy_datasets/processed/driving_sample/features/sequences/run_official/sequences_L10.npy",
+      "category": "Generated Artifacts",
+      "status": "PASS",
+      "message": "Valid finite tensor 'datasets/processed/driving_sample/features/sequences/run_official/sequences_L10.npy' shape=(123, 10, 27), dtype=float32",
+      "details": null
+    },
+    {
+      "name": "artifact_npy_datasets/processed/driving_sample/features/sequences/run_official/sequences_L15.npy",
+      "category": "Generated Artifacts",
+      "status": "PASS",
+      "message": "Valid finite tensor 'datasets/processed/driving_sample/features/sequences/run_official/sequences_L15.npy' shape=(108, 15, 27), dtype=float32",
+      "details": null
+    },
+    {
+      "name": "artifact_npy_datasets/processed/driving_sample/features/sequences/run_official/sequences_L20.npy",
+      "category": "Generated Artifacts",
+      "status": "PASS",
+      "message": "Valid finite tensor 'datasets/processed/driving_sample/features/sequences/run_official/sequences_L20.npy' shape=(93, 20, 27), dtype=float32",
+      "details": null
+    },
+    {
+      "name": "artifact_json_datasets/processed/driving_sample/features/sequences/run_official/sequence_metadata.json",
+      "category": "Generated Artifacts",
+      "status": "PASS",
+      "message": "Valid JSON artifact 'datasets/processed/driving_sample/features/sequences/run_official/sequence_metadata.json'",
+      "details": null
+    },
+    {
+      "name": "artifact_json_datasets/processed/driving_sample/features/sequences/run_official/feature_manifest.json",
+      "category": "Generated Artifacts",
+      "status": "PASS",
+      "message": "Valid JSON artifact 'datasets/processed/driving_sample/features/sequences/run_official/feature_manifest.json'",
+      "details": null
+    },
+    {
+      "name": "artifact_json_datasets/processed/driving_sample/features/sequences/run_official/dataset_splits.json",
+      "category": "Generated Artifacts",
+      "status": "PASS",
+      "message": "Valid JSON artifact 'datasets/processed/driving_sample/features/sequences/run_official/dataset_splits.json'",
+      "details": null
+    },
+    {
+      "name": "artifact_json_datasets/processed/driving_sample/features/sequences/run_official/scaler_parameters.json",
+      "category": "Generated Artifacts",
+      "status": "PASS",
+      "message": "Valid JSON artifact 'datasets/processed/driving_sample/features/sequences/run_official/scaler_parameters.json'",
+      "details": null
+    },
+    {
+      "name": "artifact_json_datasets/processed/driving_sample/features/sequences/run_official/imputation_parameters.json",
+      "category": "Generated Artifacts",
+      "status": "PASS",
+      "message": "Valid JSON artifact 'datasets/processed/driving_sample/features/sequences/run_official/imputation_parameters.json'",
+      "details": null
+    },
+    {
+      "name": "artifact_json_datasets/processed/driving_sample/features/sequences/run_official/sequence_summary.json",
+      "category": "Generated Artifacts",
+      "status": "PASS",
+      "message": "Valid JSON artifact 'datasets/processed/driving_sample/features/sequences/run_official/sequence_summary.json'",
+      "details": null
+    },
+    {
+      "name": "artifact_json_datasets/processed/driving_sample/features/sequences/run_official/sequence_errors.json",
+      "category": "Generated Artifacts",
+      "status": "PASS",
+      "message": "Valid JSON artifact 'datasets/processed/driving_sample/features/sequences/run_official/sequence_errors.json'",
+      "details": null
+    },
+    {
+      "name": "temporal_embargo_gap",
+      "category": "Data Leakage",
+      "status": "PASS",
+      "message": "Embargo gap G=25 >= 25 frames certified",
+      "details": null
+    },
+    {
+      "name": "split_frame_disjointness",
+      "category": "Data Leakage",
+      "status": "PASS",
+      "message": "Splits strictly disjoint: Train (105 frames), Val (22 frames), Test (23 frames)",
+      "details": null
+    },
+    {
+      "name": "scaler_training_only_fit",
+      "category": "Data Leakage",
+      "status": "PASS",
+      "message": "Scaler parameters certified fitted strictly on training data",
+      "details": null
+    },
+    {
+      "name": "imputer_training_only_fit",
+      "category": "Data Leakage",
+      "status": "PASS",
+      "message": "Imputer parameters certified fitted strictly on training data",
+      "details": null
+    }
+  ],
+  "git_info": {
+    "branch": "main",
+    "latest_commit": "04c8f48 test: validate temporal feature pipeline",
+    "working_tree": "Dirty (3 modified files)"
+  }
+}
