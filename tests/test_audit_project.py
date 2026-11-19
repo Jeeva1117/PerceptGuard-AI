@@ -87,9 +87,17 @@ def test_audit_project_full_run_and_reports(auditor: ProjectAuditor, tmp_path: P
         assert len(data["checks"]) >= 170
 
 
-def test_audit_project_cli():
+def test_audit_project_cli(tmp_path: Path):
     """Verify CLI execution via python scripts/audit_project.py --check-imports."""
-    cmd = [sys.executable, str(_project_root / "scripts" / "audit_project.py"), "--check-imports"]
+    temp_out = tmp_path / "cli_audit"
+    cmd = [
+        sys.executable,
+        str(_project_root / "scripts" / "audit_project.py"),
+        "--check-imports",
+        "--output-dir",
+        str(temp_out),
+    ]
     proc = subprocess.run(cmd, capture_output=True, text=True, cwd=str(_project_root))
     assert proc.returncode == 0
     assert "STAGE 2: PYTHON PACKAGE IMPORT" in proc.stdout
+    assert (temp_out / "project_audit.json").exists()
