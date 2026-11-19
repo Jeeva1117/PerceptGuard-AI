@@ -68,6 +68,12 @@ from src.forecasting.early_stopping import EarlyStopping
 from src.forecasting.checkpoint_manager import CheckpointError, CheckpointManager
 from src.forecasting.training_logger import TrainingLogger
 from src.forecasting.training_engine import LSTMTrainingEngine, TrainingEngineError
+from src.forecasting.multi_horizon_forecaster import (
+    HorizonPredictionRecord,
+    MultiHorizonForecaster,
+    MultiHorizonForecastingError,
+    MultiHorizonForecastingSummary,
+)
 
 __all__ = [
     # Configuration
@@ -127,4 +133,9 @@ __all__ = [
     "TrainingLogger",
     "LSTMTrainingEngine",
     "TrainingEngineError",
+    # Multi-Horizon Forecasting
+    "MultiHorizonForecaster",
+    "MultiHorizonForecastingError",
+    "HorizonPredictionRecord",
+    "MultiHorizonForecastingSummary",
 ]
