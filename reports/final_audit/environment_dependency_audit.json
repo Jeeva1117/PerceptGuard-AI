@@ -1,0 +1,98 @@
+{
+  "schema_version": "1.0",
+  "audit_phase": "Environment & Dependency Audit",
+  "timestamp": "2026-11-19T17:03:00Z",
+  "overall_status": "PASS",
+  "system_hardware": {
+    "cpu_model": "Intel64 Family 6 Model 190 Stepping 0 (Intel Core i3)",
+    "architecture": "AMD64",
+    "physical_cores": 8,
+    "logical_cores": 8,
+    "total_ram_bytes": 8322465792,
+    "total_ram_gb": 7.75,
+    "memory_load_percent": 88,
+    "cuda_available": false,
+    "execution_target": "CPU Only",
+    "os_name": "Windows",
+    "os_release": "11",
+    "os_build": "26200"
+  },
+  "python_runtime": {
+    "version": "3.13.3",
+    "executable": "C:\\Users\\acer\\Desktop\\PerceptGuard-AI\\venv\\Scripts\\python.exe",
+    "pip_version": "25.0.1",
+    "virtual_environment": "C:\\Users\\acer\\Desktop\\PerceptGuard-AI\\venv",
+    "installed_distributions_count": 71
+  },
+  "dependency_inventory": [
+    {"name": "torch", "version": "2.15.0+cpu", "category": "Deep Learning", "specifier": ">=2.2.0", "status": "PASS"},
+    {"name": "torchvision", "version": "0.29.2+cpu", "category": "Computer Vision", "specifier": ">=0.17.0", "status": "PASS"},
+    {"name": "ultralytics", "version": "8.4.215", "category": "Computer Vision", "specifier": ">=8.1.0", "status": "PASS"},
+    {"name": "opencv-python", "version": "5.0.0.93", "category": "Computer Vision", "specifier": ">=4.8.0", "status": "PASS"},
+    {"name": "numpy", "version": "2.5.4", "category": "Data Processing", "specifier": ">=1.24.0", "status": "PASS"},
+    {"name": "scipy", "version": "1.18.1", "category": "Machine Learning", "specifier": ">=1.10.0", "status": "PASS"},
+    {"name": "pandas", "version": "3.1.1", "category": "Data Processing", "specifier": ">=2.0.0", "status": "PASS"},
+    {"name": "scikit-learn", "version": "1.9.1", "category": "Machine Learning", "specifier": ">=1.3.0", "status": "PASS"},
+    {"name": "pyyaml", "version": "6.0.3", "category": "Core Runtime", "specifier": ">=6.0.0", "status": "PASS"},
+    {"name": "psutil", "version": "7.2.2", "category": "Core Runtime", "specifier": ">=5.9.0", "status": "PASS"},
+    {"name": "python-dotenv", "version": "1.2.4", "category": "Core Runtime", "specifier": ">=1.0.0", "status": "PASS"},
+    {"name": "matplotlib", "version": "3.11.2", "category": "Visualization", "specifier": ">=3.7.0", "status": "PASS"},
+    {"name": "streamlit", "version": "1.67.0", "category": "Visualization", "specifier": ">=1.30.0", "status": "PASS"},
+    {"name": "pytest", "version": "9.2.0", "category": "Testing", "specifier": ">=8.0.0", "status": "PASS"},
+    {"name": "setuptools", "version": "78.1.0", "category": "Development Tools", "specifier": ">=61.0", "status": "PASS"}
+  ],
+  "ml_framework_compatibility": {
+    "pytorch_cpu_tensor_ops": "PASS",
+    "yolo11n_model_loading": "PASS",
+    "yolo_cpu_inference": "PASS",
+    "opencv_image_io_and_gray": "PASS",
+    "numpy_torch_zero_copy_bridge": "PASS",
+    "lstm_model_instantiation": "PASS",
+    "lstm_cpu_forward_pass": "PASS",
+    "yaml_config_parsers": "PASS"
+  },
+  "model_artifact_status": {
+    "yolo11n_weights": {
+      "path": "models/yolo/yolo11n.pt",
+      "available": true,
+      "status": "PASS"
+    },
+    "supervised_lstm_checkpoint": {
+      "path": "models/forecasting/",
+      "available": false,
+      "status": "NOT AVAILABLE",
+      "reason": "Real driving sample lacks ground-truth reliability labels. YOLO confidence is not reliability."
+    }
+  },
+  "smoke_test_results": {
+    "total_smoke_tests": 10,
+    "passed": 10,
+    "failed": 0,
+    "skipped": 0,
+    "status": "PASS"
+  },
+  "repairs_performed": [
+    {
+      "action": "Add missing dependency 'scipy>=1.10.0' to requirements.txt and pyproject.toml",
+      "reason": "Imported directly in src/tracking/bytetrack_engine.py for Hungarian assignment fallback"
+    },
+    {
+      "action": "Add missing dependency 'psutil>=5.9.0' to requirements.txt and pyproject.toml",
+      "reason": "Imported directly in src/features/feature_environment.py and src/tracking/tracking_environment.py"
+    },
+    {
+      "action": "Expand tests/verify_environment.py dependency validation suite",
+      "reason": "Include SciPy, psutil, and PyYAML in standard environment verification"
+    },
+    {
+      "action": "Create automated smoke test suite tests/test_environment_smoke.py",
+      "reason": "Provide 10-step independent environment and dependency regression verification"
+    }
+  ],
+  "remaining_limitations": [
+    "CPU-only execution on Intel Core i3; average YOLO inference latency is ~100-300ms on 320x320 and ~4.8s on 640x640 cold start.",
+    "Physical RAM head-room is ~0.88 GB free; DataLoader batch size must be restricted to <= 16-32.",
+    "Multiprocessing DataLoader workers (num_workers > 0) disabled to prevent Windows IPC deadlocks.",
+    "Supervised LSTM training is NOT AVAILABLE until manual driving reliability annotations are provided."
+  ]
+}

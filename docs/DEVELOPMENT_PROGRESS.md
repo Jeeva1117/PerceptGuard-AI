@@ -1816,3 +1816,30 @@ Conducted an exhaustive, independent, evidence-based engineering audit of the en
 6. **Documentation & Reports:**
    - Published [docs/CODE_QUALITY_AUDIT.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/CODE_QUALITY_AUDIT.md)
    - Published [reports/final_audit/code_quality_audit.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/final_audit/code_quality_audit.md)
+
+---
+
+## Environment & Dependency Audit
+- **Date:** 2026-11-19
+- **Auditor Role:** Senior Software Engineer, Senior Machine Learning Engineer, ML Infrastructure Architect, and Python Environment Specialist
+- **Hardware Profile:** Intel Core i3 (CPU Only), 8 GB RAM (7.75 GB usable), Windows 11 Build 26200
+- **Status:** **PASS (Environment Validated & Repaired)**
+
+### Completed Audit & Verification
+1. **Python Runtime & Framework Audit:**
+   - Verified Python 3.13.3 (AMD64) in `.\venv` virtual environment with 71 installed distributions.
+   - Tested and confirmed CPU tensor arithmetic, OpenCV 5.0.0 image I/O, NumPy 2.5.4 zero-copy tensor bridge, and Ultralytics YOLO11n inference on CPU.
+   - Verified `LSTMForecaster` architecture instantiation on CPU with dynamic 27-feature dimension resolution and output horizons [1, 3, 5].
+2. **Dependency Declarations & Gap Remediation:**
+   - Added missing direct dependencies `scipy>=1.10.0` (Hungarian assignment in ByteTrack) and `psutil>=5.9.0` (hardware resource telemetry) to `requirements.txt` and `pyproject.toml`.
+   - Upgraded `tests/verify_environment.py` package verification suite to cover all 11 core dependencies (OpenCV, NumPy, SciPy, Pandas, PyTorch, Ultralytics, Scikit-Learn, PyYAML, psutil, Streamlit, Matplotlib).
+3. **Automated Smoke Test Suite:**
+   - Authored `tests/test_environment_smoke.py` covering all 10 required environment smoke checks (Python runtime, dependency imports, PyTorch CPU tensors, YOLO model loading, OpenCV I/O, NumPy-PyTorch interop, LSTM CPU forward pass, YAML configs, CLI imports, verify_environment runner).
+   - Achieved 10 / 10 passed (100% pass rate) in 15.48s.
+4. **Full Regression Results:**
+   - Full repository regression suite: **1,201 / 1,201 Passed (100% Pass Rate)** across 41 test files.
+   - Master project audit: **178 / 178 checks passed (100% Pass Rate)**.
+5. **Documentation & Reports:**
+   - Published [docs/ENVIRONMENT_DEPENDENCY_AUDIT.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/ENVIRONMENT_DEPENDENCY_AUDIT.md)
+   - Published [reports/final_audit/environment_dependency_audit.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/final_audit/environment_dependency_audit.md)
+   - Published [reports/final_audit/environment_dependency_audit.json](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/final_audit/environment_dependency_audit.json)

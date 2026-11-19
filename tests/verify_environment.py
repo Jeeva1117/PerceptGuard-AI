@@ -90,10 +90,13 @@ def run_validation() -> bool:
     packages = [
         ("OpenCV", "cv2"),
         ("NumPy", "numpy"),
+        ("SciPy", "scipy"),
         ("Pandas", "pandas"),
         ("PyTorch", "torch"),
         ("Ultralytics (YOLO)", "ultralytics"),
         ("Scikit-Learn", "sklearn"),
+        ("PyYAML", "yaml"),
+        ("psutil", "psutil"),
         ("Streamlit", "streamlit"),
         ("Matplotlib", "matplotlib"),
     ]

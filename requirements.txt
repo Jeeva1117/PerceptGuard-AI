@@ -14,6 +14,7 @@ ultralytics>=8.1.0
 
 # Scientific Computing & Data Processing
 numpy>=1.24.0
+scipy>=1.10.0
 pandas>=2.0.0
 scikit-learn>=1.3.0
 
@@ -23,6 +24,7 @@ streamlit>=1.30.0
 
 # Configuration, Utilities & Testing
 python-dotenv>=1.0.0
+psutil>=5.9.0
 pytest>=8.0.0
 pyyaml>=6.0.0
 
