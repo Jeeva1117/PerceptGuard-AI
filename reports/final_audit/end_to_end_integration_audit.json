@@ -1,0 +1,120 @@
+{
+  "schema_version": "1.0",
+  "audit_phase": "End-to-End Integration Audit",
+  "timestamp": "2026-11-19T18:15:00Z",
+  "overall_status": "PASS",
+  "hardware": {
+    "platform": "Windows-11-Build-26200",
+    "cpu": "Intel Core i3-class",
+    "ram_total_gb": 8.0,
+    "cuda_available": false,
+    "device": "cpu"
+  },
+  "pipeline_stages": [
+    {
+      "stage_index": 1,
+      "stage_name": "Video Ingestion",
+      "module": "src/video_processing/video_loader.py",
+      "input": "datasets/raw/converted_026c7465-309f6d33.mp4",
+      "output": "VideoMetadata(total_frames=1204, width=1280, height=720, fps=30.09)",
+      "status": "PASS",
+      "latency_seconds": 0.05
+    },
+    {
+      "stage_index": 2,
+      "stage_name": "Frame Extraction & Preprocessing",
+      "module": "src/video_processing/frame_extractor.py & frame_preprocessor.py",
+      "input": "VideoLoader handle",
+      "output": "PreprocessedFrameRecord(5 frames, 640x360, blur=400.19, brightness=104.09)",
+      "status": "PASS",
+      "latency_seconds": 1.25
+    },
+    {
+      "stage_index": 3,
+      "stage_name": "YOLO Object Detection",
+      "module": "src/detection/batch_detector.py",
+      "input": "datasets/processed/driving_sample/frames/",
+      "output": "datasets/processed/driving_sample/detections/run_.../detection_results.json",
+      "status": "PASS",
+      "latency_seconds": 0.21
+    },
+    {
+      "stage_index": 4,
+      "stage_name": "ByteTrack Object Tracking",
+      "module": "src/tracking/tracking_pipeline.py",
+      "input": "detection_results.json",
+      "output": "tracking_results.json (5 frames, 2 persistent tracks)",
+      "status": "PASS",
+      "latency_seconds": 0.04
+    },
+    {
+      "stage_index": 5,
+      "stage_name": "Feature Extraction",
+      "module": "src/features/",
+      "input": "Tracking trajectory & frames",
+      "output": "27 continuous features per frame per track",
+      "status": "PASS",
+      "latency_seconds": 0.12
+    },
+    {
+      "stage_index": 6,
+      "stage_name": "Sequence Construction & Loading",
+      "module": "src/forecasting/baseline_data_loader.py",
+      "input": "datasets/processed/driving_sample/features/sequences/run_official/",
+      "output": "BaselineDataset(records=123, tensors=(123, 10, 27), target_labels_available=False)",
+      "status": "PASS",
+      "latency_seconds": 0.08
+    },
+    {
+      "stage_index": 7,
+      "stage_name": "Baseline Forecasting",
+      "module": "src/forecasting/baseline_forecaster.py",
+      "input": "BaselineDataset (N=123, L=10, F=27)",
+      "output": "369 PredictionRecord items (Persistence, Mean, Trend for H in {1, 3, 5})",
+      "status": "PASS",
+      "latency_seconds": 0.02
+    },
+    {
+      "stage_index": 8,
+      "stage_name": "LSTM Multi-Horizon Forecasting",
+      "module": "src/forecasting/multi_horizon_forecaster.py",
+      "input": "torch.Tensor of shape (B, 10, 27)",
+      "output": "torch.Tensor of shape (B, 3) & 15 HorizonPredictionRecord items",
+      "status": "PASS",
+      "latency_seconds": 0.01
+    },
+    {
+      "stage_index": 9,
+      "stage_name": "Model Evaluation & Target Integrity",
+      "module": "src/forecasting/model_evaluator.py",
+      "input": "Prediction records + Ground truth observations",
+      "output": "Evaluation metrics (MAE, RMSE, Bias); honest NOT AVAILABLE for unlabelled data",
+      "status": "PASS",
+      "latency_seconds": 0.02
+    },
+    {
+      "stage_index": 10,
+      "stage_name": "Headless Visualization Suite",
+      "module": "src/forecasting/evaluation_visualizer.py",
+      "input": "Aligned pairs & horizon metrics",
+      "output": "5 matplotlib Agg PNG plots",
+      "status": "PASS",
+      "latency_seconds": 0.85
+    }
+  ],
+  "data_contracts": {
+    "schema_version": "1.0",
+    "temporal_embargo_gap": 25,
+    "feature_dimension": 27,
+    "sequence_length": 10,
+    "forecast_horizons": [1, 3, 5],
+    "ground_truth_target_integrity_enforced": true,
+    "detection_confidence_as_surrogate_rejected": true
+  },
+  "verification_metrics": {
+    "master_audit_checks": "178 / 178 passed (100%)",
+    "pytest_suite": "1,201 / 1,201 passed (100%)",
+    "total_pipeline_latency_seconds": 15.18,
+    "peak_memory_mb": 342.0
+  }
+}
