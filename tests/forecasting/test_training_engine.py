@@ -120,7 +120,7 @@ class TestTrainingEngine:
 
         # Corrupt model weights to NaN
         with torch.no_grad():
-            model.head.weight.fill_(float("nan"))
+            model.fc.weight.fill_(float("nan"))
 
         dm = ForecastingDataModule.from_synthetic(
             num_train=8,

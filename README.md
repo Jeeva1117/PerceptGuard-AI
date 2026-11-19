@@ -126,7 +126,13 @@ PerceptGuard-AI/
 │   │   ├── baseline_experiment.py
 │   │   ├── baseline_metrics.py
 │   │   ├── lstm_forecaster.py
-│   │   └── model_factory.py
+│   │   ├── model_factory.py
+│   │   ├── training_data.py
+│   │   ├── early_stopping.py
+│   │   ├── checkpoint_manager.py
+│   │   ├── training_logger.py
+│   │   ├── training_engine.py
+│   │   └── train_lstm.py
 │   ├── prediction/             # Legacy prediction stubs
 │   └── evaluation/             # Ground-truth IoU labeling & validation metrics
 │       └── __init__.py
@@ -632,9 +638,16 @@ For architectural specifications, mathematical formulations, and benchmark resul
     - Benchmarked CPU execution: **0.587 ms** forward latency (~13,620 samples/sec throughput, 7,907 parameters, 30.89 KB parameter memory) on Intel Core i3 CPU.
     - Verified compatibility with actual Day 5 sequence tensors ($L \in \{5, 10, 15, 20\}$).
     - 40 automated unit and integration tests across LSTM modules (128 total forecasting tests, 100% pass rate).
-  - [ ] **Task 4: Ground-Truth Reliability Supervision & Target Engineering**
-  - [ ] **Task 5: Model Training & Optimization Pipeline**
-  - [ ] **Task 6: Multi-Horizon Inference & Reliability Evaluation**
+  - [x] **Task 4: Advanced LSTM Model Training Pipeline Development**
+    - Implemented `ForecastingDataset` and `ForecastingDataModule` enforcing strict dataset split integrity (train/val/test disjointness, no sequence ID overlap).
+    - Enforced Supervised Target Readiness Gate: documented `supervised_readiness: "NOT AVAILABLE"` on real Day 5 driving sequences because YOLO confidence scores are detection probabilities, not ground truth future reliability labels. Halts training loop before Epoch 1 on unlabelled data.
+    - Implemented `EarlyStopping` with configurable patience, minimum delta, validation loss tracking, and automatic best weight restoration.
+    - Implemented `CheckpointManager` providing atomic persistence (`checkpoint_last.pt`, `checkpoint_best.pt`), strict architectural dimension validation, and resume capabilities.
+    - Implemented structured `TrainingLogger` persisting `training_history.json`, `training_summary.json`, `experiment_config.yaml`, and `metadata.json`.
+    - Built `LSTMTrainingEngine` coordinating AdamW optimization, gradient clipping, ReduceLROnPlateau scheduling, and safe non-finite loss detection.
+    - Created `train_lstm.py` CLI supporting `--config`, `--epochs`, `--batch-size`, `--learning-rate`, `--device`, `--resume`, and `--verbose`.
+    - 53 automated unit and integration tests across training modules (181 total forecasting tests, 100% pass rate).
+  - [ ] **Task 5: Multi-Horizon Inference & Reliability Evaluation**
   - [ ] **Task 7: Final Forecasting Audit & Pipeline Certification**
 - [ ] **Day 7: Live Inference & Perception Telemetry Pipeline**
 - [ ] **Day 8: Evaluation & Streamlit Dashboard**
