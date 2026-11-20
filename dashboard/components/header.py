@@ -6,23 +6,20 @@ import streamlit as st
 from src.config.system_settings import get_settings
 
 
-def render_dashboard_header(connection_mode: str = "IN_PROCESS", base_url: str = "") -> None:
+def render_header(
+    transport_mode: str = "IN_PROCESS",
+    calibration_status: str = "PROVISIONAL CALIBRATION",
+) -> None:
     """Render top branding header, mission statement, and operational telemetry banner."""
     settings = get_settings()
     env_str = settings.app.environment.value.upper()
     version_str = settings.app.version
-    gate_str = settings.dashboard.calibration_status_label
+    gate_str = calibration_status or settings.dashboard.calibration_status_label
 
     # Transport mode color and badge
-    mode_color = "#2a9d8f" if connection_mode == "HTTP_REST" else "#3a86ff"
-    mode_label = "REST API" if connection_mode == "HTTP_REST" else "In-Process Unified"
-
-    st.set_page_config(
-        page_title="PerceptGuard AI | Early Warning Dashboard",
-        page_icon="🛡️",
-        layout="wide",
-        initial_sidebar_state="expanded",
-    )
+    is_rest = "REST" in transport_mode.upper()
+    mode_color = "#2a9d8f" if is_rest else "#e76f51"
+    mode_label = "REST API" if is_rest else "In-Process Unified"
 
     st.markdown(
         f"""
@@ -47,3 +44,7 @@ def render_dashboard_header(connection_mode: str = "IN_PROCESS", base_url: str =
         """,
         unsafe_allow_html=True,
     )
+
+
+# Backward compatibility alias
+render_dashboard_header = render_header

@@ -152,7 +152,7 @@ class DashboardApiClient:
         try:
             resp = self._http_client.request(method, url, **kwargs)
             if resp.is_success:
-                self._connection_mode = "HTTP_REST"
+                self._connection_mode = "REST_API"
                 self._last_sync_timestamp = datetime.datetime.now(datetime.timezone.utc)
                 self._last_error = None
                 return resp.json()
@@ -304,13 +304,16 @@ class DashboardApiClient:
         """Acknowledge an active early-warning alert incident."""
         payload = {"operator_id": operator_id}
         fallback_fn = self._get_fallback_service().acknowledge_alert
-        return self._execute_request(
+        res = self._execute_request(
             "POST",
             f"/alerts/{alert_id}/acknowledge",
             fallback_fn=fallback_fn,
             fallback_kwargs={"alert_id": alert_id, "operator_id": operator_id},
             json=payload,
         )
+        if "success" in res and "acknowledged" not in res:
+            res["acknowledged"] = res["success"]
+        return res
 
     def resolve_alert(
         self, alert_id: str, reason: str = "Resolved from dashboard", operator_id: str = "dashboard_operator"
@@ -318,13 +321,16 @@ class DashboardApiClient:
         """Resolve an alert with mandatory operational justification."""
         payload = {"reason": reason, "operator_id": operator_id}
         fallback_fn = self._get_fallback_service().resolve_alert
-        return self._execute_request(
+        res = self._execute_request(
             "POST",
             f"/alerts/{alert_id}/resolve",
             fallback_fn=fallback_fn,
             fallback_kwargs={"alert_id": alert_id, "reason": reason, "operator_id": operator_id},
             json=payload,
         )
+        if "success" in res and "resolved" not in res:
+            res["resolved"] = res["success"]
+        return res
 
     def get_detection_tracking(self, sequence_id: Optional[str] = None) -> Dict[str, Any]:
         """Fetch YOLO detection and ByteTrack tracking context."""

@@ -74,32 +74,31 @@ def render_risk_overview(client: DashboardApiClient) -> None:
         }
         t_sym = trend_symbols.get(trend, trend)
 
-        with col:
-            st.markdown(
-                f"""
-                <div style="background: #181926; border: 1px solid #313244; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <h4 style="margin: 0; color: #cdd6f4;">{h_label} (H{horizon_int})</h4>
-                        <span style="background: {l_color}; color: #11111b; font-weight: 700; padding: 2px 8px; border-radius: 4px; font-size: 11px;">
-                            {level}
-                        </span>
-                    </div>
-                    <div style="font-size: 28px; font-weight: 700; color: #ffffff; margin-bottom: 4px;">
-                        {f'{score:.4f}' if score is not None else 'N/A'}
-                    </div>
-                    <div style="font-size: 12px; color: #a6adc8; margin-bottom: 8px;">
-                        Trend: <strong>{t_sym}</strong>
-                    </div>
-                    <hr style="border: 0; border-top: 1px solid #313244; margin: 8px 0;"/>
-                    <div style="font-size: 11px; color: #bac2de; line-height: 1.6;">
-                        <strong>Rolling Mean:</strong> {f'{rolling_mean:.4f}' if rolling_mean is not None else 'N/A'}<br/>
-                        <strong>Volatility (σ):</strong> {f'{volatility:.4f}' if volatility is not None else 'N/A'}<br/>
-                        <strong>Observations:</strong> {obs_count} frames
-                    </div>
+        col.markdown(
+            f"""
+            <div style="background: #181926; border: 1px solid #313244; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <h4 style="margin: 0; color: #cdd6f4;">{h_label} (H{horizon_int})</h4>
+                    <span style="background: {l_color}; color: #11111b; font-weight: 700; padding: 2px 8px; border-radius: 4px; font-size: 11px;">
+                        {level}
+                    </span>
                 </div>
-                """,
-                unsafe_allow_html=True,
-            )
+                <div style="font-size: 28px; font-weight: 700; color: #ffffff; margin-bottom: 4px;">
+                    {f'{score:.4f}' if score is not None else 'N/A'}
+                </div>
+                <div style="font-size: 12px; color: #a6adc8; margin-bottom: 8px;">
+                    Trend: <strong>{t_sym}</strong>
+                </div>
+                <hr style="border: 0; border-top: 1px solid #313244; margin: 8px 0;"/>
+                <div style="font-size: 11px; color: #bac2de; line-height: 1.6;">
+                    <strong>Rolling Mean:</strong> {f'{rolling_mean:.4f}' if rolling_mean is not None else 'N/A'}<br/>
+                    <strong>Volatility (σ):</strong> {f'{volatility:.4f}' if volatility is not None else 'N/A'}<br/>
+                    <strong>Observations:</strong> {obs_count} frames
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
     _render_horizon_card(col1, "h1", "Immediate Horizon (t+1)", 1)
     _render_horizon_card(col2, "h3", "Intermediate Horizon (t+3)", 3)

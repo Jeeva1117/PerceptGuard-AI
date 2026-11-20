@@ -7,14 +7,20 @@ from typing import Callable, Optional
 import streamlit as st
 
 
-def render_empty_state(title: str, description: str, icon: str = "📭") -> None:
+def render_empty_state(
+    title: str,
+    description: str = "",
+    icon: str = "📭",
+    message: str = "",
+) -> None:
     """Render structured empty state when no data or predictions are available."""
+    desc = message if (message and not description) else description
     st.markdown(
         f"""
         <div style="background: #181926; border: 1px dashed #45475a; border-radius: 8px; padding: 24px; text-align: center; margin: 12px 0;">
             <div style="font-size: 32px; margin-bottom: 8px;">{icon}</div>
             <h4 style="color: #cdd6f4; margin: 0 0 6px 0;">{title}</h4>
-            <p style="color: #a6adc8; font-size: 13px; margin: 0; line-height: 1.5;">{description}</p>
+            <p style="color: #a6adc8; font-size: 13px; margin: 0; line-height: 1.5;">{desc}</p>
         </div>
         """,
         unsafe_allow_html=True,
@@ -40,16 +46,24 @@ def render_error_boundary(
     if retry_callback:
         if st.button("🔄 Retry Connection", key=f"btn_retry_{key_suffix}"):
             retry_callback()
-            st.rerun()
 
 
 def render_stale_warning(
     last_sync: Optional[datetime.datetime],
-    freshness: str = "STALE",
+    freshness: str = "CURRENT",
     ttl_seconds: int = 30,
 ) -> None:
     """Render telemetry staleness indicator if data exceeds freshness threshold."""
-    if freshness.upper() == "STALE":
+    is_stale = freshness.upper() == "STALE"
+    if last_sync:
+        now = datetime.datetime.now(datetime.timezone.utc)
+        if last_sync.tzinfo is None:
+            last_sync = last_sync.replace(tzinfo=datetime.timezone.utc)
+        age = (now - last_sync).total_seconds()
+        if age > ttl_seconds:
+            is_stale = True
+
+    if is_stale:
         sync_str = (
             last_sync.strftime("%Y-%m-%d %H:%M:%S UTC")
             if last_sync

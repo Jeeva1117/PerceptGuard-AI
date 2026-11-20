@@ -30,6 +30,8 @@ st.set_page_config(
 )
 
 from src.config import get_settings
+from src.early_warning.dashboard_service import DashboardService
+from src.early_warning.pipeline_integrator import PipelineIntegrator
 from dashboard.api_client import DashboardApiClient
 from dashboard.components import (
     render_header,
@@ -40,6 +42,23 @@ from dashboard.components import (
     render_detection_tracking,
     render_pipeline_status_accordion,
 )
+
+
+@st.cache_resource(show_spinner=False)
+def get_integrator_and_service() -> tuple[PipelineIntegrator, DashboardService]:
+    """Initialize singleton PipelineIntegrator and DashboardService with ingested data."""
+    integrator = PipelineIntegrator(root_dir=PROJECT_ROOT)
+    preds_file = (
+        PROJECT_ROOT
+        / "experiments"
+        / "forecasting"
+        / "multi_horizon"
+        / "official_multi_horizon_run"
+        / "predictions.json"
+    )
+    if preds_file.exists():
+        integrator.ingest_predictions_file(preds_file)
+    return integrator, integrator.dashboard_service
 
 
 @st.cache_resource(show_spinner=False)
@@ -134,3 +153,11 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+# Backward compatibility function aliases
+render_section_a_system_overview = render_system_overview
+render_section_b_risk_overview = render_risk_overview
+render_section_c_temporal_monitoring = render_temporal_monitoring
+render_section_d_early_warning_alerts = render_early_warning_alerts
+render_section_e_detection_tracking = render_detection_tracking
+
