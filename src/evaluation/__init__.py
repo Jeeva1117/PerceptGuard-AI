@@ -64,6 +64,11 @@ from src.evaluation.annotation_processor import (
     BDD100KMOTParser,
     AnnotationProcessor,
 )
+from src.evaluation.reliability_label_generator import (
+    LabelingConfig,
+    SpatialHungarianMatcher,
+    ReliabilityLabelGenerator,
+)
 
 __all__ = [
     # Model evaluation & visualization
@@ -117,4 +122,8 @@ __all__ = [
     "CoordinateNormalizer",
     "BDD100KMOTParser",
     "AnnotationProcessor",
+    # Reliability label generator
+    "LabelingConfig",
+    "SpatialHungarianMatcher",
+    "ReliabilityLabelGenerator",
 ]
