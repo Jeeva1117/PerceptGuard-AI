@@ -47,6 +47,23 @@ from src.evaluation.reliability_schema import (
     compute_composite_reliability,
     SCHEMA_VERSION as RELIABILITY_SCHEMA_VERSION,
 )
+from src.evaluation.annotation_processor import (
+    ANNOTATION_SCHEMA_VERSION,
+    ValidationStatus,
+    FrameStatus,
+    AnnotationProcessingError,
+    AnnotationParseError,
+    CoordinateValidationError,
+    FrameAlignmentException,
+    CanonicalAnnotationRecord,
+    FrameAnnotationSummary,
+    ProcessingSummary,
+    DEFAULT_CLASS_MAPPING,
+    ClassMapper,
+    CoordinateNormalizer,
+    BDD100KMOTParser,
+    AnnotationProcessor,
+)
 
 __all__ = [
     # Model evaluation & visualization
@@ -84,4 +101,20 @@ __all__ = [
     "compute_frame_f1",
     "compute_composite_reliability",
     "RELIABILITY_SCHEMA_VERSION",
+    # Ground-truth annotation processor
+    "ANNOTATION_SCHEMA_VERSION",
+    "ValidationStatus",
+    "FrameStatus",
+    "AnnotationProcessingError",
+    "AnnotationParseError",
+    "CoordinateValidationError",
+    "FrameAlignmentException",
+    "CanonicalAnnotationRecord",
+    "FrameAnnotationSummary",
+    "ProcessingSummary",
+    "DEFAULT_CLASS_MAPPING",
+    "ClassMapper",
+    "CoordinateNormalizer",
+    "BDD100KMOTParser",
+    "AnnotationProcessor",
 ]
