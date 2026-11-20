@@ -11,6 +11,12 @@ from src.validation.dataset_validator import (
     DatasetValidator,
     ValidationConfigError,
 )
+from src.validation.dataset_quality_validator import (
+    DATASET_VALIDATOR_SCHEMA_VERSION,
+    ScorecardStatus,
+    ScorecardCategory,
+    DatasetQualityValidator,
+)
 
 __all__ = [
     "DatasetValidator",
@@ -18,5 +24,9 @@ __all__ = [
     "CategoryValidationResult",
     "DatasetValidationError",
     "ValidationConfigError",
+    "DATASET_VALIDATOR_SCHEMA_VERSION",
+    "ScorecardStatus",
+    "ScorecardCategory",
+    "DatasetQualityValidator",
 ]
 

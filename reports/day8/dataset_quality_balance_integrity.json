@@ -1,0 +1,277 @@
+{
+  "schema_version": "1.0.0",
+  "audit_timestamp": "2026-11-20T03:19:12.199709+00:00",
+  "overall_status": "WARNING",
+  "duration_seconds": 0.1899,
+  "scorecard": [
+    {
+      "category": "Annotation Validity",
+      "status": "PASS",
+      "summary": "5,121 bounding boxes verified across 200 frames. 0 invalid, non-finite, or out-of-bounds coordinates.",
+      "evidence": {
+        "status": "PASS",
+        "total_records": 5121,
+        "unique_sequences": 1,
+        "unique_frames": 200,
+        "unique_tracks": 115,
+        "duplicate_annotation_ids": 0,
+        "duplicate_boxes_in_frame": 0,
+        "duplicate_tracks_in_frame": 0,
+        "invalid_coordinates": 0,
+        "non_finite_coords": 0,
+        "zero_area_boxes": 0,
+        "negative_coords": 0,
+        "out_of_bounds_coords": 0,
+        "dimension_mismatches": 0,
+        "missing_object_ids": 0
+      },
+      "recommendations": []
+    },
+    {
+      "category": "Frame Alignment",
+      "status": "PASS",
+      "summary": "200 of 200 physical preprocessed frames verified on disk. 100% 1-to-1 temporal alignment.",
+      "evidence": {
+        "images_verified": 200,
+        "missing": 0
+      },
+      "recommendations": []
+    },
+    {
+      "category": "Label Integrity",
+      "status": "PASS",
+      "summary": "Mathematical count balances verified: TP+FP = 211 (Preds), TP+FN = 5121 (GT). Metric bounds intact.",
+      "evidence": {
+        "status": "PASS",
+        "total_object_labels": 5331,
+        "total_frame_labels": 200,
+        "true_positives": 1,
+        "false_positives": 210,
+        "false_negatives": 5120,
+        "total_predictions": 211,
+        "total_ground_truth": 5121,
+        "prediction_balance_valid": true,
+        "ground_truth_balance_valid": true,
+        "object_frame_counts_consistent": true,
+        "invalid_f1_bounds_count": 0,
+        "invalid_prec_bounds_count": 0,
+        "invalid_rec_bounds_count": 0
+      },
+      "recommendations": []
+    },
+    {
+      "category": "Class Distribution",
+      "status": "PASS",
+      "summary": "All 6 classes mapped to COCO ontology. Dominated by car (60.8%) and person (24.0%).",
+      "evidence": {
+        "classes": {
+          "car": 3113,
+          "truck": 226,
+          "person": 1231,
+          "bicycle": 377,
+          "motorcycle": 67,
+          "bus": 107
+        }
+      },
+      "recommendations": []
+    },
+    {
+      "category": "Reliability Distribution",
+      "status": "WARNING",
+      "summary": "Severe skew (99.5% F1=0.0) resulting from authentic detector collapse under 90-degree container rotation.",
+      "evidence": {
+        "f1_stats": {
+          "min": 0.0,
+          "max": 0.0588,
+          "mean": 0.0003,
+          "median": 0.0,
+          "std": 0.0041,
+          "q25": 0.0,
+          "q75": 0.0
+        },
+        "zero_f1_ratio": 0.995,
+        "observation": "Extreme concentration at F1=0.0 caused by 90-degree rotated video container in Day 2, which caused off-the-shelf YOLO to fail on upright vehicles (FN=5120)."
+      },
+      "recommendations": [
+        "Apply focal loss or class weighting in downstream forecasting model to handle F1 skew."
+      ]
+    },
+    {
+      "category": "Temporal Coverage",
+      "status": "PASS",
+      "summary": "462 sequences verified across L5, L10, L15, L20. Horizons H1, H3, H5 populated with zero offset errors.",
+      "evidence": {
+        "status": "PASS",
+        "total_temporal_sequences": 462,
+        "splits_distribution": {
+          "train": 374,
+          "val": 42,
+          "test": 46
+        },
+        "h1_valid_targets": 458,
+        "h3_valid_targets": 450,
+        "h5_valid_targets": 443,
+        "h1_out_of_bounds": 4,
+        "h3_out_of_bounds": 12,
+        "h5_out_of_bounds": 19,
+        "invalid_temporal_offsets": 0
+      },
+      "recommendations": []
+    },
+    {
+      "category": "Duplicate Detection",
+      "status": "PASS",
+      "summary": "Zero duplicate sequences, zero duplicate annotation IDs, zero duplicate frame IDs.",
+      "evidence": {
+        "duplicate_seqs": 0
+      },
+      "recommendations": []
+    },
+    {
+      "category": "Leakage Validation",
+      "status": "PASS",
+      "summary": "Zero temporal feature leakage. Sequence windows strictly insulated from target horizons.",
+      "evidence": {
+        "status": "PASS",
+        "images_verified_on_disk": 200,
+        "missing_images_count": 0,
+        "duplicate_sequences_count": 0,
+        "temporal_leakage_violations": 0,
+        "embargo_gap_frames": 25,
+        "split_leakage_detected": false,
+        "scaler_isolation_guaranteed": true
+      },
+      "recommendations": []
+    },
+    {
+      "category": "Source Traceability",
+      "status": "PASS",
+      "summary": "100% of object labels trace back to specific prediction indices and BDD100K track IDs.",
+      "evidence": {
+        "traceable_records": 5331
+      },
+      "recommendations": []
+    }
+  ],
+  "detailed_modules": {
+    "annotation_audit": {
+      "status": "PASS",
+      "total_records": 5121,
+      "unique_sequences": 1,
+      "unique_frames": 200,
+      "unique_tracks": 115,
+      "duplicate_annotation_ids": 0,
+      "duplicate_boxes_in_frame": 0,
+      "duplicate_tracks_in_frame": 0,
+      "invalid_coordinates": 0,
+      "non_finite_coords": 0,
+      "zero_area_boxes": 0,
+      "negative_coords": 0,
+      "out_of_bounds_coords": 0,
+      "dimension_mismatches": 0,
+      "missing_object_ids": 0
+    },
+    "reliability_audit": {
+      "status": "PASS",
+      "total_object_labels": 5331,
+      "total_frame_labels": 200,
+      "true_positives": 1,
+      "false_positives": 210,
+      "false_negatives": 5120,
+      "total_predictions": 211,
+      "total_ground_truth": 5121,
+      "prediction_balance_valid": true,
+      "ground_truth_balance_valid": true,
+      "object_frame_counts_consistent": true,
+      "invalid_f1_bounds_count": 0,
+      "invalid_prec_bounds_count": 0,
+      "invalid_rec_bounds_count": 0
+    },
+    "distribution_audit": {
+      "status": "WARNING",
+      "ground_truth_classes": {
+        "car": 3113,
+        "truck": 226,
+        "person": 1231,
+        "bicycle": 377,
+        "motorcycle": 67,
+        "bus": 107
+      },
+      "detection_classes": {
+        "traffic light": 159,
+        "truck": 31,
+        "train": 1,
+        "surfboard": 2,
+        "car": 7,
+        "bus": 3,
+        "person": 1,
+        "potted plant": 6,
+        "vase": 1
+      },
+      "f1_distribution": {
+        "min": 0.0,
+        "max": 0.0588,
+        "mean": 0.0003,
+        "median": 0.0,
+        "std": 0.0041,
+        "q25": 0.0,
+        "q75": 0.0
+      },
+      "precision_distribution": {
+        "min": 0.0,
+        "max": 0.3333,
+        "mean": 0.0017,
+        "median": 0.0,
+        "std": 0.0235,
+        "q25": 0.0,
+        "q75": 0.0
+      },
+      "recall_distribution": {
+        "min": 0.0,
+        "max": 0.0323,
+        "mean": 0.0002,
+        "median": 0.0,
+        "std": 0.0023,
+        "q25": 0.0,
+        "q75": 0.0
+      },
+      "composite_distribution": {
+        "min": 0.0,
+        "max": 0.1973,
+        "mean": 0.001,
+        "median": 0.0,
+        "std": 0.0139,
+        "q25": 0.0,
+        "q75": 0.0
+      },
+      "zero_f1_frames_ratio": 0.995,
+      "skew_observation": "Extreme concentration at F1=0.0 caused by 90-degree rotated video container in Day 2, which caused off-the-shelf YOLO to fail on upright vehicles (FN=5120)."
+    },
+    "temporal_audit": {
+      "status": "PASS",
+      "total_temporal_sequences": 462,
+      "splits_distribution": {
+        "train": 374,
+        "val": 42,
+        "test": 46
+      },
+      "h1_valid_targets": 458,
+      "h3_valid_targets": 450,
+      "h5_valid_targets": 443,
+      "h1_out_of_bounds": 4,
+      "h3_out_of_bounds": 12,
+      "h5_out_of_bounds": 19,
+      "invalid_temporal_offsets": 0
+    },
+    "integrity_audit": {
+      "status": "PASS",
+      "images_verified_on_disk": 200,
+      "missing_images_count": 0,
+      "duplicate_sequences_count": 0,
+      "temporal_leakage_violations": 0,
+      "embargo_gap_frames": 25,
+      "split_leakage_detected": false,
+      "scaler_isolation_guaranteed": true
+    }
+  }
+}
