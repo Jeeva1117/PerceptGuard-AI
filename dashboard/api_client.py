@@ -357,6 +357,100 @@ class DashboardApiClient:
             files=files,
         )
 
+    def submit_video_job(self, file_bytes: bytes, filename: str, max_frames: int = 30) -> Dict[str, Any]:
+        """Submit video for full asynchronous pipeline processing."""
+        files = {"file": (filename, file_bytes, "video/mp4")}
+        params = {"max_frames": max_frames}
+
+        def _fallback_submit(f_bytes, fname, m_frames):
+            from src.api.job_manager import get_job_manager
+            import tempfile
+            job_mgr = get_job_manager()
+            temp_path = Path(tempfile.gettempdir()) / f"inproc_{fname}"
+            with open(temp_path, "wb") as f_out:
+                f_out.write(f_bytes)
+            job = job_mgr.submit_job(video_path=temp_path, filename=fname, max_frames=m_frames)
+            return {
+                "job_id": job.job_id,
+                "filename": job.filename,
+                "status": job.status.value,
+                "stage": job.stage,
+                "message": job.message,
+                "max_frames": m_frames,
+                "created_at": job.created_at,
+            }
+
+        return self._execute_request(
+            "POST",
+            "/video/jobs",
+            fallback_fn=_fallback_submit,
+            fallback_args=(file_bytes, filename, max_frames),
+            files=files,
+            params=params,
+        )
+
+    def get_video_job_status(self, job_id: str) -> Dict[str, Any]:
+        """Fetch live execution status and stage progress for a video job."""
+        def _fallback_status(j_id):
+            from src.api.job_manager import get_job_manager
+            job = get_job_manager().get_job(j_id)
+            if not job:
+                return {"job_id": j_id, "status": "NOT_FOUND", "stage": "UNKNOWN", "progress_percentage": 0.0, "message": "Job not found"}
+            return job.to_dict()
+
+        return self._execute_request(
+            "GET",
+            f"/video/jobs/{job_id}",
+            fallback_fn=_fallback_status,
+            fallback_args=(job_id,),
+        )
+
+    def get_video_job_results(self, job_id: str) -> Dict[str, Any]:
+        """Retrieve full structured results.json artifact for a completed job."""
+        def _fallback_results(j_id):
+            from src.api.job_manager import get_job_manager
+            res = get_job_manager().get_job_results(j_id)
+            return res or {}
+
+        return self._execute_request(
+            "GET",
+            f"/video/jobs/{job_id}/results",
+            fallback_fn=_fallback_results,
+            fallback_args=(job_id,),
+        )
+
+    def list_video_jobs(self, limit: int = 20) -> List[Dict[str, Any]]:
+        """List recently submitted video jobs."""
+        def _fallback_list(lim):
+            from src.api.job_manager import get_job_manager
+            jobs = get_job_manager().list_jobs(limit=lim)
+            return [j.to_dict() for j in jobs]
+
+        res = self._execute_request(
+            "GET",
+            "/video/jobs",
+            fallback_fn=_fallback_list,
+            fallback_args=(limit,),
+            params={"limit": limit},
+        )
+        return res if isinstance(res, list) else []
+
+    def get_annotated_frame_url(self, job_id: str, frame_name: str) -> str:
+        """Construct URL or local filesystem path for an annotated frame."""
+        if self._connection_mode == "REST_API":
+            return f"{self.base_url}{self.api_prefix}/video/jobs/{job_id}/frames/{frame_name}"
+        else:
+            from src.api.job_manager import get_job_manager
+            job = get_job_manager().get_job(job_id)
+            if job and job.results_dir:
+                p = Path(job.results_dir) / "annotated" / frame_name
+                if p.exists():
+                    return str(p)
+                p_raw = Path(job.results_dir) / "raw_frames" / frame_name
+                if p_raw.exists():
+                    return str(p_raw)
+            return ""
+
     def close(self) -> None:
         """Release underlying HTTP client connections."""
         if not getattr(self, "_external_http_client", False):

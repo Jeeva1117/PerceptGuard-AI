@@ -12,6 +12,7 @@ from dashboard.components.temporal_chart import render_temporal_monitoring
 from dashboard.components.alerts_feed import render_early_warning_alerts
 from dashboard.components.tracking_view import render_detection_tracking
 from dashboard.components.pipeline_accordion import render_pipeline_status_accordion
+from dashboard.components.video_view import render_video_processing_view
 
 __all__ = [
     "render_empty_state",
@@ -24,4 +25,5 @@ __all__ = [
     "render_early_warning_alerts",
     "render_detection_tracking",
     "render_pipeline_status_accordion",
+    "render_video_processing_view",
 ]

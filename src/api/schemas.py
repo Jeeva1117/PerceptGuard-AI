@@ -257,3 +257,35 @@ class VideoProcessResponse(BaseModel):
     latency_ms: float
     detections_count: int
     timestamp: str
+
+
+class JobStatusResponse(BaseModel):
+    """Real-time processing job lifecycle and progress record."""
+    job_id: str
+    filename: str
+    status: str
+    stage: str
+    progress_percentage: float
+    message: str
+    created_at: str
+    started_at: Optional[str] = None
+    completed_at: Optional[str] = None
+    max_frames_requested: int = 30
+    frames_processed: int = 0
+    total_detections: int = 0
+    unique_tracks: int = 0
+    alerts_count: int = 0
+    error_message: Optional[str] = None
+    result_summary: Optional[Dict[str, Any]] = None
+
+
+class JobSubmissionResponse(BaseModel):
+    """Immediate acknowledgement returned upon video upload and job dispatch."""
+    job_id: str
+    filename: str
+    status: str
+    stage: str
+    message: str
+    max_frames: int
+    created_at: str
+

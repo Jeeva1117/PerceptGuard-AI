@@ -14,8 +14,11 @@ from src.early_warning.dashboard_service import DashboardService
 from src.early_warning.pipeline_integrator import PipelineIntegrator
 
 
-def get_current_settings() -> SystemSettings:
-    """Provide the application configuration singleton."""
+def get_current_settings(request: Request) -> SystemSettings:
+    """Provide the application configuration singleton, preferring app.state.settings."""
+    settings = getattr(request.app.state, "settings", None)
+    if settings is not None:
+        return settings
     return get_settings()
 
 

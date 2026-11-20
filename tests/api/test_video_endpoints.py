@@ -95,3 +95,34 @@ def test_video_process_endpoint(client: TestClient, tmp_path: Path):
     assert data["status"] == "SUCCESS"
     assert data["frames_processed"] == 5
     assert "task_id" in data
+
+
+def test_video_job_submission_and_lifecycle(client: TestClient, tmp_path: Path):
+    """Verify /video/jobs submission, status retrieval, and listing."""
+    test_video = tmp_path / "job_sample.mp4"
+    _generate_synthetic_test_video(test_video, num_frames=6, fps=10.0)
+
+    with open(test_video, "rb") as f:
+        files = {"file": ("job_sample.mp4", f, "video/mp4")}
+        res = client.post("/api/v1/video/jobs?max_frames=6", files=files)
+
+    assert res.status_code == 202
+    sub_data = res.json()
+    assert "job_id" in sub_data
+    job_id = sub_data["job_id"]
+    assert sub_data["filename"] == "job_sample.mp4"
+
+    # Status check
+    res_status = client.get(f"/api/v1/video/jobs/{job_id}")
+    assert res_status.status_code == 200
+    stat_data = res_status.json()
+    assert stat_data["job_id"] == job_id
+    assert stat_data["status"] in ("QUEUED", "PROCESSING", "COMPLETED")
+
+    # List jobs check
+    res_list = client.get("/api/v1/video/jobs?limit=10")
+    assert res_list.status_code == 200
+    jobs_list = res_list.json()
+    assert isinstance(jobs_list, list)
+    assert any(j["job_id"] == job_id for j in jobs_list)
+

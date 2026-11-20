@@ -7,17 +7,21 @@ import os
 from pathlib import Path
 import tempfile
 import uuid
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
 import cv2
 from fastapi import APIRouter, File, Query, UploadFile, status
 
-from src.api.exceptions import InvalidInputError, InvalidVideoError
+from src.api.exceptions import InvalidInputError, InvalidVideoError, ResourceNotFoundError
+from src.api.job_manager import JobManager, get_job_manager
 from src.api.schemas import (
+    JobStatusResponse,
+    JobSubmissionResponse,
     VideoMetadataSchema,
     VideoProcessResponse,
     VideoValidationResponse,
 )
+from starlette.responses import FileResponse
 
 router = APIRouter(prefix="/video", tags=["Video Processing"])
 
@@ -160,3 +164,124 @@ async def process_video(
                 os.remove(temp_path)
             except OSError:
                 pass
+
+
+# ------------------------------------------------------------------------------
+# Asynchronous Background Video Processing Jobs
+# ------------------------------------------------------------------------------
+
+@router.post("/jobs", response_model=JobSubmissionResponse, status_code=status.HTTP_202_ACCEPTED)
+async def submit_video_job(
+    file: UploadFile = File(...),
+    max_frames: int = Query(30, ge=5, le=100, description="Max frames to extract and process on CPU."),
+) -> JobSubmissionResponse:
+    """Submit a video for asynchronous pipeline execution (YOLO + ByteTrack + LSTM + Risk + Alerts)."""
+    filename = Path(file.filename or "uploaded_video.mp4").name
+    ext = Path(filename).suffix.lower()
+
+    if ext not in ALLOWED_VIDEO_EXTENSIONS:
+        raise InvalidVideoError(f"Unsupported format '{ext}'. Allowed: {sorted(ALLOWED_VIDEO_EXTENSIONS)}")
+
+    job_mgr = get_job_manager()
+    upload_temp_dir = job_mgr.jobs_dir / "uploads"
+    upload_temp_dir.mkdir(parents=True, exist_ok=True)
+    temp_target = upload_temp_dir / f"up_{uuid.uuid4().hex[:8]}_{filename}"
+
+    total_bytes = 0
+    with open(temp_target, "wb") as f_out:
+        while chunk := await file.read(1024 * 1024):
+            total_bytes += len(chunk)
+            if total_bytes > MAX_FILE_SIZE_BYTES:
+                if temp_target.exists():
+                    os.remove(temp_target)
+                raise InvalidVideoError("File exceeds maximum allowed upload size (100MB).")
+            f_out.write(chunk)
+
+    if total_bytes == 0:
+        if temp_target.exists():
+            os.remove(temp_target)
+        raise InvalidVideoError("Uploaded video is empty (0 bytes).")
+
+    # Dispatch to background job manager
+    job_rec = job_mgr.submit_job(
+        video_path=temp_target,
+        filename=filename,
+        max_frames=max_frames,
+    )
+
+    return JobSubmissionResponse(
+        job_id=job_rec.job_id,
+        filename=job_rec.filename,
+        status=job_rec.status.value,
+        stage=job_rec.stage,
+        message=job_rec.message,
+        max_frames=max_frames,
+        created_at=job_rec.created_at,
+    )
+
+
+@router.get("/jobs", response_model=List[JobStatusResponse])
+def list_video_jobs(limit: int = Query(20, ge=1, le=100)) -> List[JobStatusResponse]:
+    """List recent video processing jobs and their live execution status."""
+    job_mgr = get_job_manager()
+    jobs = job_mgr.list_jobs(limit=limit)
+    return [JobStatusResponse(**j.to_dict()) for j in jobs]
+
+
+@router.get("/jobs/{job_id}", response_model=JobStatusResponse)
+def get_video_job_status(job_id: str) -> JobStatusResponse:
+    """Retrieve execution status, current processing stage, and progress percentage for a job."""
+    job_mgr = get_job_manager()
+    job_rec = job_mgr.get_job(job_id)
+    if not job_rec:
+        raise ResourceNotFoundError(f"Job '{job_id}' not found.")
+    return JobStatusResponse(**job_rec.to_dict())
+
+
+@router.get("/jobs/{job_id}/results")
+def get_video_job_results(job_id: str):
+    """Retrieve full structured results.json artifact containing detections, forecasts, and alerts."""
+    job_mgr = get_job_manager()
+    results = job_mgr.get_job_results(job_id)
+    if not results:
+        job_rec = job_mgr.get_job(job_id)
+        if not job_rec:
+            raise ResourceNotFoundError(f"Job '{job_id}' not found.")
+        return {
+            "job_id": job_id,
+            "status": job_rec.status.value,
+            "stage": job_rec.stage,
+            "message": job_rec.message,
+            "results": None,
+        }
+    return results
+
+
+@router.get("/jobs/{job_id}/frames/{frame_name}")
+def get_annotated_frame(job_id: str, frame_name: str):
+    """Serve an annotated video frame image for frontend dashboard visualization."""
+    job_mgr = get_job_manager()
+    job_rec = job_mgr.get_job(job_id)
+    if not job_rec or not job_rec.results_dir:
+        raise ResourceNotFoundError(f"Job '{job_id}' not found.")
+
+    safe_name = Path(frame_name).name
+    img_path = Path(job_rec.results_dir) / "annotated" / safe_name
+    if not img_path.exists():
+        # Check raw_frames
+        img_path = Path(job_rec.results_dir) / "raw_frames" / safe_name
+    if not img_path.exists():
+        raise ResourceNotFoundError(f"Frame '{safe_name}' not found for job '{job_id}'.")
+
+    return FileResponse(str(img_path), media_type="image/jpeg")
+
+
+@router.delete("/jobs/{job_id}")
+def cancel_video_job(job_id: str):
+    """Cancel or abort an in-flight video processing job."""
+    job_mgr = get_job_manager()
+    success = job_mgr.cancel_job(job_id)
+    if not success:
+        raise ResourceNotFoundError(f"Job '{job_id}' could not be cancelled or does not exist.")
+    return {"job_id": job_id, "status": "CANCELLED", "message": "Job cancelled successfully."}
+
