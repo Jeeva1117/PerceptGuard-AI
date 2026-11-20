@@ -123,8 +123,13 @@ class BaselineDataset:
 class BaselineDataLoader:
     """Loader and validator for Day 5 sequence artifacts."""
 
-    def __init__(self, artifacts_dir: Union[str, Path]) -> None:
+    def __init__(
+        self,
+        artifacts_dir: Union[str, Path],
+        metadata_file: Optional[Union[str, Path]] = None,
+    ) -> None:
         self.artifacts_dir = Path(artifacts_dir)
+        self.metadata_file = Path(metadata_file) if metadata_file is not None else None
         self.manifest_data: Optional[Dict[str, Any]] = None
         self.metadata_data: Optional[Dict[str, Any]] = None
         self.splits_data: Optional[Dict[str, Any]] = None
@@ -141,7 +146,11 @@ class BaselineDataLoader:
         with open(manifest_file, "r", encoding="utf-8") as f:
             self.manifest_data = json.load(f)
 
-        meta_file = self.artifacts_dir / "sequence_metadata.json"
+        if self.metadata_file is not None:
+            meta_file = self.metadata_file
+        else:
+            meta_file = self.artifacts_dir / "sequence_metadata.json"
+
         if not meta_file.exists():
             raise DataLoaderError(f"Required artifact missing: {meta_file.name}")
         with open(meta_file, "r", encoding="utf-8") as f:

@@ -535,6 +535,14 @@ class ReliabilityLabelGenerator:
                 )
                 temporal_records.append(t_rec)
 
+            # Sync sequences_by_length mapping so downstream loaders obtain target labels
+            if "sequences_by_length" in updated_seq_data:
+                by_len: Dict[str, List[Dict[str, Any]]] = {}
+                for s in sequences:
+                    l_val = s.get("input_sequence_length", 5)
+                    by_len.setdefault(f"L{l_val}", []).append(s)
+                updated_seq_data["sequences_by_length"] = by_len
+
         return temporal_records, updated_seq_data
 
     def export_artifacts(

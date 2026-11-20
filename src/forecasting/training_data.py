@@ -223,6 +223,7 @@ class ForecastingDataModule:
         horizons: Sequence[int] = (1, 3, 5),
         batch_size: int = 8,
         num_workers: int = 0,
+        metadata_file: Optional[Union[str, Path]] = None,
     ) -> ForecastingDataModule:
         """Construct ForecastingDataModule from Day 5 sequence directory artifacts.
         
@@ -232,11 +233,12 @@ class ForecastingDataModule:
             horizons: Forecast horizons.
             batch_size: DataLoader batch size.
             num_workers: DataLoader worker count.
+            metadata_file: Optional path to custom sequence metadata (e.g. sequence_metadata_labeled.json).
             
         Returns:
             Configured ForecastingDataModule.
         """
-        loader = BaselineDataLoader(artifacts_dir=artifacts_dir)
+        loader = BaselineDataLoader(artifacts_dir=artifacts_dir, metadata_file=metadata_file)
         dataset = loader.load_sequence_dataset(
             sequence_length=sequence_length,
             target_horizons=horizons,

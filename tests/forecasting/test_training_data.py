@@ -185,3 +185,26 @@ class TestTrainingData:
         assert dm.test_dataset is not None
         assert len(dm.test_dataset) == 19
         assert dm.has_targets is False  # Honest reporting: Day 5 has no target labels
+
+    def test_datamodule_from_real_day8_labeled_artifacts(self) -> None:
+        """Verify loading from real Day 8 labeled metadata populates ground-truth targets."""
+        artifacts_dir = "datasets/processed/driving_sample/features/sequences/run_official"
+        labeled_meta = "datasets/processed/driving_sample/reliability_labels/sequence_metadata_labeled.json"
+        
+        dm = ForecastingDataModule.from_artifacts(
+            artifacts_dir=artifacts_dir,
+            sequence_length=5,
+            batch_size=8,
+            metadata_file=labeled_meta,
+        )
+        assert len(dm.train_dataset) == 101
+        assert len(dm.val_dataset) == 18
+        assert dm.has_targets is True
+        
+        # Verify batch extraction with aligned targets
+        train_loader = dm.train_dataloader()
+        seq_batch, target_batch = next(iter(train_loader))
+        assert seq_batch.shape == (8, 5, 27)
+        assert target_batch.shape == (8, 3)
+        assert torch.isfinite(seq_batch).all()
+        assert torch.isfinite(target_batch).all()

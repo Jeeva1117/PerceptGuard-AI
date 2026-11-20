@@ -1,0 +1,118 @@
+{
+  "schema_version": "1.0.0",
+  "audit_timestamp": "2026-11-20T04:09:00+00:00",
+  "dataset_id": "driving_sample",
+  "final_training_readiness": "READY WITH LIMITATIONS",
+  "readiness_tier": "B",
+  "subsystem_readiness": {
+    "engineering_pipeline": "TRAINING READY",
+    "ground_truth_annotations": "TRAINING READY",
+    "reliability_labels": "TRAINING READY",
+    "temporal_targets": "TRAINING READY",
+    "splits_and_leakage": "TRAINING READY",
+    "supervised_forecasting_training": "READY WITH LIMITATIONS"
+  },
+  "dataset_inventory": {
+    "total_video_frames": 200,
+    "images_verified_on_disk": 200,
+    "image_resolution": [640, 360, 3],
+    "total_canonical_annotations": 5121,
+    "unique_ground_truth_tracks": 115,
+    "total_yolo_predictions": 211,
+    "total_object_labels": 5331,
+    "total_frame_labels": 200,
+    "total_temporal_sequences": 462
+  },
+  "mathematical_invariants": {
+    "true_positives": 1,
+    "false_positives": 210,
+    "false_negatives": 5120,
+    "prediction_count_delta": 0,
+    "ground_truth_count_delta": 0,
+    "record_count_delta": 0,
+    "metric_bounds_valid": true
+  },
+  "distribution_statistics": {
+    "f1_score": {
+      "min": 0.0,
+      "max": 0.0588,
+      "mean": 0.0003,
+      "median": 0.0,
+      "std": 0.0041,
+      "q25": 0.0,
+      "q75": 0.0,
+      "zero_ratio": 0.995
+    },
+    "precision": {
+      "min": 0.0,
+      "max": 0.3333,
+      "mean": 0.0017,
+      "median": 0.0,
+      "std": 0.0235
+    },
+    "recall": {
+      "min": 0.0,
+      "max": 0.0323,
+      "mean": 0.0002,
+      "median": 0.0,
+      "std": 0.0023
+    },
+    "composite_reliability": {
+      "min": 0.0,
+      "max": 0.1973,
+      "mean": 0.001,
+      "median": 0.0,
+      "std": 0.0139
+    }
+  },
+  "temporal_coverage": {
+    "sequence_lengths": [5, 10, 15, 20],
+    "total_sequences_by_length": {
+      "L5": 138,
+      "L10": 123,
+      "L15": 108,
+      "L20": 93
+    },
+    "split_distribution": {
+      "train": 374,
+      "val": 42,
+      "test": 46
+    },
+    "valid_horizon_targets": {
+      "h1": 458,
+      "h3": 450,
+      "h5": 443
+    },
+    "embargo_gap_frames": 25,
+    "temporal_leakage_violations": 0
+  },
+  "provenance_and_licensing": {
+    "dataset_source": "BDD100K Multiple Object Tracking (MOT)",
+    "sequence_id": "026c7465-309f6d33",
+    "license": "BDD100K Academic / Research License",
+    "coordinate_transform": "90-degree clockwise rotation + letterbox scaling (s=0.28125, dx=218.75)"
+  },
+  "safe_fixes_applied": [
+    {
+      "defect": "sequences_by_length omitted target_label in sequence_metadata_labeled.json",
+      "impact": "Downstream loaders prioritizing by_length found target_label_available=False",
+      "resolution": "Updated reliability_label_generator.py to sync sequences_by_length",
+      "verification": "All sequence lengths L5, L10, L15, L20 verified with target_labels_available=True"
+    },
+    {
+      "defect": "BaselineDataLoader and ForecastingDataModule hardcoded metadata filename",
+      "impact": "Inability to load sequence_metadata_labeled.json without manual file overwrite",
+      "resolution": "Added optional metadata_file argument to BaselineDataLoader and ForecastingDataModule.from_artifacts",
+      "verification": "Added regression test test_datamodule_from_real_day8_labeled_artifacts (16/16 tests passed)"
+    }
+  ],
+  "permitted_experiments": [
+    "Multi-horizon LSTM/GRU training on driving_sample sequences under rotated visual conditions",
+    "Focal Loss and Weighted Huber loss benchmarking against unweighted MSE",
+    "Binary degradation classification (Degraded if F1 < 0.20)"
+  ],
+  "non_permitted_claims": [
+    "General autonomous driving reliability claims across arbitrary upright daytime/nighttime driving without multi-video training"
+  ],
+  "recommended_next_step": "Initialize multi-horizon LSTM training with Focal Loss (w_nonzero=50.0) using ForecastingDataModule with sequence_metadata_labeled.json"
+}
