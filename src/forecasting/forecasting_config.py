@@ -170,6 +170,10 @@ class TrainingConfig:
     weight_decay: float = 0.0001
     max_epochs: int = 50
     early_stopping_patience: int = 8
+    loss_function: str = "mse"
+    optimizer: str = "adamw"
+    gradient_clip_norm: float = 1.0
+    random_seed: int = 42
 
     def validate(self) -> List[str]:
         errors = []
@@ -181,6 +185,16 @@ class TrainingConfig:
             errors.append(f"training.max_epochs must be an integer >= 1, got: {self.max_epochs}")
         if not isinstance(self.early_stopping_patience, int) or self.early_stopping_patience < 1:
             errors.append(f"training.early_stopping_patience must be an integer >= 1, got: {self.early_stopping_patience}")
+        loss = str(self.loss_function).lower().strip()
+        if loss not in ["mse", "mae", "l1", "smooth_l1"]:
+            errors.append(f"training.loss_function must be 'mse', 'mae', 'l1', or 'smooth_l1', got: {self.loss_function}")
+        opt = str(self.optimizer).lower().strip()
+        if opt not in ["adamw", "adam", "sgd"]:
+            errors.append(f"training.optimizer must be 'adamw', 'adam', or 'sgd', got: {self.optimizer}")
+        if not isinstance(self.gradient_clip_norm, (int, float)) or float(self.gradient_clip_norm) <= 0.0:
+            errors.append(f"training.gradient_clip_norm must be > 0.0, got: {self.gradient_clip_norm}")
+        if not isinstance(self.random_seed, int) or self.random_seed < 0:
+            errors.append(f"training.random_seed must be an integer >= 0, got: {self.random_seed}")
         return errors
 
 

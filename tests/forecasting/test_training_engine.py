@@ -260,3 +260,118 @@ class TestTrainingEngine:
         )
         res = engine2.train(data_module=dm, epochs=4, resume_checkpoint_path=last_chk, verbose=False)
         assert res["total_epochs"] == 4
+
+    def test_training_configuration_validation(self) -> None:
+        """Verify TrainingConfig validation checks for loss, optimizer, grad_clip, and seed."""
+        from src.forecasting.forecasting_config import TrainingConfig
+
+        valid_cfg = TrainingConfig()
+        assert len(valid_cfg.validate()) == 0
+
+        invalid_loss = TrainingConfig(loss_function="invalid_loss")
+        assert any("training.loss_function" in e for e in invalid_loss.validate())
+
+        invalid_opt = TrainingConfig(optimizer="invalid_opt")
+        assert any("training.optimizer" in e for e in invalid_opt.validate())
+
+        invalid_clip = TrainingConfig(gradient_clip_norm=-0.5)
+        assert any("training.gradient_clip_norm" in e for e in invalid_clip.validate())
+
+    def test_training_reproducibility(self, tmp_path: Path) -> None:
+        """Verify identical random seeds yield numerically identical weights after training."""
+        dm = ForecastingDataModule.from_synthetic(
+            num_train=16,
+            num_val=8,
+            sequence_length=5,
+            feature_count=6,
+            batch_size=8,
+            with_targets=True,
+            seed=100,
+        )
+
+        cfg1 = ForecastingConfig()
+        model1 = LSTMForecaster(input_size=6, hidden_size=8)
+        engine1 = LSTMTrainingEngine(
+            model=model1,
+            config=cfg1,
+            checkpoint_manager=CheckpointManager(checkpoint_dir=tmp_path / "chk1"),
+            logger=TrainingLogger(experiment_dir=tmp_path / "exp1"),
+            device="cpu",
+        )
+        engine1.train(data_module=dm, epochs=2, verbose=False)
+
+        cfg2 = ForecastingConfig()
+        model2 = LSTMForecaster(input_size=6, hidden_size=8)
+        engine2 = LSTMTrainingEngine(
+            model=model2,
+            config=cfg2,
+            checkpoint_manager=CheckpointManager(checkpoint_dir=tmp_path / "chk2"),
+            logger=TrainingLogger(experiment_dir=tmp_path / "exp2"),
+            device="cpu",
+        )
+        engine2.train(data_module=dm, epochs=2, verbose=False)
+
+        for p1, p2 in zip(model1.parameters(), model2.parameters()):
+            assert torch.allclose(p1, p2, atol=1e-7)
+
+    def test_no_test_data_in_training(self, tmp_path: Path) -> None:
+        """Verify training engine never trains or updates gradients using test partition."""
+        dm = ForecastingDataModule.from_synthetic(
+            num_train=16,
+            num_val=8,
+            num_test=8,
+            sequence_length=5,
+            feature_count=6,
+            batch_size=8,
+            with_targets=True,
+        )
+
+        # Set test targets to recognizable extreme values
+        dm.test_dataset.targets.fill_(999.0)
+
+        model = LSTMForecaster(input_size=6, hidden_size=8)
+        engine = LSTMTrainingEngine(
+            model=model,
+            checkpoint_manager=CheckpointManager(checkpoint_dir=tmp_path / "chk_no_test"),
+            logger=TrainingLogger(experiment_dir=tmp_path / "exp_no_test"),
+            device="cpu",
+        )
+
+        res = engine.train(data_module=dm, epochs=3, verbose=False)
+        # If test targets (999.0) had been used, train loss would be massive (~1e6)
+        assert res["history"][-1]["train_loss"] < 10.0
+        assert res["history"][-1]["val_loss"] < 10.0
+
+    def test_experiment_tracking_metadata_integrity(self, tmp_path: Path) -> None:
+        """Verify experiment logger captures complete environment and training telemetry."""
+        import json
+        exp_dir = tmp_path / "telemetry_test"
+        logger = TrainingLogger(experiment_dir=exp_dir, run_id="test_run")
+
+        # Check metadata
+        meta_file = exp_dir / "test_run" / "metadata.json"
+        assert meta_file.exists()
+        with open(meta_file) as f:
+            meta = json.load(f)
+        assert "run_id" in meta
+        assert "python_version" in meta
+        assert "torch_version" in meta
+        assert "cpu_count" in meta
+
+        # Log epoch and check history
+        logger.log_epoch(
+            epoch=1,
+            train_loss=0.05,
+            val_loss=0.04,
+            learning_rate=0.001,
+            epoch_duration_seconds=0.1,
+            batch_count=2,
+            gradient_norm=0.05,
+        )
+        hist_file = exp_dir / "test_run" / "training_history.json"
+        assert hist_file.exists()
+        with open(hist_file) as f:
+            hist = json.load(f)
+        assert len(hist) == 1
+        assert hist[0]["epoch"] == 1
+        assert hist[0]["train_loss"] == 0.05

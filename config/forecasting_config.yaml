@@ -32,6 +32,10 @@ training:
   weight_decay: 0.0001
   max_epochs: 50
   early_stopping_patience: 8
+  loss_function: mse
+  optimizer: adamw
+  gradient_clip_norm: 1.0
+  random_seed: 42
 
 evaluation:
   metrics:

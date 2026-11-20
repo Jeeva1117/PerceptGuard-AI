@@ -50,7 +50,14 @@ class LSTMTrainingEngine:
     ) -> None:
         self.config = config or ForecastingConfig()
         self.device = torch.device(device)
-        self.max_grad_norm = float(max_grad_norm)
+        grad_norm_val = getattr(self.config.training, "gradient_clip_norm", None) if hasattr(self.config, "training") else None
+        self.max_grad_norm = float(grad_norm_val) if grad_norm_val is not None else float(max_grad_norm)
+
+        # 0. Reproducible Seed Initialization
+        seed = getattr(self.config.training, "random_seed", 42) if hasattr(self.config, "training") else 42
+        if seed is not None:
+            torch.manual_seed(seed)
+            np.random.seed(seed)
 
         # 1. Hardware & Threading Configuration
         if self.device.type == "cpu":
@@ -65,17 +72,24 @@ class LSTMTrainingEngine:
         if loss_fn is not None:
             self.loss_fn = loss_fn
         else:
-            self.loss_fn = create_forecasting_loss("mse")
+            loss_name = getattr(self.config.training, "loss_function", "mse") if hasattr(self.config, "training") else "mse"
+            self.loss_fn = create_forecasting_loss(loss_name)
 
-        # 4. Optimizer (AdamW)
+        # 4. Optimizer
         if optimizer is not None:
             self.optimizer = optimizer
         else:
-            self.optimizer = AdamW(
-                self.model.parameters(),
-                lr=float(self.config.training.learning_rate),
-                weight_decay=float(self.config.training.weight_decay),
-            )
+            opt_name = getattr(self.config.training, "optimizer", "adamw").lower().strip() if hasattr(self.config, "training") else "adamw"
+            lr = float(self.config.training.learning_rate)
+            wd = float(self.config.training.weight_decay)
+            if opt_name == "adamw":
+                self.optimizer = AdamW(self.model.parameters(), lr=lr, weight_decay=wd)
+            elif opt_name == "adam":
+                self.optimizer = torch.optim.Adam(self.model.parameters(), lr=lr, weight_decay=wd)
+            elif opt_name == "sgd":
+                self.optimizer = torch.optim.SGD(self.model.parameters(), lr=lr, weight_decay=wd)
+            else:
+                self.optimizer = AdamW(self.model.parameters(), lr=lr, weight_decay=wd)
 
         # 5. Learning Rate Scheduler (ReduceLROnPlateau)
         if scheduler is not None:

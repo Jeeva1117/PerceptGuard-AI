@@ -97,3 +97,34 @@ class TestTrainLSTMCLI:
         assert "DRY-RUN VERIFICATION SUCCESSFUL" in captured
         assert "Trainable Parameters: 7907" in captured
         assert "No training epochs executed" in captured
+
+    def test_cli_supervised_training_execution(self, tmp_path: Path, capsys: pytest.CaptureFixture) -> None:
+        """Verify CLI successfully executes supervised training on labeled metadata for 2 epochs."""
+        meta_file = "datasets/processed/driving_sample/reliability_labels/sequence_metadata_labeled.json"
+        if not Path(meta_file).exists():
+            pytest.skip("Labeled metadata artifact not found on disk")
+
+        out_dir = tmp_path / "exp_cli_test"
+        args = parse_args([
+            "--config", "config/forecasting_config.yaml",
+            "--metadata-file", meta_file,
+            "--sequence-length", "5",
+            "--epochs", "2",
+            "--batch-size", "8",
+            "--output", str(out_dir),
+            "--loss", "mse",
+            "--optimizer", "adamw",
+            "--seed", "42",
+            "--verbose",
+        ])
+        ret = run_training_pipeline(args)
+        assert ret == 0
+
+        captured = capsys.readouterr().out
+        assert "STARTING SUPERVISED TRAINING (2 EPOCHS)" in captured
+        assert "Training completed with status: COMPLETED" in captured
+        assert "Best Epoch:" in captured
+
+        # Check that artifacts exist
+        assert (out_dir / "official_training_experiment" / "training_summary.json").exists() or \
+               any(out_dir.glob("**/training_summary.json"))

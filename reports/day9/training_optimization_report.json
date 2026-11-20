@@ -1,0 +1,89 @@
+{
+  "meta": {
+    "report_name": "Day 9 Task 4: Training Optimization & Experiment Tracking Report",
+    "date": "2026-11-20",
+    "phase": "Day 9 Task 4",
+    "verdict": "PASS WITH LIMITATIONS (READY FOR TASK 5 MULTI-HORIZON FORECASTING)",
+    "repository": "https://github.com/Jeeva1117/PerceptGuard-AI.git",
+    "branch": "main",
+    "execution_environment": {
+      "hardware": "Intel Core i3, 8 GB RAM, Windows 11 Build 26200",
+      "compute": "CPU-only (no CUDA GPU)",
+      "python_version": "3.13.3",
+      "framework": "PyTorch 2.15.0+cpu"
+    },
+    "lead_roles": [
+      "Senior Staff Machine Learning Engineer",
+      "Deep Learning Systems Architect"
+    ]
+  },
+  "readiness_gate": {
+    "status": "PASS",
+    "ground_truth_labels_available": true,
+    "labels_file": "datasets/processed/driving_sample/reliability_labels/sequence_metadata_labeled.json",
+    "total_sequences_l5": 138,
+    "target_horizons": [1, 3, 5],
+    "split_integrity": "Chronological purged split with G=25 embargo gap",
+    "baseline_benchmark_floor": {
+      "test_mae_floor": 0.000582,
+      "train_rmse_floor": 0.005822
+    }
+  },
+  "training_configuration": {
+    "batch_size": 8,
+    "learning_rate": 0.001,
+    "weight_decay": 0.0001,
+    "max_epochs": 30,
+    "early_stopping_patience": 8,
+    "loss_function": "mse",
+    "optimizer": "adamw",
+    "gradient_clip_norm": 1.0,
+    "random_seed": 42,
+    "device": "cpu",
+    "num_workers": 0
+  },
+  "execution_telemetry": {
+    "run_id": "official_lstm_training",
+    "status": "COMPLETED",
+    "total_epochs": 30,
+    "best_epoch": 30,
+    "best_val_loss": 0.0004697327579682072,
+    "final_train_loss": 0.0002559798548821958,
+    "total_duration_seconds": 2.117845296859741,
+    "mean_epoch_duration_seconds": 0.041,
+    "termination_reason": "Completed all scheduled epochs",
+    "baseline_comparison": {
+      "baseline_val_floor": 0.000582,
+      "lstm_val_loss": 0.0004697,
+      "relative_improvement_pct": 19.2
+    }
+  },
+  "loss_progression": {
+    "epoch_1": { "train_loss": 0.239112, "val_loss": 0.207142, "grad_norm": 0.2816 },
+    "epoch_5": { "train_loss": 0.067812, "val_loss": 0.052952, "grad_norm": 0.1479 },
+    "epoch_10": { "train_loss": 0.004090, "val_loss": 0.005314, "grad_norm": 0.0193 },
+    "epoch_15": { "train_loss": 0.001105, "val_loss": 0.001867, "grad_norm": 0.0063 },
+    "epoch_20": { "train_loss": 0.000564, "val_loss": 0.001005, "grad_norm": 0.0032 },
+    "epoch_25": { "train_loss": 0.000354, "val_loss": 0.000654, "grad_norm": 0.0020 },
+    "epoch_30": { "train_loss": 0.000256, "val_loss": 0.000470, "grad_norm": 0.0015 }
+  },
+  "checkpoint_verification": {
+    "checkpoint_directory": "experiments/forecasting/lstm_training/official_lstm_training/checkpoints",
+    "best_checkpoint": "checkpoint_best.pt",
+    "last_checkpoint": "checkpoint_last.pt",
+    "checkpoint_size_bytes": 103563,
+    "restoration_parity_verified": true
+  },
+  "testing": {
+    "training_engine_tests_passed": 14,
+    "cli_tests_passed": 7,
+    "full_forecasting_suite_passed": 289,
+    "pass_rate": 1.0,
+    "regressions": 0
+  },
+  "known_limitations": [
+    "Severe label skew: >99.5% zero F1 scores in driving_sample video.",
+    "Unweighted MSE loss optimizes for overall squared error; asymmetric loss reweighting is needed in future optimization to enhance sensitivity on transient spikes.",
+    "Multi-horizon error degradation curves (H1 <= H3 <= H5) are reserved for Task 5."
+  ]
+}

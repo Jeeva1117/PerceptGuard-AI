@@ -18,6 +18,7 @@ import torch
 from src.forecasting.checkpoint_manager import CheckpointManager
 from src.forecasting.early_stopping import EarlyStopping
 from src.forecasting.forecasting_config import ForecastingConfig, ForecastingConfigError
+from src.forecasting.lstm_forecaster import create_forecasting_loss
 from src.forecasting.model_factory import build_forecasting_model
 from src.forecasting.training_data import ForecastingDataModule
 from src.forecasting.training_engine import LSTMTrainingEngine, TrainingEngineError
@@ -89,6 +90,38 @@ def parse_args(args: Optional[List[str]] = None) -> argparse.Namespace:
         "--dry-run",
         action="store_true",
         help="Verify data loading, target readiness, and model construction without executing training epochs.",
+    )
+    parser.add_argument(
+        "--loss",
+        type=str,
+        default=None,
+        choices=["mse", "mae", "l1", "smooth_l1"],
+        help="Override loss function (default from config: mse).",
+    )
+    parser.add_argument(
+        "--optimizer",
+        type=str,
+        default=None,
+        choices=["adamw", "adam", "sgd"],
+        help="Override optimizer (default from config: adamw).",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=None,
+        help="Override random seed for reproducibility (default from config: 42).",
+    )
+    parser.add_argument(
+        "--patience",
+        type=int,
+        default=None,
+        help="Override early stopping patience in epochs.",
+    )
+    parser.add_argument(
+        "--run-id",
+        type=str,
+        default=None,
+        help="Custom run ID for experiment tracking and checkpoint persistence.",
     )
     parser.add_argument(
         "--verbose",
@@ -221,16 +254,43 @@ def run_training_pipeline(args: argparse.Namespace) -> int:
         return 0
 
     # 6. Initialize Engine
-    run_id = f"lstm_{time.strftime('%Y%m%d_%H%M%S')}"
-    exp_dir = Path(args.output) if args.output else Path(config.artifacts.experiment_directory) / "lstm_training" / run_id
+    run_id = args.run_id or f"lstm_{time.strftime('%Y%m%d_%H%M%S')}"
+    base_exp_dir = Path(args.output) if args.output else Path(config.artifacts.experiment_directory) / "lstm_training"
+    exp_dir = base_exp_dir / run_id
     chk_dir = exp_dir / "checkpoints"
 
-    logger = TrainingLogger(experiment_dir=exp_dir, run_id=run_id, config=config)
+    logger = TrainingLogger(experiment_dir=base_exp_dir, run_id=run_id, config=config)
     checkpoint_mgr = CheckpointManager(checkpoint_dir=chk_dir, experiment_id=run_id)
+
+    loss_fn = create_forecasting_loss(args.loss) if args.loss else None
+    early_stopping = EarlyStopping(
+        patience=args.patience or config.training.early_stopping_patience,
+        min_delta=1e-4,
+        mode="min",
+        restore_best_weights=True,
+    ) if args.patience else None
+
+    optimizer = None
+    if args.optimizer:
+        opt_name = args.optimizer.lower().strip()
+        lr = learning_rate
+        wd = float(config.training.weight_decay)
+        if opt_name == "adamw":
+            optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=wd)
+        elif opt_name == "adam":
+            optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=wd)
+        elif opt_name == "sgd":
+            optimizer = torch.optim.SGD(model.parameters(), lr=lr, weight_decay=wd)
+
+    if args.seed is not None:
+        torch.manual_seed(args.seed)
 
     engine = LSTMTrainingEngine(
         model=model,
         config=config,
+        optimizer=optimizer,
+        loss_fn=loss_fn,
+        early_stopping=early_stopping,
         checkpoint_manager=checkpoint_mgr,
         logger=logger,
         device=device,
