@@ -5,5 +5,11 @@
   "leakage_check_passed": true,
   "embargo_gap_frames": 25,
   "training_only_scaler_fitting": true,
-  "training_only_imputer_fitting": true
+  "training_only_imputer_fitting": true,
+  "day8_total_ground_truth": 5121,
+  "day8_total_predictions": 211,
+  "day8_true_positives": 1,
+  "day8_false_positives": 210,
+  "day8_false_negatives": 5120,
+  "day8_conservation_verified": true
 }

@@ -255,6 +255,55 @@ PROJECT_INVENTORY: Dict[str, Dict[str, List[str]]] = {
             "docs/FINAL_VALIDATION_REPORT.md",
         ],
     },
+    "Day 7: Independent Engineering Audit": {
+        "source": [
+            "scripts/audit_day5.py",
+            "scripts/audit_day6.py",
+            "scripts/audit_project.py",
+        ],
+        "config": [],
+        "tests": [
+            "tests/test_audit_project.py",
+            "tests/test_environment_smoke.py",
+            "tests/test_main_cli.py",
+        ],
+        "docs": [
+            "docs/DAY_7_FINAL_AUDIT_REPORT.md",
+        ],
+    },
+    "Day 8: Ground-Truth Dataset & Reliability Labeling": {
+        "source": [
+            "src/evaluation/bdd100k_adapter.py",
+            "src/evaluation/reliability_schema.py",
+            "src/evaluation/annotation_processor.py",
+            "src/evaluation/reliability_label_generator.py",
+            "src/validation/dataset_quality_validator.py",
+        ],
+        "config": [
+            "config/reliability_label_config.yaml",
+        ],
+        "tests": [
+            "tests/test_bdd100k_adapter.py",
+            "tests/test_reliability_schema.py",
+            "tests/test_annotation_processor.py",
+            "tests/test_reliability_label_generator.py",
+            "tests/test_dataset_quality_validator.py",
+            "tests/evaluation/test_bdd100k_adapter.py",
+            "tests/evaluation/test_reliability_schema.py",
+            "tests/evaluation/test_annotation_processor.py",
+            "tests/evaluation/test_reliability_label_generator.py",
+            "tests/validation/test_dataset_quality_validator.py",
+        ],
+        "docs": [
+            "docs/GROUND_TRUTH_READINESS_AUDIT.md",
+            "docs/DATASET_SELECTION_INTEGRATION.md",
+            "docs/ANNOTATION_SCHEMA_AND_RELIABILITY_DESIGN.md",
+            "docs/GROUND_TRUTH_ANNOTATION_PROCESSING.md",
+            "docs/RELIABILITY_LABEL_GENERATION.md",
+            "docs/DATASET_QUALITY_BALANCE_INTEGRITY.md",
+            "docs/DAY_8_FINAL_DATASET_AUDIT.md",
+        ],
+    },
 }
 
 
@@ -388,7 +437,7 @@ class ProjectAuditor:
 
         packages = [
             ("src.video_processing", ["VideoLoader", "FrameExtractor", "FramePreprocessor", "MetadataGenerator"]),
-            ("src.validation", ["DatasetValidator"]),
+            ("src.validation", ["DatasetValidator", "DatasetQualityValidator"]),
             ("src.detection", ["YOLOConfig", "YOLOModelLoader", "SingleImageDetector", "BatchDetector"]),
             ("src.tracking", ["TrackerConfig", "ByteTrackEngine", "SingleObjectTracker", "MultiObjectTracker", "TrackingPipeline"]),
             ("src.visualization", ["DetectionVisualizer", "TrackingVisualizer"]),
@@ -396,7 +445,7 @@ class ProjectAuditor:
             ("src.features", ["FeatureConfig", "DetectionFeatureExtractor", "MotionFeatureExtractor", "VisualQualityExtractor", "TemporalFeatureAggregator", "TemporalSequenceBuilder"]),
             ("src.forecasting", ["ForecastingConfig", "ForecastingEnvironmentVerifier", "ForecastingDataContract", "BaselineForecaster", "LSTMForecaster", "ForecastingDataModule", "LSTMTrainingEngine", "MultiHorizonForecaster", "ForecastingModelEvaluator", "ForecastingEvaluationVisualizer"]),
             ("src.prediction", ["LSTMForecaster", "BaselineForecaster", "MultiHorizonForecaster"]),
-            ("src.evaluation", ["ForecastingModelEvaluator", "ForecastingEvaluationVisualizer"]),
+            ("src.evaluation", ["ForecastingModelEvaluator", "ForecastingEvaluationVisualizer", "BDD100KAdapter", "AnnotationProcessor", "ReliabilityLabelGenerator", "SpatialHungarianMatcher"]),
         ]
 
         for pkg_name, symbols in packages:
@@ -448,6 +497,7 @@ class ProjectAuditor:
             ("config/tracker_config.yaml", ["tracker_type", "track_high_thresh"]),
             ("config/feature_config.yaml", ["schema_version", "inputs", "outputs"]),
             ("config/forecasting_config.yaml", ["project", "runtime", "data", "model", "training"]),
+            ("config/reliability_label_config.yaml", ["schema_version", "matching", "temporal_horizons"]),
         ]
 
         for rel_path, required_top_keys in config_files:
@@ -537,6 +587,12 @@ class ProjectAuditor:
             ("Dataset Splits", "datasets/processed/driving_sample/features/sequences/run_official/dataset_splits.json"),
             ("Scaler Parameters", "datasets/processed/driving_sample/features/sequences/run_official/scaler_parameters.json"),
             ("Imputation Parameters", "datasets/processed/driving_sample/features/sequences/run_official/imputation_parameters.json"),
+            ("Canonical Annotations", "datasets/processed/driving_sample/annotations/annotations_canonical.jsonl"),
+            ("Object Reliability Labels", "datasets/processed/driving_sample/reliability_labels/object_detection_labels.json"),
+            ("Frame Reliability Labels", "datasets/processed/driving_sample/reliability_labels/frame_reliability_labels.json"),
+            ("Temporal Reliability Targets", "datasets/processed/driving_sample/reliability_labels/temporal_reliability_targets.json"),
+            ("Labeled Sequence Metadata", "datasets/processed/driving_sample/reliability_labels/sequence_metadata_labeled.json"),
+            ("Reliability Manifest", "datasets/processed/driving_sample/reliability_labels/reliability_manifest.json"),
         ]
 
         for name, rel_path in expected_artifacts:
@@ -806,6 +862,37 @@ class ProjectAuditor:
             ))
             print(f"  [FAIL] Leakage check failed: gap={gap}")
 
+        # 3. Day 8 Ground-Truth Reliability Labels Conservation & Bounds
+        frame_labels_path = self.root / "datasets/processed/driving_sample/reliability_labels/frame_reliability_labels.json"
+        total_tp, total_fp, total_fn = 0, 0, 0
+        if frame_labels_path.exists():
+            with open(frame_labels_path, "r", encoding="utf-8") as flf:
+                frame_data = json.load(flf)
+            total_tp = sum(f.get("true_positives", 0) for f in frame_data)
+            total_fp = sum(f.get("false_positives", 0) for f in frame_data)
+            total_fn = sum(f.get("false_negatives", 0) for f in frame_data)
+            pred_conserved = (total_tp + total_fp == 211)
+            gt_conserved = (total_tp + total_fn == 5121)
+            if pred_conserved and gt_conserved:
+                self.checks.append(AuditCheckItem(
+                    id="integrity_day8_conservation",
+                    phase="Scientific Integrity",
+                    category="Ground-Truth Policy",
+                    status="PASS",
+                    message=f"Day 8 mathematical count conservation verified: TP+FP={total_tp+total_fp} (211 Preds), TP+FN={total_tp+total_fn} (5,121 GT).",
+                ))
+                print(f"  [PASS] Day 8 Reliability Conservation: TP+FP={total_tp+total_fp} (211), TP+FN={total_tp+total_fn} (5,121).")
+            else:
+                all_passed = False
+                self.checks.append(AuditCheckItem(
+                    id="integrity_day8_conservation",
+                    phase="Scientific Integrity",
+                    category="Ground-Truth Policy",
+                    status="FAIL",
+                    message=f"Count conservation mismatch: TP+FP={total_tp+total_fp}, TP+FN={total_tp+total_fn}",
+                ))
+                print(f"  [FAIL] Count conservation mismatch: TP+FP={total_tp+total_fp}, TP+FN={total_tp+total_fn}")
+
         self.data_integrity_results = {
             "ground_truth_policy": "STRICT_HONESTY_ENFORCED",
             "real_data_supervised_status": val_res.supervised_readiness,
@@ -814,6 +901,12 @@ class ProjectAuditor:
             "embargo_gap_frames": gap,
             "training_only_scaler_fitting": True,
             "training_only_imputer_fitting": True,
+            "day8_total_ground_truth": 5121,
+            "day8_total_predictions": 211,
+            "day8_true_positives": total_tp,
+            "day8_false_positives": total_fp,
+            "day8_false_negatives": total_fn,
+            "day8_conservation_verified": (total_tp + total_fp == 211 and total_tp + total_fn == 5121),
         }
 
         return all_passed
@@ -915,6 +1008,18 @@ class ProjectAuditor:
             json.dump(self.data_integrity_results, dtf, indent=2)
         saved["data_integrity_report"] = p_data
 
+        # 6. day8_master_audit.json
+        p_day8_json = out_path / "day8_master_audit.json"
+        with open(p_day8_json, "w", encoding="utf-8") as djf:
+            json.dump(report.to_dict(), djf, indent=2)
+        saved["day8_master_audit_json"] = p_day8_json
+
+        # 7. day8_master_audit.md
+        p_day8_md = out_path / "day8_master_audit.md"
+        with open(p_day8_md, "w", encoding="utf-8") as dmf:
+            dmf.write(self._render_markdown_summary(report))
+        saved["day8_master_audit_md"] = p_day8_md
+
         return saved
 
     def _render_markdown_summary(self, report: ProjectAuditReport) -> str:
@@ -925,7 +1030,7 @@ class ProjectAuditor:
             f"**Overall Project Status:** **`{report.overall_status}`**  ",
             f"**Git Branch:** `{report.git_info.get('branch', 'unknown')}` | **Commit:** `{report.git_info.get('latest_commit', 'unknown')}`  ",
             "",
-            "## 1. Day 1–Day 6 Completion Status Matrix",
+            "## 1. Day 1–Day 8 Completion Status Matrix",
             "",
             "| Phase | Description | Status |",
             "| :--- | :--- | :---: |",
