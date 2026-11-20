@@ -148,13 +148,24 @@ class AlertGenerationConfig:
     enable_critical_escalation: bool = True
     max_active_alerts: int = 10
     notification_channels: Tuple[str, ...] = ("log", "dashboard_event")
+    cooldown_seconds: float = 1.0
+    min_consecutive_increasing_for_trend_alert: int = 3
+    min_consecutive_for_high_alert: int = 1
+    min_consecutive_for_medium_alert: int = 2
+    auto_resolve_on_low_risk: bool = True
+    alert_ttl_seconds: float = 10.0
+    enable_data_quality_warnings: bool = True
 
     def validate(self) -> List[str]:
         errors = []
         if self.cooldown_frames < 0:
             errors.append(f"alert_generation.cooldown_frames must be >= 0, got: {self.cooldown_frames}")
+        if self.cooldown_seconds < 0.0:
+            errors.append(f"alert_generation.cooldown_seconds must be >= 0.0, got: {self.cooldown_seconds}")
         if self.max_active_alerts < 1:
             errors.append(f"alert_generation.max_active_alerts must be >= 1, got: {self.max_active_alerts}")
+        if self.min_consecutive_increasing_for_trend_alert < 1:
+            errors.append(f"alert_generation.min_consecutive_increasing_for_trend_alert must be >= 1, got: {self.min_consecutive_increasing_for_trend_alert}")
         if not self.notification_channels:
             errors.append("alert_generation.notification_channels must not be empty")
         return errors
@@ -289,6 +300,13 @@ class EarlyWarningConfig:
             enable_critical_escalation=ag_dict.get("enable_critical_escalation", True),
             max_active_alerts=ag_dict.get("max_active_alerts", 10),
             notification_channels=tuple(ag_dict.get("notification_channels", ["log", "dashboard_event"])),
+            cooldown_seconds=float(ag_dict.get("cooldown_seconds", 1.0)),
+            min_consecutive_increasing_for_trend_alert=int(ag_dict.get("min_consecutive_increasing_for_trend_alert", 3)),
+            min_consecutive_for_high_alert=int(ag_dict.get("min_consecutive_for_high_alert", 1)),
+            min_consecutive_for_medium_alert=int(ag_dict.get("min_consecutive_for_medium_alert", 2)),
+            auto_resolve_on_low_risk=bool(ag_dict.get("auto_resolve_on_low_risk", True)),
+            alert_ttl_seconds=float(ag_dict.get("alert_ttl_seconds", 10.0)),
+            enable_data_quality_warnings=bool(ag_dict.get("enable_data_quality_warnings", True)),
         )
 
         # Data Ingestion

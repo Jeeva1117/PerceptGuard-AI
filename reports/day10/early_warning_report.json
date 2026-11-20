@@ -1,0 +1,33 @@
+{
+  "task": "Day 10 Task 5 \u2014 Predictive Early Warning & Alert Generation",
+  "status": "PASS WITH LIMITATIONS",
+  "calibration_status": "PROVISIONAL",
+  "dataset": "driving_sample (138 sequences, 414 multi-horizon predictions)",
+  "execution_metrics": {
+    "total_predictions_evaluated": 414,
+    "total_alerts_emitted": 414,
+    "active_alerts_at_termination": 72,
+    "lifecycle_events_logged": 756,
+    "total_evaluation_time_seconds": 0.04154649993870407,
+    "latency_per_frame_microseconds": 100.35386458624171,
+    "throughput_evaluations_per_second": 9964.738319973954
+  },
+  "severity_distribution": {
+    "CRITICAL": 414
+  },
+  "rule_trigger_distribution": {
+    "RULE_CRITICAL_BREACH": 414
+  },
+  "safety_invariants": {
+    "horizon_isolation": true,
+    "sequence_isolation": true,
+    "cooldown_deduplication": true,
+    "critical_escalation_enabled": true,
+    "no_false_resolution_on_missing_data": true,
+    "provisional_status_preserved": true
+  },
+  "limitations": [
+    "Predicted risk scores on driving_sample cluster predominantly in HIGH/CRITICAL due to 100% zero-inflation ground truth.",
+    "Alert thresholds remain designated as PROVISIONAL pending multi-video BDD100K calibration."
+  ]
+}

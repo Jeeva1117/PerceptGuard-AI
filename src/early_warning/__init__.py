@@ -23,7 +23,14 @@ from src.early_warning.early_warning_data_contract import (
     EarlyWarningDataContractValidationSummary,
     EarlyWarningInputRecord,
 )
+from src.early_warning.early_warning_engine import (
+    AlertLifecycleEvent,
+    EarlyWarningEngine,
+)
 from src.early_warning.interfaces import (
+    AlertLifecycleState,
+    AlertSeverity,
+    AlertType,
     EarlyWarningAlert,
     IEarlyWarningDashboard,
     IEarlyWarningGenerator,
@@ -56,9 +63,15 @@ __all__ = [
     "RiskLevel",
     "RiskScore",
     "EarlyWarningAlert",
+    "AlertSeverity",
+    "AlertType",
+    "AlertLifecycleState",
+    "AlertLifecycleEvent",
     "IRiskAssessmentEngine",
     "IRiskClassifier",
     "ITemporalRiskMonitor",
     "IEarlyWarningGenerator",
     "IEarlyWarningDashboard",
+    # Engine
+    "EarlyWarningEngine",
 ]

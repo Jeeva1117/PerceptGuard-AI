@@ -45,6 +45,51 @@ class RiskLevel(str, Enum):
         return ranks.get(self, -1)
 
 
+class AlertSeverity(str, Enum):
+    """Severity classification for early warning alerts."""
+    INFO = "INFO"
+    WARNING = "WARNING"
+    CRITICAL = "CRITICAL"
+    TREND_WARNING = "TREND_WARNING"
+    DATA_QUALITY_WARNING = "DATA_QUALITY_WARNING"
+
+    @classmethod
+    def from_string(cls, value: str) -> AlertSeverity:
+        val = str(value).strip().upper()
+        try:
+            return cls(val)
+        except ValueError:
+            return cls.WARNING
+
+    @property
+    def priority_rank(self) -> int:
+        ranks = {
+            AlertSeverity.INFO: 0,
+            AlertSeverity.DATA_QUALITY_WARNING: 1,
+            AlertSeverity.TREND_WARNING: 2,
+            AlertSeverity.WARNING: 3,
+            AlertSeverity.CRITICAL: 4,
+        }
+        return ranks.get(self, 0)
+
+
+class AlertType(str, Enum):
+    """Operational trigger categorization of perception early warnings."""
+    THRESHOLD_BREACH = "THRESHOLD_BREACH"
+    RAPID_DEGRADATION = "RAPID_DEGRADATION"
+    STATE_TRANSITION = "STATE_TRANSITION"
+    DATA_QUALITY = "DATA_QUALITY"
+
+
+class AlertLifecycleState(str, Enum):
+    """State machine lifecycle status for actionable alerts."""
+    NEW = "NEW"
+    ACTIVE = "ACTIVE"
+    ACKNOWLEDGED = "ACKNOWLEDGED"
+    RESOLVED = "RESOLVED"
+    EXPIRED = "EXPIRED"
+
+
 @dataclass
 class RiskScore:
     """Quantitative risk evaluation produced by the risk assessment engine."""
@@ -83,14 +128,57 @@ class EarlyWarningAlert:
     warning_message: str
     recommended_action: str
     is_suppressed: bool = False
+    severity: AlertSeverity = AlertSeverity.WARNING
+    alert_type: AlertType = AlertType.THRESHOLD_BREACH
+    lifecycle_state: AlertLifecycleState = AlertLifecycleState.NEW
+    video_id: str = "driving_sample"
+    frame_id: str = ""
+    timestamp: float = 0.0
+    generated_at: Optional[str] = None
+    forecast_horizon: Optional[int] = None
+    risk_category: Optional[RiskLevel] = None
+    trigger_reason: str = ""
+    risk_trend: str = "UNKNOWN"
+    previous_category: Optional[RiskLevel] = None
+    current_category: Optional[RiskLevel] = None
+    calibration_status: str = "PROVISIONAL"
+    model_version: str = "LSTMForecaster"
+    rule_id: str = "RULE_DEFAULT"
+    acknowledgement_status: str = "UNACKNOWLEDGED"
+    metadata: Dict[str, Any] = field(default_factory=dict)
     created_at: str = field(
         default_factory=lambda: datetime.datetime.now(datetime.timezone.utc).isoformat()
     )
+
+    def __post_init__(self):
+        if not self.frame_id:
+            self.frame_id = self.source_frame_id
+        if self.timestamp == 0.0 and self.target_timestamp_seconds is not None:
+            self.timestamp = self.target_timestamp_seconds
+        if self.forecast_horizon is None:
+            self.forecast_horizon = self.trigger_horizon
+        if self.risk_category is None:
+            self.risk_category = self.risk_level
+        if self.current_category is None:
+            self.current_category = self.risk_level
+        if not self.trigger_reason:
+            self.trigger_reason = self.warning_message
+        if not self.generated_at:
+            self.generated_at = self.created_at
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert EarlyWarningAlert to dictionary."""
         d = asdict(self)
         d["risk_level"] = self.risk_level.value
+        d["severity"] = self.severity.value
+        d["alert_type"] = self.alert_type.value
+        d["lifecycle_state"] = self.lifecycle_state.value
+        if self.risk_category:
+            d["risk_category"] = self.risk_category.value
+        if self.current_category:
+            d["current_category"] = self.current_category.value
+        if self.previous_category:
+            d["previous_category"] = self.previous_category.value
         return d
 
 
