@@ -11,6 +11,7 @@ from src.risk.risk_config import (
     RiskConfig,
     RiskConfigError,
     TemporalFeatureConfig,
+    TemporalMonitoringConfig,
     ThresholdProfile,
     TransformationConfig,
 )
@@ -27,6 +28,14 @@ from src.risk.risk_validator import (
     validate_horizon,
     validate_reliability_value,
     validate_risk_value,
+)
+from src.risk.temporal_risk_monitor import (
+    MonitoredRiskRecord,
+    RiskTrendDirection,
+    StateTransitionEvent,
+    TemporalMonitoringError,
+    TemporalRiskMonitor,
+    TemporalRiskSummary,
 )
 from src.risk.threshold_calibrator import (
     CalibrationError,
@@ -45,6 +54,7 @@ __all__ = [
     "TemporalFeatureConfig",
     "ThresholdProfile",
     "ClassificationConfig",
+    "TemporalMonitoringConfig",
     # Data Models
     "HorizonRiskRecord",
     "AggregatedRiskRecord",
@@ -53,6 +63,10 @@ __all__ = [
     "CalibrationSample",
     "ThresholdCandidateEvaluation",
     "CalibrationReport",
+    "MonitoredRiskRecord",
+    "StateTransitionEvent",
+    "TemporalRiskSummary",
+    "RiskTrendDirection",
     # Validation
     "RiskValidationError",
     "validate_reliability_value",
@@ -68,4 +82,7 @@ __all__ = [
     # Calibration
     "ThresholdCalibrator",
     "CalibrationError",
+    # Monitoring
+    "TemporalRiskMonitor",
+    "TemporalMonitoringError",
 ]

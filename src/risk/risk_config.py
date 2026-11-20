@@ -156,6 +156,41 @@ class ClassificationConfig:
 
 
 @dataclass(frozen=True)
+class TemporalMonitoringConfig:
+    """Configuration for chronological risk tracking, trend analysis, and state transitions."""
+    history_window_size: int = 30
+    min_observations_for_trend: int = 2
+    max_staleness_seconds: float = 1.0
+    max_timestamp_gap_seconds: float = 1.5
+    trend_stability_threshold: float = 0.01
+    allow_out_of_order: bool = False
+    deduplication_policy: str = "reject"  # "reject", "ignore", "replace"
+    track_state_transitions: bool = True
+    alert_persistence_threshold: int = 3  # Consecutive high/critical frames to trigger persistence condition
+
+    def validate(self) -> List[str]:
+        errors = []
+        if self.history_window_size < 2:
+            errors.append(f"monitoring.history_window_size must be >= 2, got: {self.history_window_size}")
+        if self.min_observations_for_trend < 2 or self.min_observations_for_trend > self.history_window_size:
+            errors.append(
+                f"monitoring.min_observations_for_trend must be between 2 and {self.history_window_size}, "
+                f"got: {self.min_observations_for_trend}"
+            )
+        if self.max_staleness_seconds <= 0.0:
+            errors.append(f"monitoring.max_staleness_seconds must be positive, got: {self.max_staleness_seconds}")
+        if self.max_timestamp_gap_seconds <= 0.0:
+            errors.append(f"monitoring.max_timestamp_gap_seconds must be positive, got: {self.max_timestamp_gap_seconds}")
+        if self.trend_stability_threshold < 0.0:
+            errors.append(f"monitoring.trend_stability_threshold must be non-negative, got: {self.trend_stability_threshold}")
+        if self.deduplication_policy not in ("reject", "ignore", "replace"):
+            errors.append(f"monitoring.deduplication_policy must be 'reject', 'ignore', or 'replace', got: {self.deduplication_policy}")
+        if self.alert_persistence_threshold < 1:
+            errors.append(f"monitoring.alert_persistence_threshold must be >= 1, got: {self.alert_persistence_threshold}")
+        return errors
+
+
+@dataclass(frozen=True)
 class RiskConfig:
     """Master configuration container for PerceptGuard AI Risk Scoring & Classification."""
     supported_horizons: Tuple[int, ...] = (1, 3, 5)
@@ -163,6 +198,7 @@ class RiskConfig:
     aggregation: AggregationConfig = field(default_factory=AggregationConfig)
     temporal: TemporalFeatureConfig = field(default_factory=TemporalFeatureConfig)
     classification: ClassificationConfig = field(default_factory=ClassificationConfig)
+    monitoring: TemporalMonitoringConfig = field(default_factory=TemporalMonitoringConfig)
     precision_decimals: int = 6
 
     def validate(self) -> List[str]:
@@ -177,6 +213,7 @@ class RiskConfig:
         errors.extend(self.aggregation.validate(supported_horizons=self.supported_horizons))
         errors.extend(self.temporal.validate())
         errors.extend(self.classification.validate(supported_horizons=self.supported_horizons))
+        errors.extend(self.monitoring.validate())
 
         if self.precision_decimals < 1 or self.precision_decimals > 12:
             errors.append(f"precision_decimals must be between 1 and 12, got: {self.precision_decimals}")
@@ -261,6 +298,20 @@ class RiskConfig:
             stale_data_level=c_data.get("stale_data_level", "UNKNOWN"),
         )
 
+        # Monitoring
+        m_data = data.get("monitoring", {})
+        monitoring = TemporalMonitoringConfig(
+            history_window_size=m_data.get("history_window_size", 30),
+            min_observations_for_trend=m_data.get("min_observations_for_trend", 2),
+            max_staleness_seconds=float(m_data.get("max_staleness_seconds", 1.0)),
+            max_timestamp_gap_seconds=float(m_data.get("max_timestamp_gap_seconds", 1.5)),
+            trend_stability_threshold=float(m_data.get("trend_stability_threshold", 0.01)),
+            allow_out_of_order=bool(m_data.get("allow_out_of_order", False)),
+            deduplication_policy=m_data.get("deduplication_policy", "reject"),
+            track_state_transitions=bool(m_data.get("track_state_transitions", True)),
+            alert_persistence_threshold=int(m_data.get("alert_persistence_threshold", 3)),
+        )
+
         precision = data.get("precision_decimals", 6)
 
         config = cls(
@@ -269,6 +320,7 @@ class RiskConfig:
             aggregation=aggregation,
             temporal=temporal,
             classification=classification,
+            monitoring=monitoring,
             precision_decimals=precision,
         )
 
