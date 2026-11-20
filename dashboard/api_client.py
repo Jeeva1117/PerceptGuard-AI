@@ -55,6 +55,7 @@ class DashboardApiClient:
         timeout: float = 10.0,
         settings: Optional[SystemSettings] = None,
         use_in_process_fallback: bool = True,
+        http_client: Optional[httpx.Client] = None,
     ):
         self.settings = settings or get_settings()
         self.base_url = (base_url or self.settings.dashboard.api_base_url).rstrip("/")
@@ -67,12 +68,15 @@ class DashboardApiClient:
         self._connection_mode: str = "INITIALIZING"
         self._last_error: Optional[str] = None
 
-        # Initialize HTTP client
-        self._http_client = httpx.Client(
-            base_url=self.base_url,
-            timeout=self.timeout,
-            headers={"User-Agent": f"PerceptGuard-UI/{self.settings.app.version}"},
-        )
+        # Initialize or accept HTTP client
+        if http_client is not None:
+            self._http_client = http_client
+        else:
+            self._http_client = httpx.Client(
+                base_url=self.base_url,
+                timeout=self.timeout,
+                headers={"User-Agent": f"PerceptGuard-UI/{self.settings.app.version}"},
+            )
 
     @property
     def connection_mode(self) -> str:
