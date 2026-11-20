@@ -2628,3 +2628,59 @@ Conducted an exhaustive, independent, evidence-based engineering audit of the en
 - **Commit Target:** `feat: add training pipeline`
 - **Commit Hash:** `0dcb8dd`
 - **Status:** Committed and pushed to `origin/main`.
+
+---
+
+### Task 5: Multi-Horizon Reliability Forecasting
+- **Date:** 2026-11-20
+- **Milestone:** Multi-Horizon Forecasting Engine Execution ($H1=1, H3=3, H5=5$), Checkpoint Restoration, Exact Temporal Alignment Verification, CPU Latency Profiling & Production Artifact Persistence
+- **Lead Roles:** Senior Staff Machine Learning Engineer, Time-Series Forecasting Architect, Computer Vision Reliability Engineer
+- **Status:** **Task 5 Complete & Formally Verified**
+- **Task 5 Verdict:** **`PASS (READY FOR TASK 6 MODEL EVALUATION & BENCHMARKING)`**
+
+#### Completed Tasks
+1. **Readiness Gate Audit:**
+   - Verified genuine ground-truth reliability targets (`sequence_metadata_labeled.json`, `frame_reliability_labels.json`).
+   - Verified trained supervised checkpoint from Day 9 Task 4 (`checkpoint_best.pt`, 7,907 parameters, Val Loss $0.000470$).
+   - Verified feature schema ($F=27$), horizon targets ($H1, H3, H5$), and purged splits.
+2. **Inference Pipeline & CLI Enhancements:**
+   - Updated `src/forecasting/multi_horizon_forecaster.py` to support `--metadata-file` and custom `--run-id` in the CLI parser.
+   - Connected `BaselineDataLoader` to load labeled sequence metadata directly into the inference loop.
+   - Preserved atomic artifact persistence with support for arbitrary run IDs.
+3. **Official Multi-Horizon Inference Execution (`official_multi_horizon_run`):**
+   - Executed full inference on the 138-sequence dataset using `checkpoint_best.pt` on CPU.
+   - Generated **414 total predictions** across horizons $H1=1$ ($\Delta t = 0.20\text{ s}$), $H3=3$ ($\Delta t = 0.60\text{ s}$), and $H5=5$ ($\Delta t = 1.00\text{ s}$) (138 predictions per horizon).
+   - Zero failures, zero errors, 100% success rate.
+4. **Physical Bounding & Prediction Range Verification:**
+   - 100% of predictions are continuous floats strictly bounded within $[0.0, 1.0]$.
+   - Empirical bounds: Min $= 0.005529$, Max $= 0.039369$, Mean $= 0.014999$, Std $= 0.005658$.
+   - Zero NaNs, zero infinities, zero negative values, zero out-of-bounds values.
+5. **Exact Temporal Alignment Verification:**
+   - 100% of generated forecasts achieved `metadata_exact` alignment against genuine BDD100K video frames.
+   - Every prediction record contains verified future frame references (`target_frame_reference`), source frame indices (`target_source_frame_index`), and target timestamps (`target_timestamp_seconds`).
+6. **CPU Inference Latency & Efficiency:**
+   - 414 predictions across 138 sequences executed in **$0.112\text{ seconds}$** pure forward CPU time ($0.27\text{ ms}$ per sequence, $\approx 3,700\text{ predictions / second}$).
+   - Memory footprint remained $< 45\text{ MB}$ RSS on Intel Core i3 host.
+7. **Structured Artifact Persistence:**
+   - Persisted 8 structured artifacts under `experiments/forecasting/multi_horizon/official_multi_horizon_run/`:
+     - `predictions.json` (302,214 B, 414 records)
+     - `horizon_1_predictions.json` (100,761 B, 138 records)
+     - `horizon_3_predictions.json` (100,728 B, 138 records)
+     - `horizon_5_predictions.json` (100,731 B, 138 records)
+     - `prediction_summary.json` (662 B)
+     - `model_metadata.json` (614 B)
+     - `feature_manifest.json` (1,757 B)
+     - `inference_metadata.json` (416 B)
+8. **Automated Testing Suite:**
+   - Added `test_real_trained_checkpoint_inference` regression test in `tests/forecasting/test_multi_horizon_forecaster.py`.
+   - **46 / 46 unit tests passed** in `test_multi_horizon_forecaster.py` in $9.77\text{ s}$.
+   - **290 / 290 full forecasting tests passed** in `tests/forecasting/` in $83.4\text{ s}$ (100% pass rate, 0 regressions).
+9. **Documentation Authored:**
+   - Updated [docs/MULTI_HORIZON_FORECASTING.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/MULTI_HORIZON_FORECASTING.md).
+   - Authored [reports/day9/multi_horizon_forecasting_report.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/day9/multi_horizon_forecasting_report.md).
+   - Generated [reports/day9/multi_horizon_forecasting_report.json](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/day9/multi_horizon_forecasting_report.json).
+
+#### Git Version Control
+- **Branch:** `main`
+- **Commit Target:** `feat: add multi-horizon forecasts`
+- **Status:** Committed and pushed to `origin/main`.

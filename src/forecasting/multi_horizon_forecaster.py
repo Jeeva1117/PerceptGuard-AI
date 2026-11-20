@@ -678,6 +678,18 @@ def parse_args(args: Optional[List[str]] = None) -> argparse.Namespace:
         help="Limit number of sequences to process.",
     )
     parser.add_argument(
+        "--metadata-file",
+        type=str,
+        default=None,
+        help="Optional path to custom or labeled sequence metadata JSON file.",
+    )
+    parser.add_argument(
+        "--run-id",
+        type=str,
+        default=None,
+        help="Custom run ID for forecasting experiment directory.",
+    )
+    parser.add_argument(
         "--verbose",
         action="store_true",
         help="Enable detailed progress logging.",
@@ -735,7 +747,7 @@ def run_forecasting_cli(args: argparse.Namespace) -> int:
 
     print(f"[DATA] Loading sequence dataset (L={args.sequence_length}) from: {input_path}")
     try:
-        loader = BaselineDataLoader(artifacts_dir=input_path)
+        loader = BaselineDataLoader(artifacts_dir=input_path, metadata_file=args.metadata_file)
         dataset = loader.load_sequence_dataset(
             sequence_length=args.sequence_length,
             target_horizons=args.horizons,
@@ -782,6 +794,7 @@ def run_forecasting_cli(args: argparse.Namespace) -> int:
             predictions=predictions,
             output_dir=args.output,
             manifest_data=loader.manifest_data,
+            run_id=args.run_id,
         )
         for name, path in artifacts.items():
             print(f"  - {name}: {path}")

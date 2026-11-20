@@ -578,3 +578,46 @@ class TestCLIAndDatasetIntegration:
             assert p.prediction_status == "success"
             assert 0.0 <= p.predicted_reliability <= 1.0
             assert np.isfinite(p.predicted_reliability)
+
+    def test_real_trained_checkpoint_inference(self, tmp_path: Path) -> None:
+        """Verify inference using the official trained Task 4 checkpoint and labeled metadata."""
+        chk_path = Path("experiments/forecasting/lstm_training/official_lstm_training/checkpoints/checkpoint_best.pt")
+        meta_file = Path("datasets/processed/driving_sample/reliability_labels/sequence_metadata_labeled.json")
+        artifacts_dir = Path("datasets/processed/driving_sample/features/sequences/run_official")
+
+        if not chk_path.exists() or not meta_file.exists() or not artifacts_dir.exists():
+            pytest.skip("Required training artifacts not found on disk")
+
+        loader = BaselineDataLoader(artifacts_dir=artifacts_dir, metadata_file=meta_file)
+        dataset = loader.load_sequence_dataset(sequence_length=5, target_horizons=[1, 3, 5])
+        assert len(dataset) == 138
+
+        forecaster = MultiHorizonForecaster(checkpoint_path=chk_path, horizons=[1, 3, 5], batch_size=8)
+        assert forecaster.model is not None
+        assert forecaster.checkpoint_id == "official_lstm_training"
+
+        preds = forecaster.predict_dataset(dataset=dataset)
+        assert len(preds) == 138 * 3
+
+        h1_preds = [p for p in preds if p.horizon == 1]
+        h3_preds = [p for p in preds if p.horizon == 3]
+        h5_preds = [p for p in preds if p.horizon == 5]
+        assert len(h1_preds) == 138
+        assert len(h3_preds) == 138
+        assert len(h5_preds) == 138
+
+        for p in preds:
+            assert 0.0 <= p.predicted_reliability <= 1.0
+            assert np.isfinite(p.predicted_reliability)
+            assert p.prediction_status == "success"
+            assert p.checkpoint_id == "official_lstm_training"
+            assert p.alignment_method == "metadata_exact"
+
+        # Verify saving artifacts
+        out_artifacts = forecaster.save_prediction_artifacts(
+            predictions=preds,
+            output_dir=tmp_path / "preds",
+            run_id="test_run",
+        )
+        assert (tmp_path / "preds" / "test_run" / "predictions.json").exists()
+        assert (tmp_path / "preds" / "test_run" / "prediction_summary.json").exists()

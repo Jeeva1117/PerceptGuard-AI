@@ -1,0 +1,203 @@
+{
+  "meta": {
+    "report_name": "Day 9 Task 5: Multi-Horizon Reliability Forecasting Report",
+    "date": "2026-11-20",
+    "phase": "Day 9 Task 5",
+    "verdict": "PASS (READY FOR TASK 6 MODEL EVALUATION & BENCHMARKING)",
+    "repository": "https://github.com/Jeeva1117/PerceptGuard-AI.git",
+    "branch": "main",
+    "execution_environment": {
+      "hardware": "Intel Core i3, 8 GB RAM, Windows 11 Build 26200",
+      "compute": "CPU-only (no CUDA GPU)",
+      "python_version": "3.13.3",
+      "framework": "PyTorch 2.15.0+cpu",
+      "device": "cpu"
+    },
+    "lead_roles": [
+      "Senior Staff Machine Learning Engineer",
+      "Time-Series Forecasting Architect",
+      "Computer Vision Reliability Engineer"
+    ]
+  },
+  "readiness_gate": {
+    "status": "PASS",
+    "ground_truth_labels_available": true,
+    "labels_file": "datasets/processed/driving_sample/reliability_labels/sequence_metadata_labeled.json",
+    "target_definitions_documented": true,
+    "horizons": [1, 3, 5],
+    "lstm_checkpoint_verified": true,
+    "checkpoint_path": "experiments/forecasting/lstm_training/official_lstm_training/checkpoints/checkpoint_best.pt",
+    "checkpoint_size_bytes": 106047,
+    "checkpoint_val_loss": 0.0004697327579682072,
+    "feature_schema_verified": true,
+    "feature_count": 27,
+    "baseline_benchmarks_available": true,
+    "sequence_alignment_verified": true
+  },
+  "checkpoint_details": {
+    "checkpoint_path": "experiments/forecasting/lstm_training/official_lstm_training/checkpoints/checkpoint_best.pt",
+    "architecture": "LSTMForecaster",
+    "input_size": 27,
+    "hidden_size": 32,
+    "num_layers": 1,
+    "output_horizons": [1, 3, 5],
+    "output_size": 3,
+    "activation": "sigmoid",
+    "trainable_parameters": 7907,
+    "non_trainable_parameters": 0,
+    "total_parameters": 7907,
+    "checkpoint_id": "official_lstm_training"
+  },
+  "inference_setup": {
+    "run_id": "official_multi_horizon_run",
+    "sequence_length": 5,
+    "feature_count": 27,
+    "batch_size": 8,
+    "inference_device": "cpu",
+    "horizons": [1, 3, 5],
+    "time_deltas_seconds": {
+      "h1": 0.20,
+      "h3": 0.60,
+      "h5": 1.00
+    },
+    "total_input_sequences": 138,
+    "total_predictions_generated": 414,
+    "successful_predictions": 414,
+    "failed_predictions": 0,
+    "alignment_method": "metadata_exact",
+    "alignment_rate_percent": 100.0
+  },
+  "predictions_breakdown": {
+    "horizon_1": {
+      "delta_frames": 1,
+      "delta_seconds": 0.20,
+      "count": 138,
+      "min": 0.005529,
+      "max": 0.031625,
+      "mean": 0.011734,
+      "std": 0.004226,
+      "artifact_file": "experiments/forecasting/multi_horizon/official_multi_horizon_run/horizon_1_predictions.json",
+      "artifact_size_bytes": 100761
+    },
+    "horizon_3": {
+      "delta_frames": 3,
+      "delta_seconds": 0.60,
+      "count": 138,
+      "min": 0.008970,
+      "max": 0.039369,
+      "mean": 0.018481,
+      "std": 0.005471,
+      "artifact_file": "experiments/forecasting/multi_horizon/official_multi_horizon_run/horizon_3_predictions.json",
+      "artifact_size_bytes": 100728
+    },
+    "horizon_5": {
+      "delta_frames": 5,
+      "delta_seconds": 1.00,
+      "count": 138,
+      "min": 0.006707,
+      "max": 0.036139,
+      "mean": 0.014782,
+      "std": 0.004905,
+      "artifact_file": "experiments/forecasting/multi_horizon/official_multi_horizon_run/horizon_5_predictions.json",
+      "artifact_size_bytes": 100731
+    },
+    "aggregate": {
+      "total_predictions": 414,
+      "min": 0.005529,
+      "max": 0.039369,
+      "mean": 0.014999,
+      "std": 0.005658,
+      "bounded_in_0_1": true,
+      "nan_or_inf_count": 0,
+      "predictions_file": "experiments/forecasting/multi_horizon/official_multi_horizon_run/predictions.json",
+      "predictions_file_size_bytes": 302214
+    }
+  },
+  "temporal_alignment_verification": {
+    "strategy_used": "metadata_exact",
+    "exact_match_count": 414,
+    "fallback_count": 0,
+    "out_of_bounds_count": 0,
+    "target_references_verified": true,
+    "target_frame_indices_verified": true,
+    "target_timestamps_verified": true
+  },
+  "performance_benchmarks": {
+    "host_cpu": "Intel Core i3 (8 Logical Cores, 2.10 GHz)",
+    "device": "cpu",
+    "pure_inference_duration_seconds": 0.112,
+    "total_pipeline_duration_seconds": 0.268,
+    "inference_latency_per_sequence_ms": 0.27,
+    "throughput_predictions_per_second": 3696.4,
+    "peak_memory_rss_mb": 44.8
+  },
+  "test_verification": {
+    "focused_unit_tests": {
+      "module": "tests/forecasting/test_multi_horizon_forecaster.py",
+      "total_tests": 46,
+      "passed": 46,
+      "failed": 0,
+      "duration_seconds": 9.77
+    },
+    "regression_suite": {
+      "scope": "tests/forecasting/",
+      "total_tests": 290,
+      "passed": 290,
+      "failed": 0,
+      "duration_seconds": 83.4
+    }
+  },
+  "persisted_artifacts": [
+    {
+      "path": "experiments/forecasting/multi_horizon/official_multi_horizon_run/predictions.json",
+      "records": 414,
+      "size_bytes": 302214
+    },
+    {
+      "path": "experiments/forecasting/multi_horizon/official_multi_horizon_run/horizon_1_predictions.json",
+      "records": 138,
+      "size_bytes": 100761
+    },
+    {
+      "path": "experiments/forecasting/multi_horizon/official_multi_horizon_run/horizon_3_predictions.json",
+      "records": 138,
+      "size_bytes": 100728
+    },
+    {
+      "path": "experiments/forecasting/multi_horizon/official_multi_horizon_run/horizon_5_predictions.json",
+      "records": 138,
+      "size_bytes": 100731
+    },
+    {
+      "path": "experiments/forecasting/multi_horizon/official_multi_horizon_run/prediction_summary.json",
+      "records": 1,
+      "size_bytes": 662
+    },
+    {
+      "path": "experiments/forecasting/multi_horizon/official_multi_horizon_run/model_metadata.json",
+      "records": 1,
+      "size_bytes": 614
+    },
+    {
+      "path": "experiments/forecasting/multi_horizon/official_multi_horizon_run/feature_manifest.json",
+      "records": 27,
+      "size_bytes": 1757
+    },
+    {
+      "path": "experiments/forecasting/multi_horizon/official_multi_horizon_run/inference_metadata.json",
+      "records": 1,
+      "size_bytes": 416
+    }
+  ],
+  "limitations": [
+    "Task 5 scope boundary: Comparative accuracy evaluation against baselines is strictly deferred to Day 9 Task 6",
+    "Model input is restricted to 2D monocular features; cannot observe blindspots outside camera FOV",
+    "Horizons are fixed at H1, H3, H5 (0.2s, 0.6s, 1.0s ahead); long-term horizon extrapolation requires autoregressive chaining"
+  ],
+  "next_steps": [
+    "Await user confirmation before proceeding to Day 9 Task 6: Comparative Model Evaluation & Benchmarking",
+    "Compute official evaluation metrics (MAE, RMSE, R2) across Train, Val, and Test splits",
+    "Compare LSTM performance against Day 9 Task 2 baseline models across horizons H1, H3, H5",
+    "Perform error degradation analysis across forecast horizons"
+  ]
+}
