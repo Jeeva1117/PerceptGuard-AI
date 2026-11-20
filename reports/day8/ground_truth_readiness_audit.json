@@ -1,0 +1,283 @@
+{
+  "schema_version": "1.0",
+  "audit_name": "Day 8 Task 1: Ground-Truth Dataset Readiness Audit",
+  "timestamp": "2026-11-20T06:20:00+05:30",
+  "auditor_roles": [
+    "Principal Computer Vision Engineer",
+    "Staff Machine Learning Engineer",
+    "Senior Data Engineer",
+    "ML Dataset Quality Architect"
+  ],
+  "overall_audit_status": "PASS",
+  "supervised_training_readiness": "BLOCKED",
+  "ground_truth_availability": "NOT AVAILABLE",
+  "annotation_formats_discovered": "NOT AVAILABLE",
+  "frame_alignment_status": "PARTIAL",
+  "data_quality_status": "PASS",
+  "frame_level_labeling_readiness": "NOT AVAILABLE",
+  "object_level_labeling_readiness": "NOT AVAILABLE",
+  "temporal_labeling_readiness": "NOT AVAILABLE",
+  "dataset_inventory": {
+    "raw_video": {
+      "filename": "converted_026c7465-309f6d33.mp4",
+      "path": "datasets/raw/converted_026c7465-309f6d33.mp4",
+      "file_size_bytes": 49774590,
+      "file_size_mb": 47.47,
+      "sha256": "12c6965c1ace511721e9ac2fbbb36d2723c5888d1dba698d5b8458adba08ad4b",
+      "resolution": [720, 1280],
+      "aspect_ratio": "9:16",
+      "total_frames": 1204,
+      "fps": 30.09,
+      "duration_seconds": 40.01,
+      "status": "PASS"
+    },
+    "extracted_frames": {
+      "directory": "datasets/processed/driving_sample/frames",
+      "total_frames": 200,
+      "extraction_fps": 5.0,
+      "frame_naming_pattern": "frame_000001.jpg to frame_000200.jpg",
+      "dimensions": [1280, 720, 3],
+      "color_mode": "BGR",
+      "status": "PASS"
+    },
+    "preprocessed_frames": {
+      "directory": "datasets/processed/driving_sample/preprocessed_frames",
+      "total_frames": 200,
+      "dimensions": [360, 640, 3],
+      "color_mode": "BGR",
+      "resizing_strategy": "letterbox_padding",
+      "scale_factor": 0.28125,
+      "active_width": 203,
+      "active_height": 360,
+      "horizontal_padding_offset": 218.5,
+      "padding_color": [0, 0, 0],
+      "mean_blur_score": 436.75,
+      "mean_brightness_score": 102.05,
+      "mean_contrast_score": 62.04,
+      "status": "PASS"
+    },
+    "yolo_detections": {
+      "source_file": "datasets/processed/driving_sample/detections/batch_runs/run_20261117_115348_e1789b/detection_results.json",
+      "model_name": "yolo11n",
+      "total_frames_processed": 200,
+      "total_detections": 211,
+      "unique_classes_detected": [
+        "traffic light",
+        "truck",
+        "car",
+        "potted plant",
+        "bus",
+        "surfboard",
+        "person",
+        "train",
+        "vase"
+      ],
+      "class_distribution": {
+        "traffic light": 159,
+        "truck": 31,
+        "car": 7,
+        "potted plant": 6,
+        "bus": 3,
+        "surfboard": 2,
+        "person": 1,
+        "train": 1,
+        "vase": 1
+      },
+      "confidence_statistics": {
+        "min": 0.2522,
+        "max": 0.7449,
+        "mean": 0.4215
+      },
+      "bounding_box_coordinate_system": "canvas_pixels_xyxy",
+      "bounding_box_range": {
+        "x_min": 218.7,
+        "x_max": 420.8,
+        "y_min": 0.8,
+        "y_max": 359.7
+      },
+      "invalid_boxes_count": 0,
+      "status": "PASS"
+    },
+    "tracking_outputs": {
+      "source_file": "datasets/processed/driving_sample/tracking/multi_object/mot_driving_sample_20261117_160903_1c98f4/multi_object_tracking.json",
+      "tracker_type": "bytetrack",
+      "total_frames_processed": 200,
+      "successful_frames": 166,
+      "empty_frames": 34,
+      "total_detections_ingested": 211,
+      "total_track_observations": 193,
+      "total_unique_tracks": 3,
+      "active_track_ids": [1, 2, 8],
+      "status": "PASS"
+    },
+    "feature_sequences": {
+      "directory": "datasets/processed/driving_sample/features/sequences/run_official",
+      "feature_count": 27,
+      "sequence_lengths": [5, 10, 15, 20],
+      "tensors": {
+        "L5": {
+          "shape": [138, 5, 27],
+          "train": 101,
+          "val": 18,
+          "test": 19,
+          "total": 138,
+          "nan_count": 0,
+          "inf_count": 0
+        },
+        "L10": {
+          "shape": [123, 10, 27],
+          "train": 96,
+          "val": 13,
+          "test": 14,
+          "total": 123,
+          "nan_count": 0,
+          "inf_count": 0
+        },
+        "L15": {
+          "shape": [108, 15, 27],
+          "train": 91,
+          "val": 8,
+          "test": 9,
+          "total": 108,
+          "nan_count": 0,
+          "inf_count": 0
+        },
+        "L20": {
+          "shape": [93, 20, 27],
+          "train": 86,
+          "val": 3,
+          "test": 4,
+          "total": 93,
+          "nan_count": 0,
+          "inf_count": 0
+        }
+      },
+      "split_strategy": "chronological_purged",
+      "temporal_gap_frames": 25,
+      "target_labels_available": false,
+      "configured_horizons": [1, 3, 5],
+      "status": "PASS"
+    }
+  },
+  "annotation_inventory": {
+    "yolo_txt_annotations": {
+      "files_found": 0,
+      "availability": "NOT AVAILABLE"
+    },
+    "coco_json_annotations": {
+      "files_found": 0,
+      "availability": "NOT AVAILABLE"
+    },
+    "pascal_voc_xml_annotations": {
+      "files_found": 0,
+      "availability": "NOT AVAILABLE"
+    },
+    "mot_csv_annotations": {
+      "files_found": 0,
+      "availability": "NOT AVAILABLE"
+    },
+    "bdd100k_json_annotations": {
+      "files_found": 0,
+      "availability": "NOT AVAILABLE"
+    },
+    "custom_annotations": {
+      "files_found": 0,
+      "availability": "NOT AVAILABLE"
+    },
+    "total_ground_truth_files": 0,
+    "ground_truth_status": "NOT AVAILABLE"
+  },
+  "frame_and_annotation_alignment": {
+    "internal_pipeline_alignment": {
+      "frame_to_detection_alignment": "PASS",
+      "detection_to_tracking_alignment": "PASS",
+      "tracking_to_feature_alignment": "PASS",
+      "feature_to_sequence_alignment": "PASS"
+    },
+    "ground_truth_alignment": {
+      "frame_id_mapping": "NOT AVAILABLE",
+      "timestamp_synchronization": "NOT AVAILABLE",
+      "coordinate_transformation_verified": "NOT TESTED",
+      "ground_truth_alignment_status": "NOT AVAILABLE"
+    },
+    "coordinate_transform_requirements": {
+      "raw_frame_space": [720, 1280],
+      "preprocessed_canvas_space": [360, 640],
+      "affine_scale_factor": 0.28125,
+      "offset_x_pixels": 218.75,
+      "offset_y_pixels": 0.0,
+      "alignment_risk": "High coordinate mismatch risk if raw ground-truth annotations are not transformed to canvas letterbox coordinates"
+    }
+  },
+  "ground_truth_reliability_formulation": {
+    "mathematical_definition": "R_{t+h} = IoU(B_{t+h}, G_{t+h})",
+    "target_horizons": [1, 3, 5],
+    "matching_algorithm": "Hungarian bipartite matching (or Greedy descending IoU assignment)",
+    "iou_threshold": 0.5,
+    "class_matching_constraint": "class(B) == class(G)",
+    "unmatched_predictions_policy": "R = 0.0 (False Positive penalty)",
+    "unmatched_ground_truth_policy": "Penalized in frame mAP / precision-recall metrics",
+    "empty_frame_policy": "R = 1.0 if both G and B empty; R = 0.0 if G empty and B non-empty; R = 0.0 if G non-empty and B empty",
+    "scientific_integrity_rules": {
+      "yolo_confidence_is_ground_truth": false,
+      "tracker_continuity_is_ground_truth": false,
+      "visual_heuristics_are_ground_truth": false,
+      "synthetic_targets_are_real_ground_truth": false
+    }
+  },
+  "labeling_readiness_assessment": {
+    "frame_level_readiness": "NOT AVAILABLE",
+    "object_level_readiness": "NOT AVAILABLE",
+    "temporal_level_readiness": "NOT AVAILABLE",
+    "supervised_training_readiness": "BLOCKED",
+    "reasons": [
+      "Zero ground-truth annotation files (JSON/XML/TXT/CSV) exist in repository",
+      "Cannot compute IoU between detections and non-existent human annotations",
+      "Cannot associate predicted track IDs with true physical objects across horizons H in {1, 3, 5}",
+      "Strict engineering rules forbid substituting YOLO confidence or heuristics as ground truth"
+    ]
+  },
+  "data_quality_and_storage_audit": {
+    "corrupted_files_count": 0,
+    "missing_files_in_pipeline": 0,
+    "duplicate_records_count": 0,
+    "invalid_bounding_boxes": 0,
+    "nan_or_inf_in_features": 0,
+    "storage_breakdown_mb": {
+      "raw_dataset": 47.47,
+      "processed_driving_sample": 404.38,
+      "models": 5.35,
+      "reports": 0.32
+    },
+    "host_ram_utilization_percent": 6.9,
+    "storage_status": "PASS",
+    "data_quality_status": "PASS"
+  },
+  "audit_tests_executed": [
+    {
+      "test_name": "test_dataset_structure.py",
+      "status": "PASS"
+    },
+    {
+      "test_name": "test_dataset_validator.py",
+      "status": "PASS"
+    },
+    {
+      "test_name": "test_batch_detector.py",
+      "status": "PASS"
+    },
+    {
+      "test_name": "test_detection_metrics.py",
+      "status": "PASS"
+    },
+    {
+      "test_name": "test_single_image_detector.py",
+      "status": "PASS"
+    },
+    {
+      "test_name": "full_regression_suite",
+      "status": "PASS"
+    }
+  ],
+  "recommended_next_action": "Execute Day 8 Task 2 to acquire or generate official BDD100K MOT ground-truth annotation files for sequence 026c7465-309f6d33, establish the letterbox affine coordinate transform, and construct authentic multi-horizon target labels R_{t+h}."
+}
