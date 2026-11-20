@@ -6,7 +6,7 @@ and reliable error payloads across all endpoints.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -151,7 +151,11 @@ class AlertSummarySchema(BaseModel):
     risk_score: float
     lifecycle_state: str
     warning_message: str
-    timestamp_seconds: float
+    timestamp_seconds: Optional[float] = None
+    target_timestamp_seconds: Optional[float] = None
+    timestamp: Optional[Union[float, str]] = None
+    created_at: Optional[str] = None
+    model_config = ConfigDict(extra="allow")
 
 
 class AlertListResponse(BaseModel):
@@ -166,8 +170,9 @@ class AlertListResponse(BaseModel):
 
 class AlertDetailResponse(AlertSummarySchema):
     """Complete alert record with audit history and context."""
-    trigger_frame_index: int
-    history: List[Dict[str, Any]]
+    trigger_frame_index: Optional[int] = None
+    history: Optional[List[Dict[str, Any]]] = None
+    lifecycle_events: Optional[List[Dict[str, Any]]] = None
     model_config = ConfigDict(extra="allow")
 
 
