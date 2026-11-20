@@ -80,6 +80,17 @@ def parse_args(args: Optional[List[str]] = None) -> argparse.Namespace:
         help="Sequence length L to load (e.g. 5, 10, 15, 20).",
     )
     parser.add_argument(
+        "--metadata-file",
+        type=str,
+        default=None,
+        help="Optional path to custom or labeled sequence metadata JSON file.",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Verify data loading, target readiness, and model construction without executing training epochs.",
+    )
+    parser.add_argument(
         "--verbose",
         action="store_true",
         help="Enable detailed progress logging.",
@@ -130,10 +141,23 @@ def run_training_pipeline(args: argparse.Namespace) -> int:
 
     print(f"[DATA] Located sequence artifacts at: {artifacts_dir}")
 
+    # Resolve metadata file (explicit CLI arg > config > default sequence_metadata.json)
+    metadata_file: Optional[Path] = None
+    if args.metadata_file:
+        metadata_file = Path(args.metadata_file)
+    elif getattr(config.data, "metadata_file", None):
+        cfg_meta = Path(config.data.metadata_file)
+        if cfg_meta.exists():
+            metadata_file = cfg_meta
+
+    if metadata_file is not None:
+        print(f"[DATA] Using custom metadata file: {metadata_file}")
+
     # 3. Load DataModule and Verify Dataset Splits
     try:
         data_module = ForecastingDataModule.from_artifacts(
             artifacts_dir=artifacts_dir,
+            metadata_file=metadata_file,
             sequence_length=seq_length,
             horizons=config.model.output_horizons,
             batch_size=batch_size,
@@ -186,6 +210,15 @@ def run_training_pipeline(args: argparse.Namespace) -> int:
     summary = model.get_model_summary()
     print(f"[MODEL] Trainable Parameters: {summary['trainable_parameters']}")
     print(f"[MODEL] Horizons: {summary['output_horizons']}")
+
+    # Check for dry-run
+    if args.dry_run:
+        print("-" * 78)
+        print("  DRY-RUN VERIFICATION SUCCESSFUL")
+        print("  All data splits, target contracts, and model architectures verified.")
+        print("  No training epochs executed (--dry-run specified).")
+        print("=" * 78)
+        return 0
 
     # 6. Initialize Engine
     run_id = f"lstm_{time.strftime('%Y%m%d_%H%M%S')}"

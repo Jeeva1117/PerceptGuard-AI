@@ -76,3 +76,24 @@ class TestTrainLSTMCLI:
         assert "Sequence Length: L = 10" in captured
         assert "Train=96, Val=13, Test=14" in captured
         assert "NOT AVAILABLE" in captured
+
+    def test_cli_labeled_data_dry_run(self, capsys: pytest.CaptureFixture) -> None:
+        """Verify CLI successfully passes target gate and completes dry run with labeled metadata."""
+        meta_file = "datasets/processed/driving_sample/reliability_labels/sequence_metadata_labeled.json"
+        if not Path(meta_file).exists():
+            pytest.skip("Labeled metadata artifact not found on disk")
+
+        args = parse_args([
+            "--config", "config/forecasting_config.yaml",
+            "--metadata-file", meta_file,
+            "--sequence-length", "5",
+            "--dry-run",
+        ])
+        ret = run_training_pipeline(args)
+        assert ret == 0
+
+        captured = capsys.readouterr().out
+        assert "Using custom metadata file" in captured
+        assert "DRY-RUN VERIFICATION SUCCESSFUL" in captured
+        assert "Trainable Parameters: 7907" in captured
+        assert "No training epochs executed" in captured

@@ -75,11 +75,14 @@ class DataConfig:
     forecast_horizons: List[int] = field(default_factory=lambda: [1, 3, 5])
     batch_size: int = 8
     num_workers: int = 0
+    metadata_file: Optional[str] = None
 
     def validate(self) -> List[str]:
         errors = []
         if not self.sequence_directory or not isinstance(self.sequence_directory, str):
             errors.append("data.sequence_directory must be a non-empty string")
+        if self.metadata_file is not None and (not isinstance(self.metadata_file, str) or not self.metadata_file.strip()):
+            errors.append("data.metadata_file must be a non-empty string when provided")
         if not isinstance(self.sequence_lengths, list) or len(self.sequence_lengths) == 0:
             errors.append("data.sequence_lengths must be a non-empty list of positive integers")
         else:

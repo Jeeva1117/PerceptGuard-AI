@@ -2403,4 +2403,65 @@ Conducted an exhaustive, independent, evidence-based engineering audit of the en
 #### Git Version Control
 - **Branch:** `main`
 - **Commit Target:** `test: finalize master engineering audit`
+- **Commit Hash:** `38c3c02`
+- **Status:** Committed and pushed to `origin/main`.
+
+---
+
+## Day 9: Supervised Forecasting Experiments & Model Validation
+
+### Task 1: Advanced Training Readiness & Experiment Planning Audit
+- **Date:** 2026-11-20
+- **Milestone:** Comprehensive Training Readiness Audit, Dataset Artifact Verification, CPU Feasibility Analysis & 5-Stage Experiment Roadmap
+- **Lead Roles:** Principal Machine Learning Engineer, Senior Staff AI Engineer, Deep Learning Architect, ML Experimentation Lead
+- **Status:** **Task 1 Complete & Formally Verified**
+- **Final Training Readiness Determination:** **`READY WITH LIMITATIONS` (Decision Tier B)**
+
+#### Completed Tasks
+1. **Day 8 Final Master Audit Review:**
+   - Inspected `docs/DAY_8_FINAL_MASTER_AUDIT.md`, `reports/final_audit/day8_master_audit.md`, and `reports/final_audit/day8_master_audit.json`.
+   - Verified that the final audit verdict is `READY WITH LIMITATIONS` (Decision Tier B).
+   - Confirmed all 14 subsystems certified ready, with the limitation that the $99.5\%$ zero-$F_1$ detector skew requires loss reweighting (Weighted Huber / Focal Loss) in downstream training.
+2. **Actual Dataset Availability Audit:**
+   - Inspected physical files on disk: 200 preprocessed frames ($640 \times 360$), 5,121 canonical annotations across 115 tracks, 211 YOLO detections, 5,331 object reliability records, 200 frame reliability records, and 462 temporal sequences.
+   - Verified multi-horizon targets available: H1 = 458, H3 = 450, H5 = 443 (1,351 total valid horizon predictions).
+   - Confirmed 0 missing records, 0 corrupt records, and 0 duplicate records.
+3. **Feature and Target Compatibility Audit:**
+   - 27 multimodal features (6 detection, 8 motion, 13 visual quality) dynamically match model input requirements.
+   - Sequence tensors `(N, L, 27)` map cleanly to target tensors `(N, 3)` across $L \in \{5, 10, 15, 20\}$.
+   - Targets strictly bounded in $[0.0, 1.0]$.
+4. **Train / Validation / Test Split Integrity:**
+   - Chronological purged split strictly enforces a $G=25$ frame embargo gap between Train (101 seqs at L=5), Val (18 seqs), and Test (19 seqs).
+   - Zero sequence or frame leakage detected across partitions.
+   - Feature scaling and imputation parameters fitted strictly on Train split only.
+5. **Baseline Model Readiness:**
+   - Evaluated `src/forecasting/baseline_forecaster.py` supporting Persistence, Historical Mean, and Linear Trend.
+   - Train-only historical mean calculated: $\bar{y}_{\text{train}} = 0.000582$.
+   - Generated 1,242 deterministic prediction records across all splits and horizons.
+6. **LSTM Training Pipeline Readiness:**
+   - `LSTMForecaster` architecture verified: input dimension 27, hidden size 32, 1 layer, output horizons `[1, 3, 5]`, Sigmoid activation, 7,907 trainable parameters ($<32\text{ KB}$ weights footprint).
+   - `LSTMTrainingEngine` verified with AdamW, ReduceLROnPlateau, gradient clipping norm 1.0, and early stopping.
+7. **CPU Resource & Feasibility Analysis:**
+   - Hardware: Intel Core i3 (CPU-only), 8 GB RAM, Windows 11.
+   - Training memory: $<500\text{ MB}$ RSS ($>93\%$ safety margin).
+   - Batch size 8 (13 training batches per epoch) executes in $\approx 40\text{ ms}$ per epoch.
+8. **Safe Corrections Applied:**
+   - Added `--metadata-file` and `--dry-run` CLI options to `src/forecasting/train_lstm.py`.
+   - Added `metadata_file: Optional[str] = None` to `DataConfig` in `src/forecasting/forecasting_config.py`.
+   - Added regression test `test_cli_labeled_data_dry_run` in `tests/forecasting/test_train_lstm_cli.py`.
+   - Verified 6/6 tests passing in `tests/forecasting/test_train_lstm_cli.py`.
+9. **Experiment Roadmap Documented:**
+   - Experiment A: Baseline Benchmark (Persistence, Mean, Trend across H1/H3/H5).
+   - Experiment B: Standard LSTM Training (Unweighted MSE baseline).
+   - Experiment C: Training Optimization (Asymmetric Weighted Huber Loss / Focal Loss).
+   - Experiment D: Multi-Horizon Forecasting Analysis (Error curves $H1 \le H3 \le H5$).
+   - Experiment E: Final Benchmark & Comparative Evaluation (MAE, RMSE, Degradation capture).
+10. **Documentation & Reporting:**
+    - Authored [docs/TRAINING_READINESS_AND_EXPERIMENT_PLAN.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/TRAINING_READINESS_AND_EXPERIMENT_PLAN.md).
+    - Published [reports/day9/training_readiness_audit.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/day9/training_readiness_audit.md).
+    - Generated [reports/day9/training_readiness_audit.json](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/day9/training_readiness_audit.json).
+
+#### Git Version Control
+- **Branch:** `main`
+- **Commit Target:** `docs: plan model training`
 - **Status:** Ready to commit and push.
