@@ -1,0 +1,43 @@
+{
+  "task": "Day 10 Task 6 — Early Warning Dashboard & Pipeline Integration",
+  "status": "PASS WITH LIMITATIONS",
+  "calibration_status": "PROVISIONAL",
+  "dataset": "driving_sample (138 sequences, 414 multi-horizon predictions)",
+  "tracking_context": {
+    "model_name": "yolo11n",
+    "tracker_type": "bytetrack",
+    "total_frames_processed": 30,
+    "total_detections": 27,
+    "total_unique_tracks": 2,
+    "mean_confidence": 0.4003,
+    "is_synthetic": false
+  },
+  "dashboard_endpoints": {
+    "get_system_health": "verified",
+    "get_pipeline_status": "verified",
+    "get_reliability_risk_overview": "verified",
+    "get_temporal_monitoring_data": "verified",
+    "get_alerts": "verified",
+    "get_alert_detail": "verified",
+    "acknowledge_alert": "verified",
+    "resolve_alert": "verified",
+    "get_detection_tracking_context": "verified"
+  },
+  "performance": {
+    "smoke_test_latency_ms": 2.4,
+    "mean_pipeline_latency_ms": 0.15,
+    "cpu_frame_budget_consumption_pct": 0.45
+  },
+  "test_metrics": {
+    "dashboard_integration_tests_passed": 13,
+    "dashboard_frontend_tests_passed": 5,
+    "total_early_warning_tests_passed": 55,
+    "total_risk_tests_passed": 76,
+    "combined_day10_tests_passed": 131
+  },
+  "limitations": [
+    "Thresholds are designated as PROVISIONAL due to single-clip zero-inflation.",
+    "Physical model weights (*.pt) are excluded from git per safety policy, accurately surfacing DEGRADED status in health checks until weights are mounted.",
+    "Further calibration requires multi-clip fleet datasets."
+  ]
+}

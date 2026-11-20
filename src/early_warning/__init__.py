@@ -27,6 +27,12 @@ from src.early_warning.early_warning_engine import (
     AlertLifecycleEvent,
     EarlyWarningEngine,
 )
+from src.early_warning.dashboard_service import DashboardService
+from src.early_warning.pipeline_integrator import (
+    PipelineBatchResult,
+    PipelineIntegrator,
+    PipelineProcessingResult,
+)
 from src.early_warning.interfaces import (
     AlertLifecycleState,
     AlertSeverity,
@@ -74,4 +80,9 @@ __all__ = [
     "IEarlyWarningDashboard",
     # Engine
     "EarlyWarningEngine",
+    # Dashboard & Pipeline Integration
+    "DashboardService",
+    "PipelineIntegrator",
+    "PipelineProcessingResult",
+    "PipelineBatchResult",
 ]
