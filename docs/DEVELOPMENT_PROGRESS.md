@@ -3203,3 +3203,67 @@ Conducted an exhaustive, independent, evidence-based engineering audit of the en
 - **Commit Target:** `docs: assess deployment readiness`
 - **Commit Hash:** `166a62f`
 - **Status:** Committed and pushed to `origin/main`.
+
+
+---
+
+### Day 11 — Task 2: Environment & Configuration Hardening
+
+- **Date:** 2026-11-20
+- **Roles:** Senior Staff Software Engineer, Python Backend Architect, DevSecOps Engineer, MLOps Configuration Specialist
+- **Milestone Type:** Centralized Strongly Typed Configuration Engine, Profile Management, Secrets Masking, Constraint Validation, Backward Compatibility Layer
+- **Audit Verdict:** **`PASS WITH LIMITATIONS`** (Calibration Status: **`PROVISIONAL CALIBRATION`**)
+
+#### Summary of Accomplishments & Verifications:
+1. **Centralized Configuration Architecture (`src/config/system_settings.py`):**
+   - Engineered strongly typed configuration root `SystemSettings` composed of 7 subsystem dataclasses: `AppConfig`, `APIConfig`, `SecurityConfig`, `LoggingConfig`, `ModelConfig`, `VideoProcessingConfig`, and `DashboardConfig`.
+   - Built automatic `__post_init__` cross-component constraint validation (`validate()`).
+   - Implemented thread-safe caching singleton `get_settings()` and runtime reload utility `reload_settings(env_file=..., env_override=...)`.
+2. **Environment Classification & Profile Enforcement (`src/config/environment.py`):**
+   - Implemented `EnvironmentType` supporting `DEVELOPMENT`, `TESTING`, and `PRODUCTION` profiles with case-insensitive parsing and alias resolution.
+   - Enforced strict failure upon unrecognized environments (e.g., `staging`, `qa`, `sandbox`).
+3. **Automated Production Security Guardrails (`src/config/validator.py`):**
+   - Enforced `DEBUG == False` in production.
+   - Enforced cryptographically secure non-default `SECRET_KEY` ($\ge 16$ characters).
+   - Strictly prohibited wildcard `*` in `CORS_ORIGINS` and `ALLOWED_HOSTS` in production.
+   - Enforced valid TCP port ranges ($[1, 65535]$) and well-formed URL schemes (`http://`, `https://`).
+4. **Zero-Exposure Secrets Management (`src/config/secrets.py`):**
+   - Implemented `SecretStr` container that permanently masks string representations in `__repr__` and `__str__` while providing explicit `get_secret_value()`.
+   - Engineered recursive dictionary scrubbing utility `redact_sensitive_dict()` for sanitizing diagnostic logs, dictionaries, and dumps.
+   - Defaulted `SystemSettings.to_dict(redact_secrets=True)` to scrub credentials automatically.
+5. **100% Backward Compatibility Layer (`config/settings.py`, `config/__init__.py`):**
+   - Refactored legacy `config/settings.py` and `config/__init__.py` to adapt transparently to `get_settings()`, preserving all legacy constants (`BASE_DIR`, `DEVICE`, `DEFAULT_YOLO_MODEL`, `SEQUENCE_LENGTH`, `FORECAST_HORIZONS`, etc.) with zero breaking changes.
+6. **Frontend Dashboard Integration (`dashboard/app.py`):**
+   - Connected Streamlit application to `get_settings()`, rendering dynamic environment banners, application versioning, compute device indicators, and calibration gate status (`PROVISIONAL CALIBRATION`).
+7. **Production Environment Templates & Source Control Hygiene:**
+   - Overhauled `.env.example` with comprehensive documentation, production security warnings, and defaults.
+   - Verified `.gitignore` blocks `.env`, `.env.local`, `*.key`, `*.pem`, `*.pt`, and dataset caches.
+8. **Comprehensive Test Suite (`tests/config/test_system_settings.py`):**
+   - Authored 30 comprehensive tests covering all 12 required areas:
+     - Area 1: Default development configuration.
+     - Area 2: Explicit testing profile initialization.
+     - Area 3: Production configuration validation & security guardrails.
+     - Area 4: Missing/short secrets and wildcard host rejection in production.
+     - Area 5: Invalid environment names rejection.
+     - Area 6: URL validation for API base URL and CORS origins.
+     - Area 7: Invalid numeric setting validation (ports, bounds, thresholds).
+     - Area 8: Secret masking and dictionary redaction.
+     - Area 9: CORS list parsing and validation.
+     - Area 10: Frontend dashboard parameters.
+     - Area 11: Model path and device validation (`cpu`, `cuda`).
+     - Area 12: Backward compatibility with `config.settings` and singleton reloading.
+   - **Test Results:** 30 / 30 passed (100%) in 8.48s.
+   - **Regression Suite:** 158 / 158 passed (131 early warning/risk + 27 CLI/YOLO) with zero regressions.
+9. **Deliverables Authored:**
+   - Authored [docs/ENVIRONMENT_CONFIGURATION.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/ENVIRONMENT_CONFIGURATION.md).
+   - Authored [docs/SECRETS_MANAGEMENT.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/SECRETS_MANAGEMENT.md).
+   - Authored [docs/PRODUCTION_CONFIGURATION.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/PRODUCTION_CONFIGURATION.md).
+   - Authored [reports/day11/environment_hardening_report.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/day11/environment_hardening_report.md).
+   - Generated [reports/day11/environment_hardening_report.json](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/day11/environment_hardening_report.json).
+   - Updated [docs/DEVELOPMENT_PROGRESS.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/DEVELOPMENT_PROGRESS.md).
+
+#### Git Version Control
+- **Branch:** `main`
+- **Commit Target:** `feat: harden environment config`
+- **Commit Hash:** `<pending>`
+- **Status:** Staged and ready for commit.

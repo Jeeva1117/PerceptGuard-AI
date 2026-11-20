@@ -21,6 +21,7 @@ if str(PROJECT_ROOT) not in sys.path:
 import pandas as pd
 import streamlit as st
 
+from src.config import get_settings
 from src.early_warning.dashboard_service import DashboardService
 from src.early_warning.pipeline_integrator import PipelineIntegrator
 
@@ -46,6 +47,11 @@ def get_integrator_and_service() -> tuple[PipelineIntegrator, DashboardService]:
 
 def render_header():
     """Render top branding header, mission statement, and system banner."""
+    settings = get_settings()
+    env_str = settings.app.environment.value.upper()
+    version_str = settings.app.version
+    gate_str = settings.dashboard.calibration_status_label
+
     st.set_page_config(
         page_title="PerceptGuard AI | Early Warning Dashboard",
         page_icon="🛡️",
@@ -54,20 +60,21 @@ def render_header():
     )
 
     st.markdown(
-        """
+        f"""
         <div style="background: linear-gradient(90deg, #0d1b2a 0%, #1b263b 100%); padding: 18px 24px; border-radius: 8px; border-left: 6px solid #415a77; margin-bottom: 20px;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
                     <h1 style="color: #e0e1dd; margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 0.5px;">
-                        🛡️ PerceptGuard AI <span style="font-size: 14px; background: #415a77; color: #fff; padding: 2px 8px; border-radius: 4px; margin-left: 10px;">v1.0-preview</span>
+                        🛡️ PerceptGuard AI <span style="font-size: 14px; background: #415a77; color: #fff; padding: 2px 8px; border-radius: 4px; margin-left: 10px;">v{version_str}</span>
+                        <span style="font-size: 12px; background: #2a9d8f; color: #fff; padding: 2px 6px; border-radius: 4px; margin-left: 6px;">{env_str}</span>
                     </h1>
                     <p style="color: #778da9; margin: 4px 0 0 0; font-size: 13px;">
                         Autonomous Driving Perception Failure Early Warning & Multi-Horizon Reliability Forecasting System
                     </p>
                 </div>
                 <div style="text-align: right;">
-                    <span style="font-size: 11px; color: #a3b18a; font-family: monospace;">CPU-Optimized (Windows 11 / Intel Core i3 / 8GB)</span><br/>
-                    <span style="font-size: 11px; color: #e0a96d; font-family: monospace;">Gate: PROVISIONAL CALIBRATION</span>
+                    <span style="font-size: 11px; color: #a3b18a; font-family: monospace;">Device: {settings.model.device.upper()} (Windows 11 / Intel Core i3 / 8GB)</span><br/>
+                    <span style="font-size: 11px; color: #e0a96d; font-family: monospace;">Gate: {gate_str}</span>
                 </div>
             </div>
         </div>
@@ -507,10 +514,13 @@ def main():
     integrator, service = get_integrator_and_service()
 
     # Sidebar controls
+    settings = get_settings()
     with st.sidebar:
         st.header("⚙️ Controls & Ingestion")
         st.markdown(
-            """
+            f"""
+            **Environment:** `{settings.app.environment.value}`<br/>
+            **Backend API:** `{settings.dashboard.api_base_url}`<br/>
             **Dataset:** `driving_sample` (720p 30fps)<br/>
             **Multi-Horizon Run:** `official_multi_horizon_run`<br/>
             **Forecasting Model:** `LSTMForecaster` (H1, H3, H5)
@@ -522,7 +532,7 @@ def main():
             st.rerun()
 
         st.markdown("---")
-        st.caption("PerceptGuard AI — Day 10 Task 6 Pipeline Integration")
+        st.caption("PerceptGuard AI — Day 11 Hardened Config Foundation")
 
     # Render main 5 sections
     render_section_a_system_overview(service)

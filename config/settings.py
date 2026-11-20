@@ -1,44 +1,72 @@
-"""PerceptGuard-AI: System Configuration.
+"""PerceptGuard-AI: System Configuration (Backward Compatibility Layer).
 
-Centralizes paths, device selection, thresholds, and hyperparameters.
-Follows 12-factor application design, reading overrides from environment variables.
+Maintains 100% backward compatibility with legacy imports while delegating
+to the centralized, strongly typed SystemSettings configuration engine.
 """
 
-from pathlib import Path
+from __future__ import annotations
+
 import os
+from pathlib import Path
 import torch
 
+from src.config.system_settings import get_settings, reload_settings
+
+# Initialize system configuration
+_settings = get_settings()
+
 # Base Directory (Project Root)
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR: Path = _settings.base_dir
 
 # Storage Directories
-DATASETS_DIR = BASE_DIR / "datasets"
-RAW_DATA_DIR = DATASETS_DIR / "raw"
-PROCESSED_DATA_DIR = DATASETS_DIR / "processed"
-MODELS_DIR = BASE_DIR / "models"
-OUTPUTS_DIR = BASE_DIR / "outputs"
-CONFIG_DIR = BASE_DIR / "config"
+DATASETS_DIR: Path = _settings.datasets_dir
+RAW_DATA_DIR: Path = _settings.raw_data_dir
+PROCESSED_DATA_DIR: Path = _settings.processed_data_dir
+MODELS_DIR: Path = _settings.models_dir
+OUTPUTS_DIR: Path = _settings.outputs_dir
+CONFIG_DIR: Path = _settings.config_dir
 
 # Set Ultralytics config directory within workspace to avoid global sandbox permission warnings
-YOLO_CONFIG_DIR = BASE_DIR / ".yolo"
+YOLO_CONFIG_DIR: Path = _settings.yolo_config_dir
 os.environ.setdefault("YOLO_CONFIG_DIR", str(YOLO_CONFIG_DIR))
 
 # Compute Device Selection
-DEFAULT_DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-DEVICE = os.getenv("DEVICE", DEFAULT_DEVICE)
+DEFAULT_DEVICE: str = "cuda" if torch.cuda.is_available() else "cpu"
+DEVICE: str = _settings.model.device
 
 # Detection & Tracking Settings
-DEFAULT_YOLO_MODEL = os.getenv("YOLO_MODEL", "yolo11n.pt" if (MODELS_DIR / "yolo" / "yolo11n.pt").exists() else "yolov8n.pt")
-DEFAULT_CONF_THRESHOLD = float(os.getenv("CONFIDENCE_THRESHOLD", "0.35"))
-DEFAULT_IOU_THRESHOLD = float(os.getenv("IOU_THRESHOLD", "0.45"))
-TRACKER_TYPE = os.getenv("TRACKER_TYPE", "bytetrack")
+DEFAULT_YOLO_MODEL: str = _settings.model.yolo_model
+DEFAULT_CONF_THRESHOLD: float = _settings.model.confidence_threshold
+DEFAULT_IOU_THRESHOLD: float = _settings.model.iou_threshold
+TRACKER_TYPE: str = _settings.video_processing.tracker_type
 
 # Temporal Sequence & Forecasting Configuration
-# Number of past frames of features fed to LSTM/GRU
-SEQUENCE_LENGTH = int(os.getenv("HISTORICAL_SEQUENCE_LENGTH", "10"))
-# Future frames ahead for reliability forecasting
-FORECAST_HORIZONS = [int(h.strip()) for h in os.getenv("FORECAST_HORIZONS", "1,3,5").split(",")]
+SEQUENCE_LENGTH: int = _settings.video_processing.historical_sequence_length
+FORECAST_HORIZONS: list[int] = _settings.video_processing.forecast_horizons
 
 # Evaluation & Ground-Truth IoU Thresholds for Reliability Labeling
-RELIABILITY_IOU_CORRECT_THRESHOLD = 0.50
-RELIABILITY_IOU_HIGH_THRESHOLD = 0.70
+RELIABILITY_IOU_CORRECT_THRESHOLD: float = _settings.video_processing.reliability_iou_correct_threshold
+RELIABILITY_IOU_HIGH_THRESHOLD: float = _settings.video_processing.reliability_iou_high_threshold
+
+__all__ = [
+    "BASE_DIR",
+    "DATASETS_DIR",
+    "RAW_DATA_DIR",
+    "PROCESSED_DATA_DIR",
+    "MODELS_DIR",
+    "OUTPUTS_DIR",
+    "CONFIG_DIR",
+    "YOLO_CONFIG_DIR",
+    "DEFAULT_DEVICE",
+    "DEVICE",
+    "DEFAULT_YOLO_MODEL",
+    "DEFAULT_CONF_THRESHOLD",
+    "DEFAULT_IOU_THRESHOLD",
+    "TRACKER_TYPE",
+    "SEQUENCE_LENGTH",
+    "FORECAST_HORIZONS",
+    "RELIABILITY_IOU_CORRECT_THRESHOLD",
+    "RELIABILITY_IOU_HIGH_THRESHOLD",
+    "get_settings",
+    "reload_settings",
+]
