@@ -1,0 +1,101 @@
+{
+  "schema_version": "1.0",
+  "audit_phase": "Testing, Data Integrity & Performance Audit",
+  "timestamp": "2026-11-19T18:35:00Z",
+  "overall_status": "PASS",
+  "hardware": {
+    "platform": "Windows-11-Build-26200",
+    "cpu": "Intel Core i3-class",
+    "ram_total_gb": 8.0,
+    "cuda_available": false,
+    "device": "cpu"
+  },
+  "testing_baseline": {
+    "total_test_files": 57,
+    "total_collected_tests": 1201,
+    "unique_logical_tests": 1064,
+    "wrapper_duplicated_tests": 137,
+    "passed_tests": 1201,
+    "failed_tests": 0,
+    "skipped_tests": 0,
+    "pass_rate_percentage": 100.0,
+    "tests_by_directory": {
+      "tests": 295,
+      "tests/analysis": 60,
+      "tests/detection": 78,
+      "tests/features": 287,
+      "tests/forecasting": 277,
+      "tests/tracking": 143,
+      "tests/visualization": 61
+    }
+  },
+  "data_integrity": {
+    "raw_video_frames": 1204,
+    "extracted_frames": 200,
+    "preprocessed_frames": 200,
+    "detection_records_frames": 200,
+    "total_detection_boxes": 211,
+    "invalid_detection_boxes": 0,
+    "tracking_records_frames": 200,
+    "total_track_observations": 193,
+    "invalid_track_boxes": 0,
+    "unique_track_ids": [1, 2, 8],
+    "sequence_arrays": {
+      "sequences_L5.npy": {"shape": [138, 5, 27], "nan_count": 0, "inf_count": 0, "dtype": "float32"},
+      "sequences_L10.npy": {"shape": [123, 10, 27], "nan_count": 0, "inf_count": 0, "dtype": "float32"},
+      "sequences_L15.npy": {"shape": [108, 15, 27], "nan_count": 0, "inf_count": 0, "dtype": "float32"},
+      "sequences_L20.npy": {"shape": [93, 20, 27], "nan_count": 0, "inf_count": 0, "dtype": "float32"}
+    }
+  },
+  "temporal_leakage": {
+    "split_strategy": "chronological_purged",
+    "temporal_embargo_gap": 25,
+    "train_frames": 105,
+    "gap_1_purged_frames": 25,
+    "val_frames": 22,
+    "gap_2_purged_frames": 25,
+    "test_frames": 23,
+    "cross_split_windows_rejected": true,
+    "preprocessors_fitted_on_train_only": true,
+    "leakage_check_passed": true
+  },
+  "ground_truth_integrity": {
+    "target_definition": "R_{t+h} = IoU(B_{t+h}, G_{t+h})",
+    "forecast_horizons": [1, 3, 5],
+    "target_labels_available_for_sample": false,
+    "supervised_training_readiness": "NOT AVAILABLE",
+    "real_forecasting_evaluation": "NOT AVAILABLE",
+    "yolo_confidence_surrogate_rejected": true
+  },
+  "checkpoint_integrity": {
+    "yolo_checkpoint_status": "PASS",
+    "yolo_checkpoint_file": "models/yolo/yolo11n.pt",
+    "supervised_lstm_checkpoint_status": "NOT AVAILABLE",
+    "checkpoint_infrastructure_status": "PASS"
+  },
+  "cpu_performance": {
+    "video_loading_sec": 1.3712,
+    "frame_extraction_per_frame_ms": 41.97,
+    "preprocessing_per_frame_ms": 71.44,
+    "yolo_model_loading_sec": 0.7161,
+    "yolo_warmup_sec": 7.3788,
+    "yolo_single_frame_infer_ms": 79.74,
+    "yolo_batch_per_frame_ms": 131.81,
+    "tracking_per_frame_ms": 8.14,
+    "sequence_loading_sec": 0.0398,
+    "baseline_persistence_369_preds_ms": 1.27,
+    "lstm_model_init_ms": 46.62,
+    "lstm_forward_batch5_ms": 69.14
+  },
+  "memory_utilization": {
+    "initial_process_rss_mb": 204.38,
+    "peak_process_rss_mb": 535.97,
+    "net_memory_delta_mb": 331.6,
+    "host_envelope_compliant": true
+  },
+  "reproducibility": {
+    "deterministic_model_diff": 0.0,
+    "deterministic_splits": true,
+    "status": "PASS"
+  }
+}

@@ -1922,3 +1922,44 @@ Conducted an exhaustive, independent, evidence-based engineering audit of the en
    - Published [reports/final_audit/end_to_end_integration_audit.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/final_audit/end_to_end_integration_audit.md)
    - Published [reports/final_audit/end_to_end_integration_audit.json](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/final_audit/end_to_end_integration_audit.json)
 
+---
+
+## Testing, Data Integrity & Performance Audit
+- **Date:** 2026-11-20
+- **Auditor Role:** Senior Software Engineer, Senior Machine Learning Engineer, ML Reliability Architect, and Performance Validation Specialist
+- **Hardware Profile:** Intel Core i3 (CPU Only), 8 GB RAM (7.75 GB usable), Windows 11 Build 26200
+- **Status:** **PASS (Testing Infrastructure, Data Integrity & Performance Profile Validated)**
+
+### Completed Audit & Verification
+1. **Testing Infrastructure & Baseline:**
+   - 57 total test files audited; 1,201 total collected test items executed via `pytest -q`.
+   - 1,064 unique logical tests verified; 137 tests identified as root discoverability wrapper duplicates across 5 entrypoint files.
+   - **1,201 / 1,201 Passed (100% Pass Rate)** with 0 failures, 0 skipped, and 0 warnings.
+   - Master project audit: **178 / 178 checks passed (100% Pass Rate)**.
+2. **Data Integrity Audit:**
+   - Ingested and decoded genuine BDD100K raw driving video (1204 frames, 720x1280 @ 30.09 FPS).
+   - Validated 200 raw and preprocessed frames; zero corrupted image headers.
+   - Validated 200 detection frames (211 bounding boxes, 0 invalid coordinates).
+   - Validated 200 tracking frames (193 observations across 3 tracks, 0 invalid boxes).
+   - Sequence tensors across all window lengths ($L \in \{5, 10, 15, 20\}$) verified with zero NaN and zero Inf values.
+3. **Temporal Leakage & Embargo Validation:**
+   - Causal sliding-window direction verified ($X_t = [f_{t-L+1}, \dots, f_t]$).
+   - Chronological purged partitioning verified: Train (105 frames), Embargo Gap 1 (25 frames purged), Val (22 frames), Embargo Gap 2 (25 frames purged), Test (23 frames).
+   - Embargo gap $G=25 \ge \max(L) + \max(H)$ strictly enforced; zero cross-split window crossings.
+   - Imputers and scalers fitted strictly on training split data.
+4. **Ground-Truth & Target Integrity:**
+   - Rejection of YOLO detection confidence as ground-truth reliability strictly enforced ($R_{t+h} = \text{IoU}(B_{t+h}, G_{t+h})$).
+   - Real BDD100K driving sample lacks frame-by-frame future bounding box ground-truth labels; supervised training and real evaluation honestly marked **`NOT AVAILABLE`**.
+5. **CPU Performance & Resource Footprint:**
+   - Measured per-frame latency: frame extraction (41.97 ms), preprocessing (71.44 ms), YOLO11n inference (79.74 ms), tracking (8.14 ms).
+   - Baseline persistence (369 predictions): 1.27 ms; LSTM forward pass (batch of 5): 69.14 ms.
+   - Peak RSS RAM: 535.97 MB (< 7% of 8 GB host envelope); sequential processing verified with zero whole-video frame buffering.
+6. **Reproducibility Audit:**
+   - 100% bit-for-bit numerical reproducibility verified on deterministic seed-42 initializations ($\Delta = 0.000000$).
+   - Split partitioning and sequence metadata identical across repeated runs.
+7. **Documentation & Reports:**
+   - Published [docs/TESTING_DATA_INTEGRITY_PERFORMANCE_AUDIT.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/TESTING_DATA_INTEGRITY_PERFORMANCE_AUDIT.md)
+   - Published [reports/final_audit/testing_data_integrity_performance_audit.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/final_audit/testing_data_integrity_performance_audit.md)
+   - Published [reports/final_audit/testing_data_integrity_performance_audit.json](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/final_audit/testing_data_integrity_performance_audit.json)
+
+
