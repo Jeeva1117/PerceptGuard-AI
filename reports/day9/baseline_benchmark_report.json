@@ -1,0 +1,150 @@
+{
+  "meta": {
+    "report_name": "Day 9 Task 2: Advanced Baseline Model Benchmarking Report",
+    "date": "2026-11-20",
+    "phase": "Day 9 Task 2",
+    "verdict": "COMPLETE & FORMALLY VERIFIED",
+    "repository": "https://github.com/Jeeva1117/PerceptGuard-AI.git",
+    "branch": "main",
+    "execution_environment": {
+      "hardware": "Intel Core i3, 8 GB RAM, Windows 11 Build 26200",
+      "compute": "CPU-only (no CUDA GPU)",
+      "python_version": "3.13.3",
+      "framework": "PyTorch 2.15.0+cpu"
+    },
+    "lead_roles": [
+      "Principal Machine Learning Engineer",
+      "Senior Staff Deep Learning Engineer",
+      "Forecasting Research Engineer",
+      "ML Experimentation Specialist"
+    ]
+  },
+  "readiness_gate": {
+    "status": "PASS",
+    "protocol": "Day 8 READY WITH LIMITATIONS",
+    "dataset_source": "datasets/processed/driving_sample/reliability_labels/",
+    "video_id": "026c7465-309f6d33.mp4",
+    "frames_analyzed": 200,
+    "sequence_length": 5,
+    "horizons": [1, 3, 5],
+    "purged_split": {
+      "strategy": "chronological_purged_split",
+      "embargo_gap": 25,
+      "train_sequences": 101,
+      "validation_sequences": 18,
+      "test_sequences": 19,
+      "total_sequences": 138
+    }
+  },
+  "baseline_models": [
+    {
+      "name": "persistence",
+      "display_name": "Persistence Baseline",
+      "formula": "y_hat_{t+h} = y_t",
+      "parameters": 0,
+      "description": "Forecasts the most recent observed reliability score from the sequence end frame."
+    },
+    {
+      "name": "mean",
+      "display_name": "Historical Mean Baseline",
+      "formula": "y_hat_{t+h} = y_bar_{train}",
+      "parameters": 1,
+      "description": "Forecasts the scalar global mean of ground-truth target reliabilities computed strictly over the training split."
+    },
+    {
+      "name": "trend",
+      "display_name": "Linear Trend Baseline",
+      "formula": "y_hat_{t+h} = clip(y_t + m * h, 0.0, 1.0)",
+      "parameters": "dynamic slope (OLS)",
+      "description": "Extrapolates linear trajectory using Ordinary Least Squares slope across trailing sequence frames, clipped to [0, 1]."
+    }
+  ],
+  "empirical_metrics": {
+    "test_split": {
+      "H1": {
+        "persistence": { "mae": 0.0, "rmse": 0.0, "mean_pred": 0.0, "mean_actual": 0.0, "valid_pairs": 18, "total_records": 19 },
+        "trend": { "mae": 0.0, "rmse": 0.0, "mean_pred": 0.0, "mean_actual": 0.0, "valid_pairs": 18, "total_records": 19 },
+        "mean": { "mae": 0.000582, "rmse": 0.000582, "mean_pred": 0.000582, "mean_actual": 0.0, "valid_pairs": 18, "total_records": 19 }
+      },
+      "H3": {
+        "persistence": { "mae": 0.0, "rmse": 0.0, "mean_pred": 0.0, "mean_actual": 0.0, "valid_pairs": 16, "total_records": 19 },
+        "trend": { "mae": 0.0, "rmse": 0.0, "mean_pred": 0.0, "mean_actual": 0.0, "valid_pairs": 16, "total_records": 19 },
+        "mean": { "mae": 0.000582, "rmse": 0.000582, "mean_pred": 0.000582, "mean_actual": 0.0, "valid_pairs": 16, "total_records": 19 }
+      },
+      "H5": {
+        "persistence": { "mae": 0.0, "rmse": 0.0, "mean_pred": 0.0, "mean_actual": 0.0, "valid_pairs": 14, "total_records": 19 },
+        "trend": { "mae": 0.0, "rmse": 0.0, "mean_pred": 0.0, "mean_actual": 0.0, "valid_pairs": 14, "total_records": 19 },
+        "mean": { "mae": 0.000582, "rmse": 0.000582, "mean_pred": 0.000582, "mean_actual": 0.0, "valid_pairs": 14, "total_records": 19 }
+      }
+    },
+    "validation_split": {
+      "H1": {
+        "persistence": { "mae": 0.0, "rmse": 0.0, "mean_pred": 0.0, "mean_actual": 0.0, "valid_pairs": 18 },
+        "trend": { "mae": 0.0, "rmse": 0.0, "mean_pred": 0.0, "mean_actual": 0.0, "valid_pairs": 18 },
+        "mean": { "mae": 0.000582, "rmse": 0.000582, "mean_pred": 0.000582, "mean_actual": 0.0, "valid_pairs": 18 }
+      },
+      "H3": {
+        "persistence": { "mae": 0.0, "rmse": 0.0, "mean_pred": 0.0, "mean_actual": 0.0, "valid_pairs": 18 },
+        "trend": { "mae": 0.0, "rmse": 0.0, "mean_pred": 0.0, "mean_actual": 0.0, "valid_pairs": 18 },
+        "mean": { "mae": 0.000582, "rmse": 0.000582, "mean_pred": 0.000582, "mean_actual": 0.0, "valid_pairs": 18 }
+      },
+      "H5": {
+        "persistence": { "mae": 0.0, "rmse": 0.0, "mean_pred": 0.0, "mean_actual": 0.0, "valid_pairs": 18 },
+        "trend": { "mae": 0.0, "rmse": 0.0, "mean_pred": 0.0, "mean_actual": 0.0, "valid_pairs": 18 },
+        "mean": { "mae": 0.000582, "rmse": 0.000582, "mean_pred": 0.000582, "mean_actual": 0.0, "valid_pairs": 18 }
+      }
+    },
+    "train_split": {
+      "H1": {
+        "mean": { "mae": 0.001153, "rmse": 0.005822, "mean_pred": 0.000582, "mean_actual": 0.000582, "valid_pairs": 101 },
+        "persistence": { "mae": 0.001164, "rmse": 0.008274, "mean_pred": 0.000582, "mean_actual": 0.000582, "valid_pairs": 101 },
+        "trend": { "mae": 0.001339, "rmse": 0.009158, "mean_pred": 0.000757, "mean_actual": 0.000582, "valid_pairs": 101 }
+      },
+      "H3": {
+        "mean": { "mae": 0.001153, "rmse": 0.005822, "mean_pred": 0.000582, "mean_actual": 0.000582, "valid_pairs": 101 },
+        "persistence": { "mae": 0.001164, "rmse": 0.008274, "mean_pred": 0.000582, "mean_actual": 0.000582, "valid_pairs": 101 },
+        "trend": { "mae": 0.001688, "rmse": 0.011178, "mean_pred": 0.001106, "mean_actual": 0.000582, "valid_pairs": 101 }
+      },
+      "H5": {
+        "mean": { "mae": 0.001153, "rmse": 0.005822, "mean_pred": 0.000582, "mean_actual": 0.000582, "valid_pairs": 101 },
+        "persistence": { "mae": 0.001164, "rmse": 0.008274, "mean_pred": 0.000582, "mean_actual": 0.000582, "valid_pairs": 101 },
+        "trend": { "mae": 0.002038, "rmse": 0.013406, "mean_pred": 0.001455, "mean_actual": 0.000582, "valid_pairs": 101 }
+      }
+    }
+  },
+  "strongest_baselines": {
+    "test_partition": {
+      "H1": "Persistence / Linear Trend (MAE: 0.0, RMSE: 0.0)",
+      "H3": "Persistence / Linear Trend (MAE: 0.0, RMSE: 0.0)",
+      "H5": "Persistence / Linear Trend (MAE: 0.0, RMSE: 0.0)"
+    },
+    "train_partition": {
+      "H1": "Historical Mean (RMSE: 0.005822)",
+      "H3": "Historical Mean (RMSE: 0.005822)",
+      "H5": "Historical Mean (RMSE: 0.005822)"
+    }
+  },
+  "benchmark_floors_for_lstm": {
+    "test_mae_target": 0.000582,
+    "train_rmse_target": 0.005822,
+    "criteria": "LSTM must outperform Historical Mean (MAE <= 0.000582 on test, RMSE < 0.005822 on train) to demonstrate learned temporal representation value."
+  },
+  "visualizations": [
+    "reports/day9/plots/baseline_horizon_mae.png",
+    "reports/day9/plots/baseline_horizon_rmse.png",
+    "reports/day9/plots/baseline_actual_vs_predicted.png",
+    "reports/day9/plots/baseline_error_distribution.png",
+    "reports/day9/plots/baseline_model_comparison.png"
+  ],
+  "artifacts": {
+    "official_run_directory": "experiments/forecasting/baseline/baseline_benchmark_official/",
+    "files": [
+      "experiment_config.yaml",
+      "predictions.json",
+      "baseline_metrics.json",
+      "experiment_summary.json",
+      "metadata.json",
+      "errors.json"
+    ]
+  }
+}

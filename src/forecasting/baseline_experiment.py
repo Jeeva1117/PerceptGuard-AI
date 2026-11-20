@@ -39,6 +39,8 @@ class BaselineExperiment:
     def __init__(
         self,
         artifacts_dir: Union[str, Path] = "datasets/processed/driving_sample/features/sequences/run_official",
+        metadata_file: Optional[Union[str, Path]] = None,
+        frame_labels_file: Optional[Union[str, Path]] = None,
         output_dir: Union[str, Path] = "experiments/forecasting/baseline",
         config_path: Union[str, Path] = "config/forecasting_config.yaml",
         strategies: Sequence[str] = ("persistence", "mean", "trend"),
@@ -47,6 +49,8 @@ class BaselineExperiment:
         run_id: Optional[str] = None,
     ) -> None:
         self.artifacts_dir = Path(artifacts_dir)
+        self.metadata_file = Path(metadata_file) if metadata_file is not None else None
+        self.frame_labels_file = Path(frame_labels_file) if frame_labels_file is not None else None
         self.output_root = Path(output_dir)
         self.config_path = Path(config_path)
         self.strategies = list(strategies)
@@ -75,7 +79,7 @@ class BaselineExperiment:
         warnings: List[str] = []
 
         # 1. Load Data
-        loader = BaselineDataLoader(self.artifacts_dir)
+        loader = BaselineDataLoader(self.artifacts_dir, metadata_file=self.metadata_file)
         dataset = loader.load_sequence_dataset(
             sequence_length=self.sequence_length,
             target_horizons=self.horizons,
@@ -94,14 +98,34 @@ class BaselineExperiment:
                 "YOLO detection confidence alone is NOT ground-truth reliability."
             )
 
-        # 3. Instantiate Forecaster & Fit on Train Split ONLY
+        # 3. Resolve Historical Target Series for Persistence and Trend
+        hist_map = historical_targets_map
+        if hist_map is None and self.frame_labels_file is not None and self.frame_labels_file.exists():
+            try:
+                with open(self.frame_labels_file, "r", encoding="utf-8") as f:
+                    frame_list = json.load(f)
+                frame_map = {item["frame_id"]: float(item["primary_reliability"]) for item in frame_list}
+                
+                hist_map = {}
+                meta_seqs = (loader.metadata_data or {}).get("sequences", [])
+                seq_dict = {s["sequence_id"]: s.get("frame_ids", []) for s in meta_seqs}
+                for rec in dataset.records:
+                    fids = seq_dict.get(rec.sequence_id, [])
+                    if fids:
+                        hist_map[rec.sequence_id] = [frame_map.get(fid, 0.0) for fid in fids]
+                    else:
+                        hist_map[rec.sequence_id] = [frame_map.get(rec.end_frame_id, 0.0)]
+            except Exception as e:
+                warnings.append(f"Failed to build automatic historical targets map: {e}")
+
+        # 4. Instantiate Forecaster & Fit on Train Split ONLY
         forecaster = BaselineForecaster(
             strategy="all",
             horizons=self.horizons,
         )
         forecaster.fit(train_ds)
 
-        # 4. Generate Predictions Across Splits
+        # 5. Generate Predictions Across Splits
         all_predictions: List[PredictionRecord] = []
         split_prediction_map: Dict[str, List[PredictionRecord]] = {}
 
@@ -110,7 +134,7 @@ class BaselineExperiment:
                 dataset=split_ds,
                 strategy="all",
                 horizons=self.horizons,
-                historical_targets_map=historical_targets_map,
+                historical_targets_map=hist_map,
             )
             split_prediction_map[split_name] = preds
             all_predictions.extend(preds)
@@ -265,10 +289,24 @@ def main() -> int:
         default=[1, 3, 5],
         help="Target horizons (e.g., 1 3 5)",
     )
+    parser.add_argument(
+        "--metadata-file",
+        type=str,
+        default=None,
+        help="Optional path to labeled sequence metadata JSON",
+    )
+    parser.add_argument(
+        "--frame-labels-file",
+        type=str,
+        default=None,
+        help="Optional path to frame reliability labels JSON",
+    )
 
     args = parser.parse_args()
     experiment = BaselineExperiment(
         artifacts_dir=args.input,
+        metadata_file=args.metadata_file,
+        frame_labels_file=args.frame_labels_file,
         output_dir=args.output,
         sequence_length=args.sequence_length,
         horizons=args.horizons,

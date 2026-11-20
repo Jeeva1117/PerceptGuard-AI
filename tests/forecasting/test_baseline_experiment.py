@@ -204,3 +204,35 @@ class TestBaselineExperiment:
         assert "Baseline Forecasting Experiment Complete" in res.stdout
         assert "Status                 : PASS" in res.stdout
         assert "Supervised Readiness   : NOT AVAILABLE" in res.stdout
+
+    def test_run_on_real_day8_labeled_artifacts(self, real_day5_dir, tmp_path):
+        """Running on real Day 8 labeled data must compute valid MAE and RMSE."""
+        labeled_meta = Path("datasets/processed/driving_sample/reliability_labels/sequence_metadata_labeled.json")
+        frame_labels = Path("datasets/processed/driving_sample/reliability_labels/frame_reliability_labels.json")
+        if not labeled_meta.exists() or not frame_labels.exists():
+            pytest.skip("Day 8 labeled artifacts not found")
+
+        exp = BaselineExperiment(
+            artifacts_dir=real_day5_dir,
+            metadata_file=labeled_meta,
+            frame_labels_file=frame_labels,
+            output_dir=tmp_path / "experiments",
+            run_id="real_labeled_run",
+            sequence_length=5,
+            horizons=[1, 3, 5],
+        )
+        res = exp.run()
+
+        assert res["status"] == "PASS"
+        assert res["supervised_readiness"] == "PASS"
+        assert res["targets_available"] is True
+        assert res["total_predictions"] == 138 * 3 * 3
+
+        run_dir = tmp_path / "experiments" / "real_labeled_run"
+        with open(run_dir / "baseline_metrics.json") as f:
+            metrics = json.load(f)
+        assert metrics["overall"]["status"] == "PASS"
+        assert "val" in metrics["by_split"]
+        assert "test" in metrics["by_split"]
+        assert metrics["by_split"]["val"]["strategies"]["persistence"]["h1"]["status"] == "PASS"
+        assert metrics["by_split"]["val"]["strategies"]["persistence"]["h1"]["valid_pairs"] == 18

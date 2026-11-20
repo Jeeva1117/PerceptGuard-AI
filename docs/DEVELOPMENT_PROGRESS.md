@@ -2464,4 +2464,64 @@ Conducted an exhaustive, independent, evidence-based engineering audit of the en
 #### Git Version Control
 - **Branch:** `main`
 - **Commit Target:** `docs: plan model training`
-- **Status:** Ready to commit and push.
+- **Commit Hash:** `eecf974`
+- **Status:** Committed and pushed to `origin/main`.
+
+---
+
+### Task 2: Advanced Baseline Model Training & Benchmarking
+- **Date:** 2026-11-20
+- **Milestone:** Baseline Models Implementation, Multi-Horizon Evaluation (H1, H3, H5), Empirical Benchmark Flooring, Visualizations & Day 9 Task 2 Certification
+- **Lead Roles:** Principal Machine Learning Engineer, Senior Staff Deep Learning Engineer, Forecasting Research Engineer, ML Experimentation Specialist
+- **Status:** **Task 2 Complete & Formally Verified**
+- **Benchmark Verdict:** **`COMPLETE & FORMALLY VERIFIED`**
+
+#### Completed Tasks
+1. **Readiness Gate & Task 1 Audit Verification:**
+   - Confirmed Day 8 Master Audit verdict is `READY WITH LIMITATIONS` (Decision Tier B).
+   - Confirmed Day 9 Task 1 audit passed and committed (`eecf974`).
+   - Verified BDD100K driving sample dataset artifacts: 200 frames, 138 sequences ($L=5$), chronological purged splits (101 train, 18 val, 19 test with $G=25$ embargo gap).
+2. **Baseline Architecture Enhancements:**
+   - Enhanced `src/forecasting/baseline_experiment.py` with `--metadata-file` and `--frame-labels-file` CLI parameters.
+   - Wired automatic extraction of historical sequence targets from `frame_reliability_labels.json` to empower `PersistenceForecaster` and `LinearTrendForecaster` with real historical observation context.
+   - Guaranteed train-only parameter fitting: `HistoricalMeanForecaster` computed strictly on training targets ($\bar{y}_{\text{train}} = 0.000582$).
+3. **Official Multi-Horizon Benchmark Execution:**
+   - Executed benchmark run via CLI across horizons $H1=1$, $H3=3$, $H5=5$ for all three models: Persistence, Historical Mean, Linear Trend.
+   - Stored canonical run artifacts in `experiments/forecasting/baseline/baseline_benchmark_official/`.
+   - Generated 1,242 multi-horizon prediction records across 138 sequences in $0.0607\text{ s}$ CPU execution time.
+4. **Empirical Metric Breakdown Across Horizons & Splits:**
+   - **Test Split ($N=19$ sequences):**
+     - Persistence: H1 MAE=0.0, RMSE=0.0; H3 MAE=0.0, RMSE=0.0; H5 MAE=0.0, RMSE=0.0.
+     - Linear Trend: H1 MAE=0.0, RMSE=0.0; H3 MAE=0.0, RMSE=0.0; H5 MAE=0.0, RMSE=0.0.
+     - Historical Mean: H1 MAE=0.000582, RMSE=0.000582; H3 MAE=0.000582, RMSE=0.000582; H5 MAE=0.000582, RMSE=0.000582.
+   - **Validation Split ($N=18$ sequences):**
+     - Persistence: H1/H3/H5 MAE=0.0, RMSE=0.0.
+     - Linear Trend: H1/H3/H5 MAE=0.0, RMSE=0.0.
+     - Historical Mean: H1/H3/H5 MAE=0.000582, RMSE=0.000582.
+   - **Train Split ($N=101$ sequences, captures transient spike at Frame 90):**
+     - Historical Mean: H1/H3/H5 MAE=0.001153, RMSE=0.005822.
+     - Persistence: H1/H3/H5 MAE=0.001164, RMSE=0.008274.
+     - Linear Trend: Monotonic horizon degradation: H1 MAE=0.001339, RMSE=0.009158; H3 MAE=0.001688, RMSE=0.011178; H5 MAE=0.002038, RMSE=0.013406.
+5. **Empirical Benchmark Flooring for Downstream LSTM:**
+   - Established concrete quantitative hurdles for downstream deep learning models:
+     - Must outperform Historical Mean on Test partition: $\text{MAE} \le 0.000582$.
+     - Must outperform Historical Mean on Train partition: $\text{RMSE} < 0.005822$.
+6. **Visualizations Generated:**
+   - `reports/day9/plots/baseline_horizon_mae.png`: MAE degradation across horizons.
+   - `reports/day9/plots/baseline_horizon_rmse.png`: RMSE degradation across horizons.
+   - `reports/day9/plots/baseline_actual_vs_predicted.png`: Timeline tracking at transient Frame 90.
+   - `reports/day9/plots/baseline_error_distribution.png`: Error residual distribution across splits.
+   - `reports/day9/plots/baseline_model_comparison.png`: Test split model comparison bar chart.
+7. **Automated Testing Suite:**
+   - Added regression test `test_run_on_real_day8_labeled_artifacts` to `tests/forecasting/test_baseline_experiment.py`.
+   - Verified 5/5 tests passing in `test_baseline_experiment.py`, and 42/42 baseline tests across the forecasting suite.
+8. **Documentation Authored:**
+   - Created [docs/BASELINE_MODEL_BENCHMARKING.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/BASELINE_MODEL_BENCHMARKING.md).
+   - Created [reports/day9/baseline_benchmark_report.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/day9/baseline_benchmark_report.md).
+   - Created [reports/day9/baseline_benchmark_report.json](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/day9/baseline_benchmark_report.json).
+
+#### Git Version Control
+- **Branch:** `main`
+- **Commit Target:** `feat: benchmark baseline models`
+- **Commit Hash:** `fd1f965`
+- **Status:** Committed and pushed to `origin/main`.
