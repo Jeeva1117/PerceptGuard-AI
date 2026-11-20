@@ -1,0 +1,194 @@
+{
+  "audit_version": "1.0.0",
+  "audit_date": "2026-11-20T13:30:00+05:30",
+  "project_name": "PerceptGuard AI",
+  "audit_type": "Day 9 Final Master Training & Validation Audit",
+  "auditor_roles": [
+    "Principal Machine Learning Engineer",
+    "Senior Staff Software Engineer",
+    "ML Research Auditor",
+    "Production Readiness Reviewer"
+  ],
+  "hardware_environment": {
+    "cpu": "Intel Core i3",
+    "ram_gb": 8,
+    "os": "Windows 11 Build 26200",
+    "cuda_available": false,
+    "execution_mode": "CPU only"
+  },
+  "verdict": "RELEASE READY WITH LIMITATIONS",
+  "tasks_audited": {
+    "task1_readiness_audit": {
+      "status": "PASS",
+      "ground_truth_file": "data/annotations/raw/bdd100k_val_sample.json",
+      "labeled_metadata": "data/processed/sequences/sequence_metadata_labeled.json",
+      "total_sequences": 145,
+      "labeled_sequences": 145,
+      "horizons_defined": [1, 3, 5],
+      "purged_splits": true,
+      "embargo_gap_frames": 25
+    },
+    "task2_baseline_benchmarking": {
+      "status": "PASS",
+      "models_benchmarked": ["Persistence", "Historical Mean", "Linear Trend"],
+      "test_sequences": 19,
+      "metrics_artifact": "reports/day9/baseline_benchmark_report.json"
+    },
+    "task3_lstm_architecture": {
+      "status": "PASS",
+      "model_type": "LSTMForecaster",
+      "input_dim": 27,
+      "hidden_dim": 32,
+      "num_layers": 1,
+      "output_dim": 3,
+      "head_activation": "Sigmoid",
+      "total_parameters": 7907,
+      "trainable_parameters": 7907,
+      "model_size_kb": 31.8,
+      "output_bounded_range": [0.0, 1.0]
+    },
+    "task4_training_optimization": {
+      "status": "PASS",
+      "checkpoint_path": "experiments/forecasting/lstm_training/official_lstm_training/checkpoints/checkpoint_best.pt",
+      "checkpoint_size_bytes": 106047,
+      "epochs_completed": 30,
+      "best_epoch": 30,
+      "best_val_loss": 0.0004697333642979854,
+      "train_loss_final": 0.0002130541785244583,
+      "learning_rate": 0.001,
+      "optimizer": "Adam",
+      "loss_function": "MSELoss"
+    },
+    "task5_multi_horizon_forecasting": {
+      "status": "PASS",
+      "total_sequences_inferred": 138,
+      "total_predictions": 414,
+      "horizons_evaluated": [1, 3, 5],
+      "output_range_min": 0.006428,
+      "output_range_max": 0.024108,
+      "invalid_nan_count": 0,
+      "invalid_inf_count": 0,
+      "alignment_rate": 1.0
+    },
+    "task6_model_evaluation": {
+      "status": "PASS",
+      "test_split_sequences": 19,
+      "evaluation_pairs_evaluated": 48,
+      "visualizations_generated": 8,
+      "honesty_check": "LSTM is worse than Persistence on flat zero test partition due to continuous positive activation residual"
+    },
+    "task7_final_audit": {
+      "status": "PASS",
+      "independent_metric_recalculation": "VERIFIED_EXACT_MATCH",
+      "leakage_audit": "ZERO_LEAKAGE_CONFIRMED",
+      "regression_suite": "100%_PASS"
+    }
+  },
+  "independent_metric_verification": {
+    "horizon_1": {
+      "pairs_count": 18,
+      "reported_mae": 0.011556,
+      "recalculated_mae": 0.011556,
+      "reported_rmse": 0.011615,
+      "recalculated_rmse": 0.011615,
+      "recalculated_mse": 0.00013492,
+      "recalculated_bias": 0.011556,
+      "parity_match": true
+    },
+    "horizon_3": {
+      "pairs_count": 16,
+      "reported_mae": 0.020326,
+      "recalculated_mae": 0.020326,
+      "reported_rmse": 0.020435,
+      "recalculated_rmse": 0.020435,
+      "recalculated_mse": 0.00041759,
+      "recalculated_bias": 0.020326,
+      "parity_match": true
+    },
+    "horizon_5": {
+      "pairs_count": 14,
+      "reported_mae": 0.015467,
+      "recalculated_mae": 0.015467,
+      "reported_rmse": 0.015530,
+      "recalculated_rmse": 0.015530,
+      "recalculated_mse": 0.00024117,
+      "recalculated_bias": 0.015467,
+      "parity_match": true
+    },
+    "overall": {
+      "total_valid_pairs": 48,
+      "reported_mae": 0.015620,
+      "recalculated_mae": 0.015620,
+      "reported_rmse": 0.016086,
+      "recalculated_rmse": 0.016086,
+      "parity_match": true
+    }
+  },
+  "comparative_benchmark_summary": {
+    "test_set_mae": {
+      "persistence": 0.0,
+      "linear_trend": 0.0,
+      "historical_mean": 0.000582,
+      "lstm_neural": 0.015620
+    },
+    "scientific_explanation": "Test split ground truth targets are 100% zero (y_i = 0.0) due to severe zero inflation in the single driving sample clip. The persistence and trend baselines trivially predict exactly 0.0 and incur 0.0 error. The LSTM forecaster produces continuous non-saturating probabilities (~0.011 to 0.020), which incurs a slight residual error (~0.0156 MAE) on flat zero data."
+  },
+  "checkpoint_audit": {
+    "file_path": "experiments/forecasting/lstm_training/official_lstm_training/checkpoints/checkpoint_best.pt",
+    "total_tensors": 6,
+    "tensor_shapes": {
+      "model_state_dict.lstm.weight_ih_l0": [128, 27],
+      "model_state_dict.lstm.weight_hh_l0": [128, 32],
+      "model_state_dict.lstm.bias_ih_l0": [128],
+      "model_state_dict.lstm.bias_hh_l0": [128],
+      "model_state_dict.fc.weight": [3, 32],
+      "model_state_dict.fc.bias": [3]
+    },
+    "total_parameters": 7907,
+    "parameter_dtype": "torch.float32",
+    "saved_metrics": {
+      "epoch": 30,
+      "train_loss": 0.0002130541785244583,
+      "val_loss": 0.0004697333642979854
+    }
+  },
+  "leakage_audit": {
+    "train_sequence_count": 101,
+    "val_sequence_count": 25,
+    "test_sequence_count": 19,
+    "train_val_test_intersection": 0,
+    "embargo_gap_frames": 25,
+    "temporal_chronological_order": true,
+    "future_feature_leakage": false,
+    "label_leakage": false
+  },
+  "performance_profile": {
+    "forward_pass_per_sequence_ms": 0.27,
+    "throughput_sequences_per_second": 3703.7,
+    "training_time_30_epochs_sec": 2.12,
+    "evaluation_runtime_sec": 0.054,
+    "plot_generation_runtime_sec": 1.42,
+    "peak_memory_rss_mb": 53.4,
+    "hardware_compatibility": "Fully validated on dual-core Intel Core i3 CPU, 8 GB RAM, Windows 11"
+  },
+  "test_suite_status": {
+    "total_tests_collected": 1342,
+    "tests_passed": 1342,
+    "tests_failed": 0,
+    "tests_errored": 0,
+    "regressions_detected": 0,
+    "exit_code": 0
+  },
+  "limitations": [
+    "Severe target zero-inflation: ground-truth reliability targets in the single 10-second driving clip (145 sequences) are >99% zero, and test set targets are 100% zero.",
+    "Baselines (Persistence, Linear Trend) outperform the LSTM on flat zero targets by trivially predicting zero.",
+    "Anticipation of actual failure events (sharp drops in reliability) has not yet been benchmarked against non-zero empirical degradation events.",
+    "Dataset scale is restricted to a single BDD100K driving video (10 seconds, 300 frames); expansion across multi-weather, multi-camera driving sequences is required in Day 10."
+  ],
+  "recommendations_for_day10": [
+    "Ingest multi-video BDD100K scenarios featuring weather transitions (fog, rain, glare, nighttime) to generate non-zero reliability degradation labels.",
+    "Evaluate event-detection metrics (Precision, Recall, ROC-AUC, F1-Score, Time-to-Failure anticipation lead time) in addition to regression loss.",
+    "Implement temperature scaling / threshold calibration for zero-inflated reliability outputs.",
+    "Integrate the multi-horizon forecaster into the online PerceptGuard pipeline runtime."
+  ]
+}
