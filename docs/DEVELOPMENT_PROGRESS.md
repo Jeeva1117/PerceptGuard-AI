@@ -3320,3 +3320,58 @@ Conducted an exhaustive, independent, evidence-based engineering audit of the en
 - **Commit Target:** `feat: harden backend services`
 - **Commit Hash:** `cb8a212`
 - **Status:** Committed and pushed to `origin/main`.
+
+
+---
+
+### Day 11 — Task 4: Frontend Production Optimization & API Integration Hardening
+
+- **Date:** 2026-11-20
+- **Roles:** Senior Staff Frontend Engineer, React Architect, UI Performance Engineer, Production Integration Specialist
+- **Milestone Type:** Frontend Modularization, Dual Topology Integration, Streamlit Dashboard Hardening, Strict Data Integrity
+- **Audit Verdict:** **`PASS WITH LIMITATIONS`** (Calibration Status: **`PROVISIONAL CALIBRATION`**)
+
+#### Summary of Accomplishments & Verifications:
+1. **Frontend Modular Component Architecture (`dashboard/components/`):**
+   - Decomposed monolithic `dashboard/app.py` into 8 modular, independently testable UI components:
+     - `state_views.py`: Reusable empty states, error boundaries with retry callbacks, and telemetry staleness notices.
+     - `header.py`: System branding, semantic versioning, runtime environment badge, device specs, provisional calibration status, and active transport mode badge.
+     - `overview.py`: Section A high-level pipeline status, perception health score, sequence metadata, and model availability.
+     - `risk_cards.py`: Section B multi-horizon risk overview cards ($H1, H3, H5$) with strict data presentation integrity.
+     - `temporal_chart.py`: Section C trajectory line charts and chronological state transitions table.
+     - `alerts_feed.py`: Section D early-warning alert feed, multi-parameter filtering, detail inspector, and operator lifecycle actions.
+     - `tracking_view.py`: Section E authentic YOLO11n + ByteTrack detection & tracking telemetry context.
+     - `pipeline_accordion.py`: 8-Stage perception architecture pipeline status expander.
+2. **Dual-Topology API Client & In-Process Fallback (`dashboard/api_client.py`):**
+   - Engineered `DashboardApiClient` seamlessly supporting both Topology A (Unified in-process invocation via `DashboardService`) and Topology B (Decoupled microservice via HTTP REST client).
+   - Implemented dynamic probing via `/health/live` (1.5s timeout) to auto-detect live backend REST services.
+   - Built fail-safe fallback: when the REST endpoint is offline or unreachable, client transparently switches to `IN_PROCESS` mode without crashing or surfacing unhandled exceptions.
+3. **Strict Data Presentation Integrity & Gate Banner:**
+   - Enforced strict rule: missing or uncalculated risk scores are strictly rendered as `"N/A"` with risk category `"UNKNOWN"` (grey badge); missing forecasts are NEVER converted into `0.0` or `"LOW"` risk.
+   - Preserved conspicuous `PROVISIONAL CALIBRATION` badges across header, Section A, Section B, and sidebar due to zero-inflation in single-clip driving scenarios.
+   - Reported authentic YOLO11n detections, unique ByteTrack tracks, and CPU latency metrics.
+4. **State Handling & Operator Lifecycle Actions:**
+   - Implemented non-sensitive error boundaries preventing Python tracebacks from leaking to UI users.
+   - Implemented telemetry staleness warning banner when telemetry data age exceeds freshness TTL ($30\text{s}$).
+   - Enabled interactive alert lifecycle actions (Acknowledge and Resolve) with instant visual feedback and audit trail inspection.
+5. **Comprehensive Automated Frontend Test Suite (`tests/frontend/`):**
+   - Implemented 31 tests across 3 modules:
+     - `test_api_client.py`: 14 tests verifying initialization, REST API calls, dynamic probing, timeout handling, and in-process fallback.
+     - `test_dashboard_components.py`: 14 tests verifying state views, strict data integrity (missing risk $\to$ UNKNOWN), H1/H3/H5 display, empty states, and alerts filtering.
+     - `test_production_build.py`: 3 tests verifying standard `py_compile` compilation on all dashboard modules, required runtime dependencies, and public API exports.
+   - **Frontend Test Suite:** 31 / 31 passed (100%) in $8.02\text{s}$.
+   - **Full Subsystem Regression Suite:** 222 / 222 passed (100%) in $13.01\text{s}$ across config, api, frontend, early warning, and risk.
+6. **Deliverables Authored:**
+   - Authored [docs/FRONTEND_PRODUCTION_OPTIMIZATION.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/FRONTEND_PRODUCTION_OPTIMIZATION.md).
+   - Authored [docs/FRONTEND_API_INTEGRATION.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/FRONTEND_API_INTEGRATION.md).
+   - Authored [docs/FRONTEND_ERROR_HANDLING.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/FRONTEND_ERROR_HANDLING.md).
+   - Authored [docs/FRONTEND_BUILD_VALIDATION.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/FRONTEND_BUILD_VALIDATION.md).
+   - Authored [reports/day11/frontend_optimization_report.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/day11/frontend_optimization_report.md).
+   - Generated [reports/day11/frontend_optimization_report.json](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/day11/frontend_optimization_report.json).
+   - Updated [docs/DEVELOPMENT_PROGRESS.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/DEVELOPMENT_PROGRESS.md).
+
+#### Git Version Control
+- **Branch:** `main`
+- **Commit Target:** `feat: optimize frontend app`
+- **Commit Hash:** Pending commit
+- **Status:** Staged and ready for Git commit and push.
