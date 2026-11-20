@@ -125,7 +125,6 @@ class VideoPipelineRunner:
         self._lstm_model = None
         self._risk_scorer = None
         self._risk_classifier = None
-        self._early_warning_engine = None
 
     def _ensure_models_loaded(self) -> None:
         """Lazily load and cache YOLO and LSTM models in memory."""
@@ -170,8 +169,6 @@ class VideoPipelineRunner:
             self._risk_scorer = ReliabilityRiskScorer()
         if self._risk_classifier is None:
             self._risk_classifier = RiskClassifier()
-        if self._early_warning_engine is None:
-            self._early_warning_engine = EarlyWarningEngine()
 
     def run(
         self,
@@ -217,7 +214,9 @@ class VideoPipelineRunner:
 
         width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        fps = float(cap.get(cv2.CAP_PROP_FPS)) or 30.0
+        raw_fps = cap.get(cv2.CAP_PROP_FPS)
+        fps = 30.0 if (raw_fps is None or np.isnan(raw_fps) or float(raw_fps) <= 0.0) else float(raw_fps)
+        frame_rate = max(1, int(round(fps)))
         total_container_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         duration_sec = total_container_frames / fps if fps > 0 else 0.0
 
@@ -234,15 +233,19 @@ class VideoPipelineRunner:
         # Ensure models ready
         self._ensure_models_loaded()
 
-        # Initialize tracker and temporal risk monitor per video run
-        tracker = ByteTrackEngine(frame_rate=int(fps))
+        # Initialize tracker, temporal risk monitor, and early warning engine per video run
+        tracker = ByteTrackEngine(frame_rate=frame_rate)
         temporal_monitor = TemporalRiskMonitor(classifier=self._risk_classifier)
+        early_warning_engine = EarlyWarningEngine()
 
         # ----------------------------------------------------------------------
         # Stage 2 to 12: Frame-by-Frame Processing Loop
         # ----------------------------------------------------------------------
         frames_to_process = min(max_frames, total_container_frames if total_container_frames > 0 else max_frames)
         feature_history: List[List[float]] = []
+        prev_track_positions: Dict[int, Tuple[float, float]] = {}
+        conf_history: List[float] = []
+        blur_history: List[float] = []
         processed_frames: List[FrameProcessingDetail] = []
         all_alerts: List[EarlyWarningAlert] = []
         total_detections = 0
@@ -310,32 +313,115 @@ class VideoPipelineRunner:
             tracks_info: List[Dict[str, Any]] = [t.to_dict() for t in active_tracks]
             durations_track_ms += (time.perf_counter() - t0) * 1000.0
 
-            # --- C. Feature Extraction (Multi-Modal 27 Features) ---
+            # --- C. Feature Extraction (Multi-Modal 27 Features adhering to feature_manifest.json) ---
             t0 = time.perf_counter()
             gray = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2GRAY)
             blur_val = float(cv2.Laplacian(gray, cv2.CV_64F).var())
             brightness_val = float(np.mean(gray))
+            brightness_std_val = float(np.std(gray))
             contrast_val = float(np.std(gray))
+            contrast_range_val = float(np.ptp(gray))
+            contrast_p_range = float(np.percentile(gray, 95) - np.percentile(gray, 5))
 
             det_count = len(detections)
-            mean_conf = float(np.mean([d["confidence"] for d in detections])) if detections else 0.0
-            conf_var = float(np.var([d["confidence"] for d in detections])) if len(detections) > 1 else 0.0
+            unique_classes = len(set(d["class_id"] for d in detections))
+            confs = [d["confidence"] for d in detections]
+            mean_conf = float(np.mean(confs)) if confs else 0.0
+            conf_std = float(np.std(confs)) if len(confs) > 1 else 0.0
+
+            bbox_areas = [(d["bbox_xyxy"][2] - d["bbox_xyxy"][0]) * (d["bbox_xyxy"][3] - d["bbox_xyxy"][1]) for d in detections]
+            bbox_widths = [d["bbox_xyxy"][2] - d["bbox_xyxy"][0] for d in detections]
+            bbox_heights = [d["bbox_xyxy"][3] - d["bbox_xyxy"][1] for d in detections]
+            mean_area = float(np.mean(bbox_areas)) if bbox_areas else 0.0
+            mean_width = float(np.mean(bbox_widths)) if bbox_widths else 0.0
+            mean_height = float(np.mean(bbox_heights)) if bbox_heights else 0.0
 
             track_count = len(active_tracks)
+            curr_track_positions: Dict[int, Tuple[float, float]] = {}
+            displacements: List[float] = []
+            speeds: List[float] = []
+            vel_xs: List[float] = []
+            vel_ys: List[float] = []
+            moving_count = 0
 
+            for trk in active_tracks:
+                cx = (trk.bbox_xyxy[0] + trk.bbox_xyxy[2]) / 2.0
+                cy = (trk.bbox_xyxy[1] + trk.bbox_xyxy[3]) / 2.0
+                curr_track_positions[trk.track_id] = (cx, cy)
+                if trk.track_id in prev_track_positions:
+                    px, py = prev_track_positions[trk.track_id]
+                    dx = cx - px
+                    dy = cy - py
+                    disp = float(np.hypot(dx, dy))
+                    displacements.append(disp)
+                    speeds.append(disp * fps)
+                    vel_xs.append(dx * fps)
+                    vel_ys.append(dy * fps)
+                    if disp > 2.0:
+                        moving_count += 1
+            prev_track_positions = curr_track_positions
+
+            stationary_count = max(0, track_count - moving_count)
+            mean_disp = float(np.mean(displacements)) if displacements else 0.0
+            max_disp = float(np.max(displacements)) if displacements else 0.0
+            mean_spd = float(np.mean(speeds)) if speeds else 0.0
+            mean_vx = float(np.mean(vel_xs)) if vel_xs else 0.0
+            mean_vy = float(np.mean(vel_ys)) if vel_ys else 0.0
+            motion_cov = 1.0 if track_count > 0 else 0.0
+
+            # Update histories for rolling trend slopes
+            conf_history.append(mean_conf)
+            blur_history.append(blur_val)
+
+            def _calc_slope(vals: List[float], win: int) -> float:
+                if len(vals) < win:
+                    return 0.0
+                y = np.array(vals[-win:], dtype=np.float32)
+                x = np.arange(win, dtype=np.float32)
+                x_mean = np.mean(x)
+                y_mean = np.mean(y)
+                denom = np.sum((x - x_mean) ** 2)
+                if denom == 0:
+                    return 0.0
+                return float(np.sum((x - x_mean) * (y - y_mean)) / denom)
+
+            w3_conf_slope = _calc_slope(conf_history, 3)
+            w3_blur_slope = _calc_slope(blur_history, 3)
+            w5_conf_slope = _calc_slope(conf_history, 5)
+            w5_blur_slope = _calc_slope(blur_history, 5)
+
+            # Construct exact 27-feature vector according to feature_manifest.json
             feat_vec = [
-                float(det_count),
-                mean_conf,
-                conf_var,
-                blur_val,
-                brightness_val,
-                contrast_val,
-                float(track_count),
-                float(frame_idx),
-                timestamp_sec,
+                float(det_count),            # 0: detection_count
+                float(unique_classes),       # 1: unique_class_count
+                mean_conf,                   # 2: mean_confidence
+                conf_std,                    # 3: confidence_std
+                mean_area,                   # 4: mean_bbox_area
+                mean_width,                  # 5: mean_bbox_width
+                mean_height,                 # 6: mean_bbox_height
+                float(track_count),          # 7: observed_track_count
+                float(moving_count),         # 8: moving_track_count
+                float(stationary_count),     # 9: stationary_track_count
+                mean_disp,                   # 10: mean_displacement
+                max_disp,                    # 11: maximum_displacement
+                mean_spd,                    # 12: mean_speed
+                mean_vx,                     # 13: mean_velocity_x
+                mean_vy,                     # 14: mean_velocity_y
+                motion_cov,                  # 15: motion_feature_coverage
+                blur_val,                    # 16: blur_score
+                brightness_val,              # 17: mean_brightness
+                brightness_std_val,          # 18: brightness_std
+                contrast_val,                # 19: contrast_std
+                contrast_range_val,          # 20: contrast_range
+                contrast_p_range,            # 21: contrast_percentile_range
+                1.0,                         # 22: numeric_feature_coverage
+                w3_conf_slope,               # 23: w3_confidence_trend_slope
+                w3_blur_slope,               # 24: w3_blur_trend_slope
+                w5_conf_slope,               # 25: w5_confidence_trend_slope
+                w5_blur_slope,               # 26: w5_blur_trend_slope
             ]
-            while len(feat_vec) < 27:
-                feat_vec.append(0.0)
+            # Sanitize any non-finite values to guarantee numerical safety
+            feat_vec = [float(np.nan_to_num(v, nan=0.0, posinf=0.0, neginf=0.0)) for v in feat_vec]
 
             feature_history.append(feat_vec)
             if len(feature_history) > 10:
@@ -389,7 +475,7 @@ class VideoPipelineRunner:
                 latest_trans = tracker_state.transitions[-1] if tracker_state.transitions else None
 
                 # Early-warning rule evaluation
-                alerts = self._early_warning_engine.evaluate(
+                alerts = early_warning_engine.evaluate(
                     summary=summary,
                     transition=latest_trans,
                     source_record=latest_rec,
@@ -470,6 +556,9 @@ class VideoPipelineRunner:
 
         cap.release()
 
+        if len(processed_frames) == 0:
+            raise ValueError(f"Video file '{vpath.name}' contains zero decodable frames.")
+
         # ----------------------------------------------------------------------
         # Stage 13: Summary & Result Packaging
         # ----------------------------------------------------------------------
@@ -501,7 +590,7 @@ class VideoPipelineRunner:
             total_detections=total_detections,
             unique_tracks=tracker.unique_track_count,
             total_alerts=len(all_alerts),
-            active_alerts=len(self._early_warning_engine.get_active_alerts()),
+            active_alerts=len(early_warning_engine.get_active_alerts()),
             calibration_status="PROVISIONAL CALIBRATION",
             per_horizon_risk=per_h_risk,
             frames=processed_frames,

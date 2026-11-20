@@ -3591,3 +3591,38 @@ Conducted an exhaustive, independent, evidence-based engineering audit of the en
 - **Commit Target:** `feat: integrate streamlit dashboard`
 - **Commit Hash:** `a1a0b8c`
 - **Status:** Committed and pushed to `origin/main`. Clean working tree.
+
+---
+
+### Day 14: Real-World Testing, Pipeline Validation & Reliability Verification
+**Date:** 2026-11-20  
+**Phase:** Day 14 — Master Advanced Real-World Validation & Engineering Stabilization  
+**Role:** Principal Software Engineer, Senior CV Engineer, Senior ML Engineer, QA Architect, Reliability Engineer  
+**Overall Verdict:** **`PASS WITH LIMITATIONS`** *(Calibration Gate: `PROVISIONAL CALIBRATION`)*
+
+#### Summary of Accomplishments:
+1. **Defect Rectification & Stabilization:**
+   - Fixed alert state leak across distinct video runs by scoping `EarlyWarningEngine` per video job run.
+   - Fixed restart persistence by adding `_rehydrate_existing_jobs()` in `JobManager` scanning persisted `results.json` artifacts.
+   - Implemented exact 27-dimensional feature engineering matching `feature_manifest.json` with rolling trend slopes and finite number sanitization (`np.nan_to_num`).
+   - Hardened video FPS decoding against non-positive, zero, or NaN values, clamping to `max(1, int(round(fps)))`.
+   - Added automatic staging file unlinking in `JobManager` upon job completion or failure.
+2. **Real-World Video Validation Across 6 Scenarios:**
+   - Validated authentic BDD100K driving video (`converted_026c7465-309f6d33.mp4`):
+     - **Scenario A (Normal Daytime Driving):** 15 frames, $488.0\text{ ms/frame}$ on CPU, 3 detections, 1 track, $H1=0.5976, H3=0.5896, H5=0.4455$ (MEDIUM risk).
+     - **Scenario B (Low Lighting):** 15 frames, 0 detections, $H1=0.7455, H5=0.6871$ (HIGH risk) — anticipated failure under low visibility.
+     - **Scenario C (Motion-Heavy):** 15 frames, $H3=0.6637$ (HIGH risk), 16 alerts triggered.
+     - **Scenario D (Visual Degradation):** 15 frames, blur & contrast reduction, $H1=0.7062$ (HIGH risk), $H5=0.6022$ (HIGH risk).
+     - **Scenario E (Edge Case: 1 Frame):** Successfully padded and scored in $0.17\text{s}$.
+     - **Scenario F (Edge Case: Corrupt Stream):** Cleanly rejected with explicit `ValueError`.
+3. **Automated Regression Suite:**
+   - Created `tests/early_warning/test_day14_reliability_and_edge_cases.py` (4 tests).
+   - Executed full test suite: **1,614 / 1,614 tests passed (100.0%)** on CPU.
+4. **Documentation & Reports Authored:**
+   - [docs/REAL_WORLD_TESTING.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/REAL_WORLD_TESTING.md)
+   - [docs/PIPELINE_VALIDATION.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/PIPELINE_VALIDATION.md)
+   - [docs/KNOWN_LIMITATIONS.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/KNOWN_LIMITATIONS.md)
+   - [docs/PERFORMANCE_BENCHMARKS.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/PERFORMANCE_BENCHMARKS.md)
+   - [docs/ERROR_RECOVERY.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/ERROR_RECOVERY.md)
+   - [reports/day14/day14_real_world_validation_report.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/day14/day14_real_world_validation_report.md)
+   - [reports/day14/day14_real_world_validation_report.json](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/day14/day14_real_world_validation_report.json)

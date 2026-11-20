@@ -86,8 +86,50 @@ class JobManager:
         self._jobs_lock = threading.RLock()
         self._executor = ThreadPoolExecutor(max_workers=max_workers, thread_name_prefix="pg_worker")
         self._runner = VideoPipelineRunner(project_root=Path.cwd())
+        self._rehydrate_existing_jobs()
         self._initialized = True
-        logger.info(f"Initialized JobManager (max_workers={max_workers}, jobs_dir={self.jobs_dir})")
+        logger.info(f"Initialized JobManager (max_workers={max_workers}, jobs_dir={self.jobs_dir}, rehydrated={len(self._jobs)})")
+
+    def _rehydrate_existing_jobs(self) -> None:
+        """Scan jobs_dir and rehydrate completed job records into memory on startup for restart persistence."""
+        if not self.jobs_dir.exists():
+            return
+        for child in self.jobs_dir.iterdir():
+            if child.is_dir() and child.name.startswith("job_"):
+                res_file = child / "results.json"
+                if res_file.exists():
+                    try:
+                        with open(res_file, "r", encoding="utf-8") as f:
+                            data = json.load(f)
+                        job_id = data.get("job_id", child.name)
+                        rec = JobRecord(
+                            job_id=job_id,
+                            filename=data.get("video_filename", "video.mp4"),
+                            status=JobStatus.COMPLETED,
+                            stage="COMPLETED",
+                            progress_percentage=100.0,
+                            message=f"Restored from disk storage. {data.get('frames_processed', 0)} frames.",
+                            created_at=data.get("completed_at", datetime.datetime.now(datetime.timezone.utc).isoformat()),
+                            completed_at=data.get("completed_at"),
+                            max_frames_requested=data.get("frames_processed", 30),
+                            frames_processed=data.get("frames_processed", 0),
+                            total_detections=data.get("total_detections", 0),
+                            unique_tracks=data.get("unique_tracks", 0),
+                            alerts_count=data.get("total_alerts", 0),
+                            results_dir=str(child),
+                            result_summary={
+                                "frames_processed": data.get("frames_processed", 0),
+                                "total_detections": data.get("total_detections", 0),
+                                "unique_tracks": data.get("unique_tracks", 0),
+                                "total_alerts": data.get("total_alerts", 0),
+                                "active_alerts": data.get("active_alerts", 0),
+                                "total_duration_seconds": data.get("total_duration_seconds", 0.0),
+                                "per_horizon_risk": data.get("per_horizon_risk", {}),
+                            },
+                        )
+                        self._jobs[job_id] = rec
+                    except Exception as e:
+                        logger.warning(f"Could not rehydrate job from {res_file}: {e}")
 
     def submit_job(
         self,
@@ -188,6 +230,12 @@ class JobManager:
                 record.completed_at = datetime.datetime.now(datetime.timezone.utc).isoformat()
                 record.error_message = str(exc)
                 record.message = f"Pipeline execution failed: {exc}"
+        finally:
+            try:
+                if video_path.exists() and "uploads" in str(video_path):
+                    video_path.unlink()
+            except OSError:
+                pass
 
     def get_job(self, job_id: str) -> Optional[JobRecord]:
         """Retrieve job record by ID."""

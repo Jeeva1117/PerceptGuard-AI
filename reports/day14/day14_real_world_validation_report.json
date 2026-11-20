@@ -1,0 +1,108 @@
+{
+  "milestone": "Day 14 — Real-World Testing & Reliability Verification",
+  "audit_date": "2026-11-20",
+  "overall_verdict": "PASS WITH LIMITATIONS",
+  "calibration_status_gate": "PROVISIONAL CALIBRATION",
+  "hardware_profile": {
+    "cpu": "Intel Core i3 11th Gen",
+    "ram_gb": 8,
+    "os": "Windows 11 AMD64",
+    "acceleration": "None (Pure CPU)"
+  },
+  "test_suite_results": {
+    "total_tests_collected": 1614,
+    "total_tests_passed": 1614,
+    "total_tests_failed": 0,
+    "total_tests_skipped": 0,
+    "pass_rate_percentage": 100.0
+  },
+  "scenarios_validated": [
+    {
+      "scenario": "Scenario A: Normal Daytime Driving",
+      "video_filename": "scenario_a_normal_daytime.mp4",
+      "frames_processed": 15,
+      "detections_count": 3,
+      "unique_tracks": 1,
+      "total_alerts": 14,
+      "active_alerts": 11,
+      "per_horizon_risk": {
+        "h1": {"latest_risk": 0.5976, "category": "MEDIUM"},
+        "h3": {"latest_risk": 0.5896, "category": "MEDIUM"},
+        "h5": {"latest_risk": 0.4455, "category": "MEDIUM"}
+      },
+      "status": "PASS"
+    },
+    {
+      "scenario": "Scenario B: Low Lighting",
+      "video_filename": "scenario_b_low_lighting.mp4",
+      "frames_processed": 15,
+      "detections_count": 0,
+      "unique_tracks": 0,
+      "total_alerts": 6,
+      "active_alerts": 3,
+      "per_horizon_risk": {
+        "h1": {"latest_risk": 0.7455, "category": "HIGH"},
+        "h3": {"latest_risk": 0.5016, "category": "MEDIUM"},
+        "h5": {"latest_risk": 0.6871, "category": "HIGH"}
+      },
+      "status": "PASS"
+    },
+    {
+      "scenario": "Scenario C: Motion-Heavy Driving",
+      "video_filename": "scenario_c_motion_heavy.mp4",
+      "frames_processed": 15,
+      "detections_count": 1,
+      "unique_tracks": 0,
+      "total_alerts": 16,
+      "active_alerts": 10,
+      "per_horizon_risk": {
+        "h1": {"latest_risk": 0.5103, "category": "MEDIUM"},
+        "h3": {"latest_risk": 0.6637, "category": "HIGH"},
+        "h5": {"latest_risk": 0.3903, "category": "MEDIUM"}
+      },
+      "status": "PASS"
+    },
+    {
+      "scenario": "Scenario D: Visual Quality Degradation",
+      "video_filename": "scenario_d_blur_and_contrast.mp4",
+      "frames_processed": 15,
+      "detections_count": 5,
+      "unique_tracks": 1,
+      "total_alerts": 11,
+      "active_alerts": 7,
+      "per_horizon_risk": {
+        "h1": {"latest_risk": 0.7062, "category": "HIGH"},
+        "h3": {"latest_risk": 0.4692, "category": "MEDIUM"},
+        "h5": {"latest_risk": 0.6022, "category": "HIGH"}
+      },
+      "status": "PASS"
+    },
+    {
+      "scenario": "Scenario E: Minimalist 1-Frame Sequence",
+      "video_filename": "scenario_e_single_frame.mp4",
+      "frames_processed": 1,
+      "detections_count": 0,
+      "unique_tracks": 0,
+      "total_alerts": 1,
+      "active_alerts": 1,
+      "status": "PASS"
+    },
+    {
+      "scenario": "Scenario F: Corrupted Stream Rejection",
+      "video_filename": "scenario_f_corrupted.mp4",
+      "frames_processed": 0,
+      "status": "PASS"
+    }
+  ],
+  "defects_rectified": [
+    "Cross-job alert state leakage in VideoPipelineRunner",
+    "Missing disk rehydration and restart persistence in JobManager",
+    "Zero or NaN FPS video decoding handling",
+    "Feature extraction alignment with 27-feature manifest contract",
+    "Staging file cleanup in JobManager"
+  ],
+  "known_limitations": [
+    "Docker Engine CLI unavailable on local Windows host (validated in remote CI)",
+    "Provisional calibration status for risk classification thresholds"
+  ]
+}
