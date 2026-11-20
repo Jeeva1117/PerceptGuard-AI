@@ -3428,3 +3428,61 @@ Conducted an exhaustive, independent, evidence-based engineering audit of the en
 - **Commit Target:** `feat: add docker deployment`
 - **Commit Hash:** `41618bd`
 - **Status:** Committed and pushed to `origin/main`.
+
+
+---
+
+### Day 11 — Task 6: CI/CD Pipeline & Operational Monitoring Implementation
+
+- **Date:** 2026-11-20
+- **Roles:** Senior Staff DevOps Engineer, Platform Engineer, MLOps Architect, Site Reliability Engineer (SRE)
+- **Milestone Type:** Continuous Integration Architecture, GitHub Actions Pipeline, Operational Monitoring, Production Alerting
+- **Audit Verdict:** **`PASS WITH LIMITATIONS`** (Calibration Status: **`PROVISIONAL CALIBRATION`**)
+- **Remote CI Execution:** Locally validated against YAML syntax, schema AST, and triggers; prepared for push to `origin/main`
+
+#### Summary of Accomplishments & Verifications:
+1. **GitHub Actions Continuous Integration Pipeline (`.github/workflows/ci.yml`):**
+   - Engineered 6 cohesive pipeline jobs on `ubuntu-latest`:
+     - `code-quality`: Python bytecode compilation (`py_compile`), secret leakage guard, and Compose YAML validation.
+     - `backend-ci`: Matrix testing across Python `3.11` and `3.12` with CPU-only PyTorch and full backend test suites.
+     - `frontend-ci`: Automated frontend test suites and Streamlit component compilation verification.
+     - `docker-validation`: Docker Compose syntax linting, backend/frontend container builds, and non-root user (UID 1000) verification.
+     - `security-scan`: Dependency CVE vulnerability scanning via `pip-audit` against PyPA advisory database.
+     - `readiness-gate`: Aggregates all gate results and issues deployment readiness certificate.
+   - Enforced least privilege (`permissions: contents: read`), concurrency cancellation, and path-based filtering to skip doc-only changes.
+2. **Authorized Production Deployment Gate (`.github/workflows/deploy.yml`):**
+   - Strictly isolated CD deployment from CI testing.
+   - Triggered exclusively via manual `workflow_dispatch` on `main`.
+   - Requires manual entry of confirmation token `DEPLOY` and binds to GitHub protected environment `production`.
+3. **Operational SRE Telemetry & Health Monitoring (`/health/metrics`):**
+   - Added lightweight, non-blocking operational process telemetry endpoint `GET /health/metrics`:
+     - Process uptime in seconds
+     - Physical memory RSS and virtual memory in MB (via `psutil`)
+     - Process CPU utilization percentage
+     - Active worker thread count
+   - Maintained multi-tiered health interface: `/health/live` (liveness), `/health/ready` (readiness), and `/health` (domain health).
+4. **Production Operational Alerting Framework (`docs/PRODUCTION_ALERTING.md`):**
+   - Clearly separated SRE operational alerts from ML early-warning alerts.
+   - Defined structured alerts: `BACKEND_LIVENESS_FAILED` (P1), `BACKEND_READINESS_UNREADY` (P1), `MEMORY_PRESSURE_BREACH` (P2, PROVISIONAL), `API_HIGH_ERROR_RATE` (P2), `CHECKPOINT_MOUNT_MISSING` (P3), and `HIGH_REQUEST_LATENCY` (P3, PROVISIONAL).
+5. **Automated Test Suite & Regression Verification:**
+   - Implemented 8 CI/CD workflow tests in `tests/deployment/test_cicd_workflows.py`.
+   - Added `test_operational_metrics_endpoint` in `tests/api/test_health_endpoints.py`.
+   - **Deployment & CI Tests:** 14 / 14 passed (100%) in $0.45\text{s}$.
+   - **Full Subsystem Regression Suite:** 237 / 237 passed (100%) in $16.23\text{s}$ across config, api, frontend, deployment, early warning, and risk.
+6. **Deliverables Authored:**
+   - Authored [.github/workflows/ci.yml](file:///c:/Users/acer/Desktop/PerceptGuard-AI/.github/workflows/ci.yml).
+   - Authored [.github/workflows/deploy.yml](file:///c:/Users/acer/Desktop/PerceptGuard-AI/.github/workflows/deploy.yml).
+   - Authored [docs/CI_CD_ARCHITECTURE.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/CI_CD_ARCHITECTURE.md).
+   - Authored [docs/GITHUB_ACTIONS_SETUP.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/GITHUB_ACTIONS_SETUP.md).
+   - Authored [docs/OPERATIONAL_MONITORING.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/OPERATIONAL_MONITORING.md).
+   - Authored [docs/PRODUCTION_ALERTING.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/PRODUCTION_ALERTING.md).
+   - Authored [docs/DEPLOYMENT_APPROVALS.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/DEPLOYMENT_APPROVALS.md).
+   - Authored [reports/day11/cicd_monitoring_report.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/day11/cicd_monitoring_report.md).
+   - Generated [reports/day11/cicd_monitoring_report.json](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/day11/cicd_monitoring_report.json).
+   - Updated [docs/DEVELOPMENT_PROGRESS.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/DEVELOPMENT_PROGRESS.md).
+
+#### Git Version Control
+- **Branch:** `main`
+- **Commit Target:** `ci: add automated validation`
+- **Commit Hash:** Pending commit
+- **Status:** Staged and ready for Git commit and push.

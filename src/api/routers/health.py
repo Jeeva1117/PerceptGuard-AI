@@ -3,15 +3,25 @@
 from __future__ import annotations
 
 import datetime
+import os
 from pathlib import Path
+import time
 from fastapi import APIRouter, Depends, Response, status
+import psutil
 
 from src.api.dependencies import get_current_settings, get_dashboard_service
-from src.api.schemas import HealthStatusResponse, LivenessResponse, ReadinessResponse
+from src.api.schemas import (
+    HealthStatusResponse,
+    LivenessResponse,
+    ReadinessResponse,
+    OperationalMetricsResponse,
+)
 from src.config.system_settings import SystemSettings
 from src.early_warning.dashboard_service import DashboardService
 
 router = APIRouter(tags=["Health & Diagnostics"])
+
+START_TIME = time.time()
 
 
 @router.get("/health", response_model=HealthStatusResponse)
@@ -80,5 +90,24 @@ def get_readiness(
         status="ready",
         subsystems=subsystems,
         details="PerceptGuard AI backend ready for operational inference and telemetry queries.",
+        timestamp=now_str,
+    )
+
+
+@router.get("/health/metrics", response_model=OperationalMetricsResponse)
+def get_operational_metrics() -> OperationalMetricsResponse:
+    """Return operational process telemetry (CPU, memory, uptime) for SRE monitoring and alerting."""
+    proc = psutil.Process(os.getpid())
+    mem = proc.memory_info()
+    uptime = time.time() - START_TIME
+    now_str = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    return OperationalMetricsResponse(
+        service="perceptguard-backend",
+        uptime_seconds=round(uptime, 2),
+        memory_rss_mb=round(mem.rss / (1024 * 1024), 2),
+        memory_vms_mb=round(mem.vms / (1024 * 1024), 2),
+        cpu_percent=proc.cpu_percent(interval=None),
+        num_threads=proc.num_threads(),
+        status="HEALTHY",
         timestamp=now_str,
     )

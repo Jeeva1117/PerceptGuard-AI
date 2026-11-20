@@ -46,6 +46,18 @@ class ReadinessResponse(BaseModel):
     timestamp: str = Field(..., description="Current UTC timestamp.")
 
 
+class OperationalMetricsResponse(BaseModel):
+    """Response schema for operational process telemetry and SRE monitoring."""
+    service: str = Field("perceptguard-backend", description="Service identifier.")
+    uptime_seconds: float = Field(..., description="Process uptime in seconds.")
+    memory_rss_mb: float = Field(..., description="Resident set memory consumption in megabytes.")
+    memory_vms_mb: float = Field(..., description="Virtual memory consumption in megabytes.")
+    cpu_percent: float = Field(..., description="Process CPU utilization percentage.")
+    num_threads: int = Field(..., description="Active thread count.")
+    status: str = Field("HEALTHY", description="Operational health status.")
+    timestamp: str = Field(..., description="Current UTC timestamp.")
+
+
 class HealthStatusResponse(BaseModel):
     """Comprehensive system operational health schema."""
     project_name: str

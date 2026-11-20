@@ -1,0 +1,56 @@
+name: PerceptGuard AI Production Deployment Gate
+
+# ==============================================================================
+# Triggers: Manual workflow dispatch ONLY.
+# Strictly isolated from CI pipeline to prevent unapproved production deployments.
+# ==============================================================================
+on:
+  workflow_dispatch:
+    inputs:
+      target_environment:
+        description: "Target Deployment Environment"
+        required: true
+        default: "staging"
+        type: choice
+        options:
+          - staging
+          - production
+      confirmation:
+        description: "Type 'DEPLOY' to authorize release"
+        required: true
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  # ----------------------------------------------------------------------------
+  # Job: Authorized Release Gate
+  # ----------------------------------------------------------------------------
+  deploy-authorized:
+    name: Execute Deployment (${{ inputs.target_environment }})
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.target_environment }}
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Verify Explicit Human Confirmation
+        run: |
+          if [ "${{ inputs.confirmation }}" != "DEPLOY" ]; then
+            echo "DEPLOYMENT BLOCKED: Human confirmation token 'DEPLOY' was not provided."
+            exit 1
+          fi
+          echo "Authorization confirmed for environment: ${{ inputs.target_environment }}"
+
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Deployment Safeguard Notice
+        run: |
+          echo "=========================================================="
+          echo "PERCEPTGUARD AI — STAGED DEPLOYMENT GATE"
+          echo "=========================================================="
+          echo "Commit:          ${{ github.sha }}"
+          echo "Environment:     ${{ inputs.target_environment }}"
+          echo "Authorized by:   ${{ github.actor }}"
+          echo "Status:          Production credentials require manual secret injection"
+          echo "=========================================================="

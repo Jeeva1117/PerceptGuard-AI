@@ -46,3 +46,18 @@ def test_comprehensive_health_endpoint(client: TestClient):
     assert "pipeline_status" in data
     assert "health_score" in data
     assert "calibration_gate_status" in data
+
+
+def test_operational_metrics_endpoint(client: TestClient):
+    """Verify /health/metrics returns SRE process telemetry (CPU, memory, uptime)."""
+    res = client.get("/health/metrics")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["service"] == "perceptguard-backend"
+    assert data["uptime_seconds"] >= 0.0
+    assert data["memory_rss_mb"] > 0.0
+    assert data["status"] == "HEALTHY"
+    assert "cpu_percent" in data
+    assert "num_threads" in data
+    assert "timestamp" in data
+
