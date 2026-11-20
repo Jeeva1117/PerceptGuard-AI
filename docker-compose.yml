@@ -1,0 +1,117 @@
+# ==============================================================================
+# PerceptGuard AI — Multi-Container Docker Compose Orchestration
+# Topology B: Decoupled FastAPI Backend REST Service + Streamlit Operations Dashboard
+# CPU-optimized edge architecture with non-root security and volume isolation.
+# ==============================================================================
+
+version: "3.8"
+
+services:
+  # ----------------------------------------------------------------------------
+  # Backend Service: FastAPI Asynchronous REST API
+  # ----------------------------------------------------------------------------
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: perceptguard-backend:latest
+    container_name: perceptguard-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - APP__ENVIRONMENT=production
+      - APP__DEBUG=false
+      - API__HOST=0.0.0.0
+      - API__PORT=8000
+      - API__PREFIX=/api/v1
+      - API__CORS_ORIGINS=["http://localhost:8501", "http://frontend:8501", "http://127.0.0.1:8501"]
+      - MODEL__DEVICE=cpu
+      - MODEL__NUM_WORKERS=2
+      - LOG__LEVEL=INFO
+      - LOG__FORMAT=json
+      - SECURITY__ALLOWED_HOSTS=["*"]
+      - DASHBOARD__CALIBRATION_STATUS_LABEL=PROVISIONAL CALIBRATION
+    volumes:
+      - ./models:/app/models:ro
+      - ./datasets/processed:/app/datasets/processed:ro
+      - backend_outputs:/app/outputs
+      - backend_logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/live"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - perceptguard-net
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2048M
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+
+  # ----------------------------------------------------------------------------
+  # Frontend Service: Streamlit Interactive Monitoring Dashboard
+  # ----------------------------------------------------------------------------
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    image: perceptguard-frontend:latest
+    container_name: perceptguard-frontend
+    restart: unless-stopped
+    ports:
+      - "8501:8501"
+    environment:
+      - APP__ENVIRONMENT=production
+      - APP__DEBUG=false
+      - DASHBOARD__API_BASE_URL=http://backend:8000
+      - DASHBOARD__API_REQUEST_TIMEOUT_SECONDS=10.0
+      - DASHBOARD__TELEMETRY_FRESHNESS_TTL_SECONDS=30
+      - DASHBOARD__CALIBRATION_STATUS_LABEL=PROVISIONAL CALIBRATION
+      - STREAMLIT_SERVER_PORT=8501
+      - STREAMLIT_SERVER_ADDRESS=0.0.0.0
+      - STREAMLIT_SERVER_HEADLESS=true
+      - STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+      - MODEL__DEVICE=cpu
+      - LOG__LEVEL=INFO
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - perceptguard-net
+    deploy:
+      resources:
+        limits:
+          cpus: "1.5"
+          memory: 1024M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+
+# ------------------------------------------------------------------------------
+# Isolated Bridge Network
+# ------------------------------------------------------------------------------
+networks:
+  perceptguard-net:
+    driver: bridge
+    name: perceptguard-network
+
+# ------------------------------------------------------------------------------
+# Persistent Volume Declarations
+# ------------------------------------------------------------------------------
+volumes:
+  backend_outputs:
+    name: perceptguard-backend-outputs
+  backend_logs:
+    name: perceptguard-backend-logs

@@ -1,0 +1,70 @@
+{
+  "task": "Day 11 Task 5 — Docker Containerization & Deployment Setup",
+  "audit_date": "2026-11-20",
+  "auditor_role": "Senior Staff Software Engineer, DevOps Architect, Docker Specialist, MLOps Deployment Engineer",
+  "verdict": "PASS WITH LIMITATIONS",
+  "calibration_status": "PROVISIONAL CALIBRATION",
+  "hardware_profile": {
+    "cpu": "Intel Core i3 11th Gen",
+    "ram_gb": 8,
+    "os": "Windows 11",
+    "tier": "CPU-Optimized"
+  },
+  "docker_environment": {
+    "docker_installed_on_host": false,
+    "docker_build_status": "BLOCKED",
+    "docker_compose_test_status": "BLOCKED",
+    "reason": "Docker CLI not installed on host Windows 11 development machine",
+    "vulnerability_scanning": "NOT RUN"
+  },
+  "static_validation_results": {
+    "deployment_tests_collected": 6,
+    "deployment_tests_passed": 6,
+    "deployment_tests_failed": 0,
+    "deployment_test_runtime_seconds": 0.24,
+    "total_regression_tests_passed": 228,
+    "total_regression_tests_failed": 0
+  },
+  "container_specifications": {
+    "backend": {
+      "image": "perceptguard-backend:latest",
+      "base_image": "python:3.11-slim",
+      "port": 8000,
+      "user": "appuser (UID 1000)",
+      "command": "uvicorn src.api.app:app --host 0.0.0.0 --port 8000 --workers 1",
+      "healthcheck": "curl -f http://localhost:8000/health/live"
+    },
+    "frontend": {
+      "image": "perceptguard-frontend:latest",
+      "base_image": "python:3.11-slim",
+      "port": 8501,
+      "user": "appuser (UID 1000)",
+      "command": "streamlit run dashboard/app.py --server.port=8501 --server.address=0.0.0.0 --server.headless=true --browser.gatherUsageStats=false",
+      "healthcheck": "curl -f http://localhost:8501/_stcore/health"
+    }
+  },
+  "security_controls": {
+    "non_root_execution": true,
+    "multi_stage_builds": true,
+    "secrets_excluded_in_dockerignore": true,
+    "raw_datasets_excluded": true,
+    "model_weights_read_only_bind": true,
+    "no_database_container": true,
+    "resource_limits_defined": true
+  },
+  "artifacts_created": [
+    "Dockerfile",
+    "Dockerfile.frontend",
+    "docker/Dockerfile.backend",
+    "docker/Dockerfile.frontend",
+    "docker-compose.yml",
+    ".dockerignore",
+    "tests/deployment/__init__.py",
+    "tests/deployment/test_docker_configuration.py",
+    "docs/DOCKER_SETUP.md",
+    "docs/CONTAINER_ARCHITECTURE.md",
+    "docs/DEPLOYMENT_GUIDE.md",
+    "reports/day11/containerization_report.md",
+    "reports/day11/containerization_report.json"
+  ]
+}

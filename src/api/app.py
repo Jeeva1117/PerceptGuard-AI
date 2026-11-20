@@ -146,3 +146,8 @@ def create_app(settings: Optional[SystemSettings] = None) -> FastAPI:
         }
 
     return app
+
+
+# Default ASGI application instance for Uvicorn / Gunicorn production runners
+app = create_app()
+

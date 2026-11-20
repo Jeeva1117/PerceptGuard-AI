@@ -1,0 +1,64 @@
+# ==============================================================================
+# PerceptGuard AI — Docker Build Exclusions (.dockerignore)
+# Prevents secrets, large raw datasets, virtual environments, caches, and weights
+# from leaking into production container build contexts.
+# ==============================================================================
+
+# Git version control metadata
+.git/
+.github/
+.gitignore
+
+# Python virtual environments & build artifacts
+venv/
+.venv/
+env/
+ENV/
+build/
+dist/
+*.egg-info/
+
+# Python bytecode & cache directories
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local environment configuration & credentials (NEVER bake into images)
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+!.env.example
+
+# Development tools & IDE directories
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Large raw datasets & video files (mount via volumes instead)
+datasets/raw/
+datasets/*.bag
+datasets/*.tar*
+datasets/*.zip
+datasets/processed/*.mp4
+datasets/processed/*.avi
+
+# Large binary model checkpoints (mount via volumes instead)
+models/*.pt
+models/**/*.pt
+models/*.onnx
+models/*.engine
+!models/.gitkeep
+
+# Temporary processing outputs, test runs & logs
+outputs/
+logs/
+*.log
+tmp/
+temp/
+.gemini/

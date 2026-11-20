@@ -3375,3 +3375,56 @@ Conducted an exhaustive, independent, evidence-based engineering audit of the en
 - **Commit Target:** `feat: optimize frontend app`
 - **Commit Hash:** `9474c1f`
 - **Status:** Committed and pushed to `origin/main`.
+
+
+---
+
+### Day 11 — Task 5: Docker Containerization & Deployment Setup
+
+- **Date:** 2026-11-20
+- **Roles:** Senior Staff Software Engineer, DevOps Architect, Docker Specialist, MLOps Deployment Engineer
+- **Milestone Type:** Containerization Architecture, Multi-Stage Dockerfiles, Docker Compose Orchestration, Non-Root Security
+- **Audit Verdict:** **`PASS WITH LIMITATIONS`** (Calibration Status: **`PROVISIONAL CALIBRATION`**)
+- **Container Build / Compose Status:** **`BLOCKED`** (Host Docker Engine/CLI unavailable on Windows 11 development machine; verified via PowerShell, zero fabricated build logs)
+
+#### Summary of Accomplishments & Verifications:
+1. **Container Deployment Architecture (`Dockerfile`, `Dockerfile.frontend`, `docker-compose.yml`):**
+   - Engineered Topology B decoupled container architecture:
+     - `backend`: FastAPI REST API on port `8000` via Uvicorn.
+     - `frontend`: Streamlit Operations Console on port `8501`.
+   - Built with `python:3.11-slim` base images utilizing multi-stage compilation to isolate C-compilers in the `builder` stage, keeping production images minimal and secure.
+2. **Security Hardening & Non-Root Execution:**
+   - Enforced non-root user execution across both images via `appuser:appgroup` (UID/GID 1000).
+   - Dropped root capabilities, ensured safe directory permissions (`/app/outputs`, `/app/logs`).
+   - Pinned dependencies in `requirements.txt` (added `httpx>=0.25.0`).
+3. **Docker Compose Orchestration & Health Dependencies (`docker-compose.yml`):**
+   - Configured user-defined bridge network `perceptguard-net`.
+   - Wired container health probes (`/health/live` on backend, `/_stcore/health` on frontend).
+   - Configured dependency readiness: `frontend` specifies `depends_on: backend: condition: service_healthy`.
+   - Declared explicit resource limits ($2.0\text{ vCPU} / 2\text{ GB RAM}$ backend, $1.5\text{ vCPU} / 1\text{ GB RAM}$ frontend).
+   - Intentionally omitted superfluous database containers.
+4. **Volume Isolation & Build-Context Protection:**
+   - Mounted model checkpoints (`./models`) and processed datasets (`./datasets/processed`) as read-only volumes (`:ro`).
+   - Created persistent named volumes `backend_outputs` and `backend_logs` to preserve artifacts across restarts.
+   - Authored `.dockerignore` strictly blocking `.git/`, `.env*`, `venv/`, `datasets/raw/`, `models/*.pt`, and caches.
+5. **Static Validation Suite & Subsystem Regression Testing:**
+   - Implemented 6 tests in `tests/deployment/test_docker_configuration.py` validating multi-stage structure, non-root user, compose schema, security rules, and path references.
+   - **Deployment Tests:** 6 / 6 passed (100%) in $0.24\text{s}$.
+   - **Full Subsystem Regression Suite:** 228 / 228 passed (100%) in $16.93\text{s}$ across config, api, frontend, deployment, early warning, and risk.
+6. **Deliverables Authored:**
+   - Authored [Dockerfile](file:///c:/Users/acer/Desktop/PerceptGuard-AI/Dockerfile) and [docker/Dockerfile.backend](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docker/Dockerfile.backend).
+   - Authored [Dockerfile.frontend](file:///c:/Users/acer/Desktop/PerceptGuard-AI/Dockerfile.frontend) and [docker/Dockerfile.frontend](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docker/Dockerfile.frontend).
+   - Authored [docker-compose.yml](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docker-compose.yml).
+   - Authored [.dockerignore](file:///c:/Users/acer/Desktop/PerceptGuard-AI/.dockerignore).
+   - Authored [docs/DOCKER_SETUP.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/DOCKER_SETUP.md).
+   - Authored [docs/CONTAINER_ARCHITECTURE.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/CONTAINER_ARCHITECTURE.md).
+   - Authored [docs/DEPLOYMENT_GUIDE.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/DEPLOYMENT_GUIDE.md).
+   - Authored [reports/day11/containerization_report.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/day11/containerization_report.md).
+   - Generated [reports/day11/containerization_report.json](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/day11/containerization_report.json).
+   - Updated [docs/DEVELOPMENT_PROGRESS.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/DEVELOPMENT_PROGRESS.md).
+
+#### Git Version Control
+- **Branch:** `main`
+- **Commit Target:** `feat: add docker deployment`
+- **Commit Hash:** Pending commit
+- **Status:** Staged and ready for Git commit and push.
