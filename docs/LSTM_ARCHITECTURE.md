@@ -3,41 +3,47 @@
 ## 1. Overview & Architecture Design
 
 PerceptGuard AI forecasts future perception reliability across upcoming video frames.
-Building upon Day 5's temporal feature sequence preparation and Day 6 Tasks 1–2 baseline foundations, Day 6 Task 3 establishes the primary deep learning recurrent model: **`LSTMForecaster`**.
+Building upon Day 5's temporal feature sequence preparation, Day 8's ground-truth reliability label generation, and Day 9 Tasks 1–2 baseline benchmarks, Day 9 Task 3 establishes and formally certifies the primary deep learning recurrent model: **`LSTMForecaster`**.
 
 The architecture processes historical temporal feature sequences to capture perception degradation dynamics, tracking stability trends, and visual quality degradation slopes, predicting multi-horizon reliability scores ($t+1, t+3, t+5$ frames ahead).
 
 ### Architectural Topology
 ```
            Input Sequence Tensor
-   (batch_size, sequence_length, feature_count)
-                       │
-                       ▼
-       ┌───────────────────────────────┐
-       │     Unidirectional LSTM       │
-       │   (hidden_size=32, layers=1)  │
-       │        batch_first=True       │
-       └───────────────┬───────────────┘
-                       │
-                       ▼
-       Final Temporal Representation (h_t)
-             (batch_size, hidden_size)
-                       │
-                       ▼
-       ┌───────────────────────────────┐
-       │   Linear Forecasting Head     │
-       │     Linear(32 -> 3)           │
-       └───────────────┬───────────────┘
-                       │
-                       ▼
-       ┌───────────────────────────────┐
-       │      Sigmoid Activation       │
-       │  (Output Range: [0.0, 1.0])   │
-       └───────────────┬───────────────┘
-                       │
-                       ▼
-            Multi-Horizon Forecast
-       (batch_size, 3) -> [h1, h3, h5]
+    (batch_size, sequence_length, feature_count)
+                        │
+                        ▼
+        ┌───────────────────────────────┐
+        │   Input Validation Guardrails │
+        │  (NaN, Inf, Dtype, 3D Check)  │
+        └───────────────┬───────────────┘
+                        │
+                        ▼
+        ┌───────────────────────────────┐
+        │     Unidirectional LSTM       │
+        │   (hidden_size=32, layers=1)  │
+        │        batch_first=True       │
+        └───────────────┬───────────────┘
+                        │
+                        ▼
+        Final Temporal Representation (h_t)
+              (batch_size, hidden_size)
+                        │
+                        ▼
+        ┌───────────────────────────────┐
+        │   Linear Forecasting Head     │
+        │      Linear(32 -> 3)          │
+        └───────────────┬───────────────┘
+                        │
+                        ▼
+        ┌───────────────────────────────┐
+        │      Sigmoid Activation       │
+        │  (Output Range: [0.0, 1.0])   │
+        └───────────────┬───────────────┘
+                        │
+                        ▼
+             Multi-Horizon Forecast
+        (batch_size, 3) -> [H1, H3, H5]
 ```
 
 ---
@@ -45,11 +51,11 @@ The architecture processes historical temporal feature sequences to capture perc
 ## 2. Input Tensor Contract
 
 - **Tensor Dimensionality:** Strictly 3-dimensional (`ndim == 3`).
-- **Shape Specification:** `(batch_size, sequence_length, feature_count)`.
-- **Batch Dimension:** Configurable ($B \ge 1$; e.g. 1, 4, 8, 16).
+- **Shape Specification:** `(batch_size, sequence_length, feature_count)` $\rightarrow (B, L, 27)$.
+- **Batch Dimension:** Configurable ($B \ge 1$; e.g. 1, 4, 8, 16, 32).
 - **Temporal Sequence Length ($L$):** Variable window lengths supported ($L \in \{5, 10, 15, 20\}$).
-- **Feature Dimension ($F$):** Dynamically resolved from `feature_manifest.json` ($F=27$ for Day 5 artifacts).
-- **Data Type & Numerical Guardrails:** `torch.float32`. Strictly finite values (rejection of NaNs and $\pm\infty$).
+- **Feature Dimension ($F$):** Dynamically resolved from `feature_manifest.json` ($F=27$ features: 6 detection, 8 motion, 13 visual quality).
+- **Data Type & Numerical Guardrails:** `torch.float32`. Strictly finite values (strict rejection of NaNs and $\pm\infty$ via `ModelArchitectureError`).
 
 ---
 
@@ -64,9 +70,9 @@ The architecture processes historical temporal feature sequences to capture perc
 
 ### Column-to-Horizon Ordering
 Output tensor columns strictly preserve configured horizon offsets:
-- **Column 0:** Forecast Horizon $h = 1$ ($t+1$ frame ahead)
-- **Column 1:** Forecast Horizon $h = 3$ ($t+3$ frames ahead)
-- **Column 2:** Forecast Horizon $h = 5$ ($t+5$ frames ahead)
+- **Column 0:** Forecast Horizon $h = 1$ ($t+1$ frame ahead; $+0.2\text{ s}$)
+- **Column 1:** Forecast Horizon $h = 3$ ($t+3$ frames ahead; $+0.6\text{ s}$)
+- **Column 2:** Forecast Horizon $h = 5$ ($t+5$ frames ahead; $+1.0\text{ s}$)
 
 The mapping is explicitly exposed via `model.get_column_for_horizon(horizon: int) -> int` and `model.horizon_to_index`.
 
@@ -75,12 +81,13 @@ The mapping is explicitly exposed via `model.get_column_for_horizon(horizon: int
 ## 4. Target Contract & Ground-Truth Readiness Policy
 
 1. **Continuous Regression Semantics:**
-   - The primary target represents continuous future object detection reliability (e.g., ground-truth bounding box IoU / recall under Hungarian bipartite matching).
-2. **Scientific Integrity Gate (CRITICAL):**
-   - Day 5 sequence metadata currently records `target_label_available: false` and `target_label: null`.
-   - YOLO detection confidence alone is **NOT** ground-truth perception reliability.
-   - Supervised training readiness is honestly marked as **`NOT AVAILABLE`** for real data.
-   - Forward pass, dimension checks, gradient propagation, and unit tests execute using synthetic fixtures and actual unlabelled Day 5 tensors. No deceptive accuracy metrics are claimed without true ground-truth annotations.
+   - The primary target represents continuous future object detection reliability ($F_1$ score derived from Hungarian bipartite matching against canonical BDD100K annotations at IoU threshold $\tau = 0.50$).
+2. **Ground-Truth Readiness Status:**
+   - Verified Day 8 ground-truth labels exist at `datasets/processed/driving_sample/reliability_labels/sequence_metadata_labeled.json`.
+   - Chronological purged split with $G=25$ embargo gap guarantees zero temporal leakage between Train ($N=101$), Val ($N=18$), and Test ($N=19$) partitions.
+3. **Scientific Integrity Gate:**
+   - In Task 3, only architecture validation, numerical verification, and CPU latency benchmarks are performed.
+   - **No model training epochs or accuracy evaluations were executed in this task.** Actual model training begins in Task 4 (Experiment B).
 
 ---
 
@@ -108,7 +115,7 @@ Configured via `config/forecasting_config.yaml` and strongly typed `ModelConfig`
 Implemented in `src/forecasting/model_factory.py`:
 - **`build_forecasting_model(config, input_size, artifacts_dir, target_contract, device)`**:
   - Dynamically resolves `input_size` from `feature_manifest.json` if set to `"auto"`.
-  - Rejects unsupported architectures (`"gru"` or `"transformer"` are blocked in Task 3).
+  - Rejects unsupported architectures (`"gru"` or `"transformer"` are blocked).
   - Validates output horizons against `ModelOutputSpec`.
   - Places the model strictly on the configured CPU device.
 
@@ -143,16 +150,17 @@ Parameter calculation for $F=27$, $H=32$, $L=1$, $\text{out}=3$:
 
 ## 9. CPU Execution & Latency Benchmarks
 
-Measured on host Intel Core i3 CPU (8 logical threads, PyTorch CPU threads: 2):
+Empirically measured on host Intel Core i3 CPU (8 logical cores, PyTorch CPU threads: 2):
 
 | Metric | Batch Size = 8, Seq Length = 5 |
 |---|---|
-| **Mean Forward Latency** | **0.5872 ms** |
-| **Median Forward Latency** | **0.5405 ms** |
-| **Min Latency** | **0.4378 ms** |
-| **Max Latency** | **1.2400 ms** |
-| **Model Throughput** | **13,624 samples / sec** |
-| **Parameter Memory** | **30.89 KB** |
+| **Mean Forward Latency** | **$0.5405\text{ ms}$** |
+| **Median Forward Latency** | **$0.4939\text{ ms}$** |
+| **Min Latency** | **$0.3560\text{ ms}$** |
+| **Max Latency** | **$0.9565\text{ ms}$** |
+| **Model Throughput** | **$14,802.37\text{ samples / sec}$** |
+| **Parameter Memory** | **$30.89\text{ KB}$** |
+| **Process RSS Memory** | **$186.4\text{ MB}$** |
 
 ---
 
@@ -168,20 +176,25 @@ python -m src.forecasting.lstm_forecaster --summary
 python -m src.forecasting.lstm_forecaster --summary --benchmark
 ```
 
+### Test Data & Architecture Compatibility via Dry Run
+```bash
+python -m src.forecasting.train_lstm --metadata-file datasets/processed/driving_sample/reliability_labels/sequence_metadata_labeled.json --dry-run
+```
+
 ---
 
 ## 11. Test Coverage & Verification
 
 Automated test suite in `tests/forecasting/`:
-- `test_lstm_forecaster.py`: 20 unit tests covering layer instantiation, input validation, output shapes, clipping, backpropagation, and determinism.
-- `test_model_factory.py`: 11 unit tests covering dynamic input dimension resolution, contract checks, and GRU blocking.
+- `test_lstm_forecaster.py`: 23 unit tests covering layer instantiation, input validation, output shapes, clipping, backpropagation, checkpoint save/load, real sequence tensors, and determinism.
+- `test_model_factory.py`: 12 unit tests covering dynamic input dimension resolution, contract checks, and architecture blocking.
 - `test_model_output_contract.py`: 9 integration tests verifying real Day 5 tensor compatibility ($L \in \{5, 10, 15, 20\}$) and multi-horizon mappings.
-- **Task 3 Test Subtotal:** **40 / 40 Passed (100% Pass Rate)**.
+- **Full Forecasting Test Suite:** **284 / 284 Passed (100% Pass Rate)**.
 
 ---
 
 ## 12. Known Limitations & Task Scope Boundaries
 
-1. **Training Pipeline Unimplemented:** Model training loops, optimizers, learning rate schedulers, and backpropagation epochs belong to Day 6 Task 5.
-2. **GRU Architecture Excluded:** Day 6 Task 3 implements only LSTM. GRU variants are reserved for subsequent architectural comparisons.
-3. **Supervised Target Unavailability:** Supervised real-world reliability training remains `NOT AVAILABLE` until true ground-truth labels are ingested.
+1. **Severe Label Imbalance:** Over $99.5\%$ of ground-truth reliability targets are $0.0$ due to camera rotation container mismatch. Standard unweighted MSE (Task 4) will establish the unweighted baseline; asymmetric loss reweighting (Task 5) is required to optimize transient detection.
+2. **Single Video Domain:** Current artifacts are from video `026c7465-309f6d33.mp4`.
+3. **No Training in Task 3:** Model parameters remain strictly un-trained. No performance claims or loss curves are generated.

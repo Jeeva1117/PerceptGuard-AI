@@ -234,3 +234,77 @@ class TestLSTMForecaster:
         assert "Advanced LSTM Forecasting Architecture" in res.stdout
         assert "Trainable Parameters       : 7,907" in res.stdout
         assert "CPU Forward Throughput" in res.stdout
+
+    def test_multi_layer_lstm_with_dropout(self):
+        """Multi-layer LSTM (num_layers=2) with dropout must initialize and run forward pass."""
+        model = LSTMForecaster(input_size=27, hidden_size=32, num_layers=2, dropout=0.2)
+        summary = model.get_model_summary()
+        assert summary["num_layers"] == 2
+        assert summary["dropout"] == 0.2
+        # Layer 1: 4 * (27 + 32 + 1) * 32 = 7680 (with 2*128 bias = 7908 - 1 = 7907)
+        # Layer 2: 4 * (32 + 32 + 1) * 32 = 8320 (with 2*128 bias = 8576)
+        # Head: (32 * 3) + 3 = 99
+        assert summary["total_parameters"] > 7907
+
+        x = torch.randn(4, 5, 27)
+        out = model(x)
+        assert out.shape == (4, 3)
+        assert torch.isfinite(out).all()
+
+    def test_get_column_for_horizon(self):
+        """Valid horizons must return column indices, invalid must raise ModelArchitectureError."""
+        model = LSTMForecaster(input_size=27, output_horizons=[1, 3, 5])
+        assert model.get_column_for_horizon(1) == 0
+        assert model.get_column_for_horizon(3) == 1
+        assert model.get_column_for_horizon(5) == 2
+
+        with pytest.raises(ModelArchitectureError, match="Horizon 2 not found"):
+            model.get_column_for_horizon(2)
+
+    def test_checkpoint_save_and_load_compatibility(self, tmp_path):
+        """Model state must be fully saveable and reloadable with exact numerical parity."""
+        from src.forecasting.checkpoint_manager import CheckpointManager
+
+        model1 = LSTMForecaster(input_size=27, hidden_size=32, num_layers=1)
+        optimizer = torch.optim.AdamW(model1.parameters(), lr=1e-3)
+
+        chk_mgr = CheckpointManager(checkpoint_dir=tmp_path / "checkpoints", experiment_id="test_exp")
+        chk_path = chk_mgr.save_checkpoint(
+            model=model1,
+            optimizer=optimizer,
+            epoch=1,
+            val_loss=0.005,
+            is_best=True,
+        )
+        assert chk_path.exists()
+
+        model2 = LSTMForecaster(input_size=27, hidden_size=32, num_layers=1)
+        chk_mgr.load_checkpoint(chk_path, model=model2)
+
+        x = torch.randn(8, 5, 27)
+        with torch.no_grad():
+            out1 = model1(x)
+            out2 = model2(x)
+        assert torch.allclose(out1, out2, atol=1e-7)
+
+    def test_forward_with_real_sequence_tensors(self):
+        """Model must process real Day 5 sequence tensor files on CPU without issues."""
+        seq_path = Path("datasets/processed/driving_sample/features/sequences/run_official/sequences_L5.npy")
+        if not seq_path.exists():
+            pytest.skip("Real sequence artifacts not found")
+
+        real_data = np.load(seq_path)  # (138, 5, 27)
+        assert real_data.shape == (138, 5, 27)
+
+        model = LSTMForecaster(input_size=27, hidden_size=32, output_horizons=[1, 3, 5])
+        model.eval()
+
+        # Test batching through real sequences
+        tensor_data = torch.from_numpy(real_data).float()
+        with torch.no_grad():
+            outputs = model(tensor_data)
+
+        assert outputs.shape == (138, 3)
+        assert torch.isfinite(outputs).all()
+        assert (outputs >= 0.0).all()
+        assert (outputs <= 1.0).all()

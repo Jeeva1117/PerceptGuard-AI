@@ -2523,5 +2523,59 @@ Conducted an exhaustive, independent, evidence-based engineering audit of the en
 #### Git Version Control
 - **Branch:** `main`
 - **Commit Target:** `feat: benchmark baseline models`
-- **Commit Hash:** `fd1f965`
+- **Commit Hash:** `a076176`
+- **Status:** Committed and pushed to `origin/main`.
+
+---
+
+### Task 3: LSTM Architecture Development
+- **Date:** 2026-11-20
+- **Milestone:** LSTMForecaster Architecture Development, Input Validation Guardrails, CPU Profiling, Training Interface Certification & Day 9 Task 3 Certification
+- **Lead Roles:** Senior Staff Machine Learning Engineer, Deep Learning Architect
+- **Status:** **Task 3 Complete & Formally Verified**
+- **Architecture Verdict:** **`PASS WITH LIMITATIONS (READY FOR TASK 4 SUPERVISED TRAINING)`**
+
+#### Completed Tasks
+1. **Readiness Gate Audit:**
+   - Verified genuine ground-truth reliability labels at `datasets/processed/driving_sample/reliability_labels/sequence_metadata_labeled.json` and `frame_reliability_labels.json`.
+   - Verified multi-horizon targets H1 ($0.2\text{ s}$), H3 ($0.6\text{ s}$), H5 ($1.0\text{ s}$) matching continuous $F_1$ Hungarian IoU schema.
+   - Verified chronological purged split ($G=25$ embargo gap) guarantees zero temporal leakage between Train ($N=101$), Val ($N=18$), and Test ($N=19$).
+   - Verified Task 2 baseline floors established ($\text{MAE} \le 0.000582$ on Test, $\text{RMSE} < 0.005822$ on Train).
+2. **Architecture Design & Mathematical Formulation:**
+   - Verified `LSTMForecaster` recurrent neural network architecture:
+     - Input size: 27 multimodal temporal features.
+     - Hidden size: 32 units, unidirectional, batch_first=True.
+     - Stacked layers: 1 (configurable $\ge 1$, with inter-layer dropout).
+     - Forecasting head: Linear(32 -> 3) mapping to output horizons `[1, 3, 5]`.
+     - Output activation: Sigmoid bounding predictions strictly within $[0.0, 1.0]$.
+     - Total trainable parameters: 7,907 ($30.89\text{ KB}$ weights footprint).
+3. **Model Input Validation Guardrails:**
+   - Verified runtime enforcement in `LSTMForecaster.forward()`: rejects non-3D tensors, empty batches, feature count mismatches, and non-finite numbers (NaN/Inf) with clear `ModelArchitectureError`.
+   - Automatic type coercion to `torch.float32`.
+4. **CPU Resource Optimization & Benchmarking:**
+   - Benchmarked forward-pass latency on host Intel Core i3 (CPU-only, no CUDA):
+     - Batch size 8, sequence length 5: Mean latency = **$0.5405\text{ ms}$**, Median = **$0.4939\text{ ms}$**.
+     - CPU throughput = **$14,802.37\text{ samples / sec}$**.
+     - Process RSS memory = **$186.4\text{ MB}$** ($>97\%$ memory margin).
+5. **Training Interface Compatibility:**
+   - Verified decoupled loss interface (`create_forecasting_loss`, `validate_loss_inputs`) supporting MSE, MAE/L1, and Smooth L1.
+   - Verified optimizer compatibility (AdamW, lr=1e-3, weight_decay=1e-4) and ReduceLROnPlateau.
+   - Verified checkpoint saving and loading via `CheckpointManager` with exact numerical parity ($\text{atol} = 10^{-7}$).
+   - Verified seed reproducibility (`torch.manual_seed`) guaranteeing bit-level deterministic initialization.
+6. **Real Artifact & End-to-End CLI Dry Run:**
+   - Executed forward pass on genuine `sequences_L5.npy` ($138 \times 5 \times 27$ float32 tensor). Output strictly bounded in $(0.0, 1.0)^{138 \times 3}$.
+   - Validated end-to-end loading via CLI dry-run: `python -m src.forecasting.train_lstm --metadata-file datasets/processed/driving_sample/reliability_labels/sequence_metadata_labeled.json --dry-run` (Exit Code 0).
+7. **Automated Testing Suite:**
+   - Implemented 4 new focused unit tests in `tests/forecasting/test_lstm_forecaster.py` covering multi-layer dropout, horizon column lookups, checkpoint save/load parity, and real sequence tensor processing.
+   - 23 / 23 tests passing in `tests/forecasting/test_lstm_forecaster.py`.
+   - Full regression suite across `tests/forecasting/`: **284 / 284 passed in 82.35s** (100% pass rate, 0 failures, 0 regressions).
+8. **Documentation Authored:**
+   - Updated [docs/LSTM_ARCHITECTURE.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/LSTM_ARCHITECTURE.md).
+   - Authored [reports/day9/lstm_architecture_report.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/day9/lstm_architecture_report.md).
+   - Generated [reports/day9/lstm_architecture_report.json](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/day9/lstm_architecture_report.json).
+
+#### Git Version Control
+- **Branch:** `main`
+- **Commit Target:** `feat: add LSTM architecture`
+- **Commit Hash:** `9f09f11`
 - **Status:** Committed and pushed to `origin/main`.
