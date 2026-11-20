@@ -2070,7 +2070,50 @@ Conducted an exhaustive, independent, evidence-based engineering audit of the en
    - Published [reports/day8/dataset_selection_integration.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/day8/dataset_selection_integration.md)
    - Published [reports/day8/dataset_selection_integration.json](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/day8/dataset_selection_integration.json)
 
+### Task 3: Annotation Schema & Reliability Label Design
+- **Milestone:** Canonical Ground-Truth Schema, Hungarian Matching & Multi-Horizon Reliability Label Specification
+- **Lead Roles:** Principal Computer Vision Scientist, Staff ML Engineer, Senior Data Architect, ML Reliability Research Engineer
+- **Status:** **Task 3 Complete & Verified**
 
+#### Completed Tasks
+1. **Mathematical Foundation & Formulation:**
+   - Reaffirmed the core project thesis: detection confidence and tracker continuity are not ground-truth reliability.
+   - Formulated object-level reliability: $R(b) = \text{IoU}(b, g^*)$ when matched with $\text{IoU} \ge 0.50$, $0.0$ when unmatched.
+   - Evaluated four candidate frame-level metrics (Frame mAP@0.5, Mean IoU, Frame F1-score, Composite Reliability).
+   - Formally selected **Frame F1-Score** ($F_1 = \frac{2 \cdot TP}{2 \cdot TP + FP + FN}$) as primary target metric for bounded $[0.0, 1.0]$ behavior and balanced penalization of false alarms and missed obstacles.
+2. **Configuration Specification (`config/reliability_label_config.yaml`):**
+   - Fully parameterized dataset canvas ($640 \times 360$, 5.0 FPS), Hungarian matching ($\tau_{\text{IoU}} = 0.50$, class-aware), primary/secondary metrics, temporal horizons ($H \in \{1, 3, 5\}$), and deterministic edge-case policies.
+3. **Production Schema Module (`src/evaluation/reliability_schema.py`):**
+   - Authored comprehensive Pydantic models: `CanonicalBoundingBox`, `MatchingOutcome`, `TargetStatus`, `ObjectReliabilityRecord`, `FrameReliabilityRecord`, `HorizonTargetSpec`, `TemporalTargetRecord`.
+   - Implemented geometric `calculate_iou`, Hungarian assignment matcher, `compute_frame_f1`, `compute_composite_reliability`, and `ReliabilityDataContract` validators.
+4. **Module Re-Exports & Audit Compliance:**
+   - Updated `src/evaluation/__init__.py` to re-export all evaluation, BDD100K adapter, and reliability schema interfaces.
+   - Executed `scripts/audit_project.py --check-imports`: **10 / 10 checks PASSED**.
+5. **Unit & Integration Test Suite:**
+   - Created `tests/evaluation/test_reliability_schema.py` and `tests/test_reliability_schema.py` with 17 exhaustive test cases covering bounding box geometry, IoU corner cases, F1 edge cases (empty scene, hallucination, blackout, zero matches), composite scores, Pydantic validation, and contract integrity.
+   - Executed test suite: **33 / 33 tests PASSED** in 5.79s (100% pass rate).
+6. **Documentation & Reporting:**
+   - Published publication-grade standard [docs/ANNOTATION_SCHEMA_AND_RELIABILITY_DESIGN.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/ANNOTATION_SCHEMA_AND_RELIABILITY_DESIGN.md).
+   - Published detailed engineering audit report [reports/day8/annotation_schema_reliability_design.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/day8/annotation_schema_reliability_design.md).
+   - Published structured machine-readable report [reports/day8/annotation_schema_reliability_design.json](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/day8/annotation_schema_reliability_design.json) with strict allowed status values.
 
+#### Files Created or Modified
+- `config/reliability_label_config.yaml`: Centralized configuration for matching and labeling.
+- `src/evaluation/reliability_schema.py`: Canonical data schemas, metric algorithms, and data contracts.
+- `src/evaluation/__init__.py`: Package re-exports for evaluation modules.
+- `tests/evaluation/test_reliability_schema.py`: Canonical unit tests for reliability schema.
+- `tests/test_reliability_schema.py`: Root mirror unit test suite.
+- `docs/ANNOTATION_SCHEMA_AND_RELIABILITY_DESIGN.md`: Formal 14-section design document.
+- `reports/day8/annotation_schema_reliability_design.md`: 14-section comprehensive engineering report.
+- `reports/day8/annotation_schema_reliability_design.json`: Structured machine-readable report.
+- `docs/DEVELOPMENT_PROGRESS.md`: Updated with Day 8 Task 3 milestone record.
 
+#### Git Version Control
+- **Branch:** `main`
+- **Commit Target:** `docs: define reliability labels`
+- **Status:** Ready to commit and push.
+
+#### Downstream Impact
+- Day 8 Task 4 (Reliability Label Generation) is completely unblocked.
+- 186 sliding window sequence targets can now be populated with ground-truth multi-horizon vectors $Y_t = [F_{1, t+1}, F_{1, t+3}, F_{1, t+5}]^T$.
 

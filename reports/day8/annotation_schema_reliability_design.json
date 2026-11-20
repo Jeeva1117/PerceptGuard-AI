@@ -1,0 +1,214 @@
+{
+  "report_metadata": {
+    "report_id": "RELIABILITY-SCHEMA-DESIGN-DAY8-TASK3",
+    "timestamp": "2026-11-20T08:00:00Z",
+    "project_name": "PerceptGuard-AI",
+    "task": "Day 8 – Task 3: Annotation Schema & Reliability Label Design",
+    "lead_architects": [
+      "Principal Computer Vision Scientist",
+      "Staff Machine Learning Engineer",
+      "Senior Data Architect",
+      "ML Reliability Research Engineer"
+    ],
+    "target_repository": "https://github.com/Jeeva1117/PerceptGuard-AI.git",
+    "branch": "main",
+    "overall_status": "PASS"
+  },
+  "schema_design_summary": {
+    "status": "PASS",
+    "version": "1.0.0",
+    "core_concept": "Object detection reliability is grounded in spatial agreement (IoU >= 0.50) with verified ground truth rather than model confidence or tracking continuity.",
+    "spatial_resolution": {
+      "canvas_width": 640,
+      "canvas_height": 360,
+      "coordinate_format": "[xmin, ymin, xmax, ymax]"
+    },
+    "implementation_files": [
+      "config/reliability_label_config.yaml",
+      "src/evaluation/reliability_schema.py",
+      "src/evaluation/__init__.py",
+      "tests/evaluation/test_reliability_schema.py",
+      "tests/test_reliability_schema.py",
+      "docs/ANNOTATION_SCHEMA_AND_RELIABILITY_DESIGN.md"
+    ]
+  },
+  "ground_truth_schema_definition": {
+    "status": "PASS",
+    "source_dataset": "BDD100K Driving Video Sequence (026c7465-309f6d33)",
+    "preprocessed_count": 5121,
+    "unique_frames": 200,
+    "unique_tracks": 115,
+    "required_fields": [
+      "annotation_id",
+      "extracted_frame_id",
+      "frame_index",
+      "timestamp_seconds",
+      "bbox_xyxy",
+      "category",
+      "class_id",
+      "track_id",
+      "attributes"
+    ],
+    "coordinate_bounds": {
+      "xmin_min": 0.0,
+      "ymin_min": 0.0,
+      "xmax_max": 640.0,
+      "ymax_max": 360.0
+    }
+  },
+  "detection_schema_definition": {
+    "status": "PASS",
+    "model": "Ultralytics YOLOv8",
+    "inference_canvas": [640, 360],
+    "required_fields": [
+      "detection_id",
+      "extracted_frame_id",
+      "frame_index",
+      "timestamp_seconds",
+      "bbox_xyxy",
+      "confidence",
+      "class_name",
+      "class_id"
+    ]
+  },
+  "matching_specification": {
+    "status": "PASS",
+    "algorithm": "Hungarian (Munkres) Bipartite Matching",
+    "cost_matrix_formula": "1.0 - IoU(b_i, g_j) if class match and IoU >= 0.50 else infinity",
+    "iou_threshold": 0.50,
+    "class_aware": true,
+    "one_to_one_matching": true,
+    "duplicate_penalty": "Highest IoU detection assigned to GT; redundant detections assigned to False Positives"
+  },
+  "object_reliability_definition": {
+    "status": "PASS",
+    "matched_formula": "R(b) = IoU(b, g)",
+    "unmatched_detection_formula": "R(b) = 0.0 (False Positive)",
+    "missed_ground_truth_formula": "R(g) = 0.0 (False Negative)"
+  },
+  "frame_reliability_metric": {
+    "status": "PASS",
+    "primary_metric": "f1_score",
+    "primary_formula": "2 * TP / (2 * TP + FP + FN)",
+    "primary_range": [0.0, 1.0],
+    "secondary_metric": "composite_reliability",
+    "secondary_formula": "0.60 * F1 + 0.30 * mIoU + 0.10 * (1 - FP_penalty)",
+    "evaluated_metrics": {
+      "frame_map_0_5": {
+        "status": "NOT AVAILABLE",
+        "reason": "Rejected: Discrete step changes on small object counts degrade regression gradients"
+      },
+      "mean_iou": {
+        "status": "PARTIAL",
+        "reason": "Rejected as primary: Fails to penalize false positives and false negatives; undefined when TP = 0"
+      },
+      "frame_f1_score": {
+        "status": "PASS",
+        "reason": "Recommended primary: Bounded, continuous, balances false alarms (FP) and missed obstacles (FN)"
+      },
+      "composite_reliability": {
+        "status": "PASS",
+        "reason": "Secondary audit metric: Integrates localization tightness with safety penalties"
+      }
+    }
+  },
+  "empty_frame_policy": {
+    "status": "PASS",
+    "gt_empty_pred_empty": {
+      "reliability": 1.0,
+      "interpretation": "Perfect Rejection (Zero False Alarms)"
+    },
+    "gt_empty_pred_nonempty": {
+      "reliability": 0.0,
+      "interpretation": "Pure Hallucination (All False Positives)"
+    },
+    "gt_nonempty_pred_empty": {
+      "reliability": 0.0,
+      "interpretation": "Perceptual Blackout (All False Negatives)"
+    },
+    "gt_nonempty_pred_nonempty_zero_matches": {
+      "reliability": 0.0,
+      "interpretation": "Total Localization Failure"
+    }
+  },
+  "multi_horizon_target_definition": {
+    "status": "PASS",
+    "target_representation": "Exact Future Frame Reliability Vector",
+    "horizons": [1, 3, 5],
+    "time_offsets_sec": [0.2, 0.6, 1.0],
+    "target_vector_formula": "Y_t = [R_{t+1}, R_{t+3}, R_{t+5}]^T",
+    "target_domain": "[0.0, 1.0]^3",
+    "alternative_delta_status": "PARTIAL",
+    "alternative_binary_status": "PARTIAL"
+  },
+  "data_leakage_guarantees": {
+    "status": "PASS",
+    "input_window_isolation": "Features X_t use only frames <= t (strictly [t-4, t])",
+    "target_label_isolation": "Target R_{t+h} is computed exclusively at frame t+h",
+    "temporal_partitioning": "Continuous time partitioning with 25-frame embargo gap (5.0s)",
+    "scaler_isolation": "Fitted strictly on training partition"
+  },
+  "data_contract_specifications": {
+    "status": "PASS",
+    "framework": "Pydantic v2 / BaseModel",
+    "models": [
+      "CanonicalBoundingBox",
+      "ObjectReliabilityRecord",
+      "FrameReliabilityRecord",
+      "HorizonTargetSpec",
+      "TemporalTargetRecord"
+    ],
+    "validators": [
+      "ReliabilityDataContract.validate_bounding_box",
+      "ReliabilityDataContract.validate_frame_record",
+      "ReliabilityDataContract.validate_temporal_target"
+    ]
+  },
+  "configuration_documentation": {
+    "status": "PASS",
+    "config_path": "config/reliability_label_config.yaml",
+    "sections": [
+      "version",
+      "dataset",
+      "matching",
+      "metrics",
+      "temporal_horizons",
+      "edge_cases",
+      "validation_rules"
+    ]
+  },
+  "test_coverage_summary": {
+    "status": "PASS",
+    "test_files": [
+      "tests/test_reliability_schema.py",
+      "tests/test_bdd100k_adapter.py",
+      "tests/evaluation/test_reliability_schema.py",
+      "tests/evaluation/test_bdd100k_adapter.py"
+    ],
+    "tests_collected": 33,
+    "tests_passed": 33,
+    "tests_failed": 0,
+    "execution_time_seconds": 5.79,
+    "coverage_highlights": [
+      "Geometric IoU computation (identical, disjoint, partial)",
+      "Degenerate bounding box coordinate rejection",
+      "Frame F1 edge cases (empty, hallucination, blackout, zero matches)",
+      "Composite metric calculation and weighting",
+      "Data contract validation of counts and scores",
+      "JSON serialization roundtrip"
+    ]
+  },
+  "downstream_impact": {
+    "status": "PASS",
+    "unblocks_task_4": true,
+    "unblocks_model_retraining": true,
+    "target_sequences_to_label": 186,
+    "transition": "Transitions from heuristic null targets to ground-truth multi-horizon supervision"
+  },
+  "final_status": "PASS",
+  "recommendations": [
+    "Proceed to Day 8 Task 4 (Reliability Label Generation) to execute Hungarian matching and populate target labels.",
+    "Maintain strict separation between feature engineering and target calculation pipelines.",
+    "Verify label distribution in Task 4 to check for extreme class imbalance prior to model retraining."
+  ]
+}
