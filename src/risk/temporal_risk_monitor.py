@@ -12,14 +12,15 @@ from dataclasses import asdict, dataclass, field
 import datetime
 from enum import Enum
 import math
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Tuple, Union
 
 from src.early_warning.interfaces import (
     ITemporalRiskMonitor,
     RiskLevel,
     RiskScore,
 )
-from src.risk.risk_classifier import ClassificationResult, RiskClassifier
+if TYPE_CHECKING:
+    from src.risk.risk_classifier import ClassificationResult, RiskClassifier
 from src.risk.risk_config import RiskConfig, TemporalMonitoringConfig
 from src.risk.risk_models import AggregatedRiskRecord, HorizonRiskRecord
 from src.risk.risk_validator import RiskValidationError, validate_risk_value
@@ -359,7 +360,11 @@ class TemporalRiskMonitor(ITemporalRiskMonitor):
         else:
             self.config = TemporalMonitoringConfig()
 
-        self.classifier = classifier or RiskClassifier()
+        if classifier is not None:
+            self.classifier = classifier
+        else:
+            from src.risk.risk_classifier import RiskClassifier
+            self.classifier = RiskClassifier()
         self.trackers: Dict[Tuple[str, Optional[int]], SequenceHorizonTracker] = {}
 
     def _get_tracker(self, sequence_id: str, horizon: Optional[int]) -> SequenceHorizonTracker:
@@ -392,6 +397,7 @@ class TemporalRiskMonitor(ITemporalRiskMonitor):
         Task 3 (ClassificationResult), or raw parameter dictionaries.
         """
         # 1. Parse input to MonitoredRiskRecord
+        from src.risk.risk_classifier import ClassificationResult
         if isinstance(observation, ClassificationResult):
             score = observation.risk_score
             t_sec = timestamp_seconds if timestamp_seconds is not None else (observation.target_timestamp_seconds or 0.0)

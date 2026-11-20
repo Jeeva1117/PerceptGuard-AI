@@ -25,7 +25,6 @@ from src.early_warning.interfaces import (
     RiskLevel,
     RiskScore,
 )
-from src.risk.risk_classifier import RiskClassifier
 from src.risk.risk_config import RiskConfig
 from src.risk.risk_scorer import ReliabilityRiskScorer
 from src.risk.temporal_risk_monitor import (

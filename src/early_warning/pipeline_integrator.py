@@ -18,8 +18,10 @@ import json
 import logging
 from pathlib import Path
 import time
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Tuple, Union
 
+if TYPE_CHECKING:
+    from src.risk.risk_classifier import RiskClassifier
 from src.early_warning.dashboard_service import DashboardService
 from src.early_warning.early_warning_config import EarlyWarningConfig
 from src.early_warning.early_warning_data_contract import EarlyWarningInputRecord
@@ -32,7 +34,6 @@ from src.early_warning.interfaces import (
     RiskLevel,
     RiskScore,
 )
-from src.risk.risk_classifier import RiskClassifier
 from src.risk.risk_config import RiskConfig
 from src.risk.risk_models import HorizonRiskRecord
 from src.risk.risk_scorer import ReliabilityRiskScorer
@@ -93,7 +94,11 @@ class PipelineIntegrator:
         self.config = config or EarlyWarningConfig()
         self.risk_config = risk_config or RiskConfig()
         self.scorer = scorer or ReliabilityRiskScorer(config=self.risk_config)
-        self.classifier = classifier or RiskClassifier(config=self.risk_config)
+        if classifier is not None:
+            self.classifier = classifier
+        else:
+            from src.risk.risk_classifier import RiskClassifier
+            self.classifier = RiskClassifier(config=self.risk_config)
         self.monitor = monitor or TemporalRiskMonitor(config=self.risk_config, classifier=self.classifier)
         self.engine = engine or EarlyWarningEngine(config=self.config)
         self.root_dir = root_dir or Path.cwd()
