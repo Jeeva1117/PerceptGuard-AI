@@ -92,17 +92,18 @@ class PipelineStatusResponse(BaseModel):
 class HorizonRiskDetail(BaseModel):
     """Individual horizon risk metrics."""
     horizon: int = Field(..., ge=1, le=10)
-    risk_score: float = Field(..., ge=0.0, le=1.0)
-    risk_level: str
-    trend_direction: str
-    rolling_mean: float
-    rolling_max: float
-    rolling_min: float
-    volatility: float
-    observation_count: int
-    timestamp_seconds: float
-    is_stale: bool
-    calibration_status: str
+    risk_score: Optional[float] = Field(None, ge=0.0, le=1.0)
+    risk_level: str = Field("UNKNOWN", description="Risk classification level.")
+    trend_direction: str = Field("UNKNOWN", description="Risk trend direction.")
+    rolling_mean: Optional[float] = None
+    rolling_max: Optional[float] = None
+    rolling_min: Optional[float] = None
+    volatility: Optional[float] = None
+    observation_count: Optional[int] = 0
+    timestamp_seconds: Optional[float] = None
+    is_stale: Optional[bool] = False
+    calibration_status: Optional[str] = "PROVISIONAL"
+    model_config = ConfigDict(extra="allow")
 
 
 class RiskOverviewResponse(BaseModel):
