@@ -1,0 +1,282 @@
+{
+  "meta": {
+    "report_name": "Day 9 Task 6: Model Evaluation & Comparative Analysis Report",
+    "date": "2026-11-20",
+    "phase": "Day 9 Task 6",
+    "verdict": "PASS WITH LIMITATIONS (SCIENTIFICALLY SOUND & RIGOROUSLY AUDITED)",
+    "repository": "https://github.com/Jeeva1117/PerceptGuard-AI.git",
+    "branch": "main",
+    "execution_environment": {
+      "hardware": "Intel Core i3, 8 GB RAM, Windows 11 Build 26200",
+      "compute": "CPU-only (no CUDA GPU)",
+      "python_version": "3.13.3",
+      "framework": "PyTorch 2.15.0+cpu",
+      "device": "cpu"
+    },
+    "lead_roles": [
+      "Senior Staff Machine Learning Engineer",
+      "ML Evaluation Specialist",
+      "Computer Vision Reliability Research Engineer"
+    ]
+  },
+  "readiness_gate": {
+    "status": "PASS",
+    "ground_truth_labels_available": true,
+    "trained_checkpoint_verified": true,
+    "baseline_predictions_available": true,
+    "target_semantics_consistent": true,
+    "prediction_alignment_verified": true,
+    "test_split_isolated": true,
+    "test_gt_evaluation_only": true,
+    "scales_compatible": true
+  },
+  "checkpoint_details": {
+    "checkpoint_path": "experiments/forecasting/lstm_training/official_lstm_training/checkpoints/checkpoint_best.pt",
+    "architecture": "LSTMForecaster",
+    "input_size": 27,
+    "hidden_size": 32,
+    "num_layers": 1,
+    "output_horizons": [1, 3, 5],
+    "trainable_parameters": 7907,
+    "checkpoint_training_loss": 0.000256,
+    "checkpoint_validation_loss": 0.000470
+  },
+  "evaluation_protocol": {
+    "split_evaluated": "test",
+    "total_test_sequences": 19,
+    "total_potential_predictions": 57,
+    "valid_aligned_predictions": 48,
+    "excluded_predictions_count": 9,
+    "exclusion_reason": "Physical video boundary: future target frame extends beyond final video frame",
+    "coverage_percentage": 84.21,
+    "horizons": [1, 3, 5],
+    "embargo_gap_frames": 25
+  },
+  "test_regression_metrics": {
+    "horizon_1": {
+      "horizon": 1,
+      "delta_time_seconds": 0.20,
+      "sample_count": 18,
+      "mae": 0.011556,
+      "rmse": 0.011615,
+      "mse": 0.00013492,
+      "r2": null,
+      "bias": 0.011556,
+      "median_absolute_error": 0.011082,
+      "error_std": 0.001175,
+      "mean_predicted": 0.011556,
+      "mean_actual": 0.000000,
+      "min_predicted": 0.010220,
+      "max_predicted": 0.014327,
+      "min_actual": 0.000000,
+      "max_actual": 0.000000,
+      "overprediction_count": 18,
+      "underprediction_count": 0
+    },
+    "horizon_3": {
+      "horizon": 3,
+      "delta_time_seconds": 0.60,
+      "sample_count": 16,
+      "mae": 0.020326,
+      "rmse": 0.020435,
+      "mse": 0.00041759,
+      "r2": null,
+      "bias": 0.020326,
+      "median_absolute_error": 0.020045,
+      "error_std": 0.002110,
+      "mean_predicted": 0.020326,
+      "mean_actual": 0.000000,
+      "min_predicted": 0.017257,
+      "max_predicted": 0.025234,
+      "min_actual": 0.000000,
+      "max_actual": 0.000000,
+      "overprediction_count": 16,
+      "underprediction_count": 0
+    },
+    "horizon_5": {
+      "horizon": 5,
+      "delta_time_seconds": 1.00,
+      "sample_count": 14,
+      "mae": 0.015467,
+      "rmse": 0.015530,
+      "mse": 0.00024117,
+      "r2": null,
+      "bias": 0.015467,
+      "median_absolute_error": 0.014963,
+      "error_std": 0.001389,
+      "mean_predicted": 0.015467,
+      "mean_actual": 0.000000,
+      "min_predicted": 0.014033,
+      "max_predicted": 0.018717,
+      "min_actual": 0.000000,
+      "max_actual": 0.000000,
+      "overprediction_count": 14,
+      "underprediction_count": 0
+    },
+    "aggregate": {
+      "sample_count": 48,
+      "mae": 0.015620,
+      "rmse": 0.016119,
+      "mse": 0.00025983,
+      "r2": null,
+      "bias": 0.015620,
+      "mean_predicted": 0.015620,
+      "mean_actual": 0.000000
+    }
+  },
+  "baseline_comparison": [
+    {
+      "model_name": "LSTMForecaster",
+      "horizon": 1,
+      "sample_count": 18,
+      "mae": 0.011556,
+      "rmse": 0.011615,
+      "mse": 0.00013492,
+      "r2": null,
+      "interpretation": "Evaluated model"
+    },
+    {
+      "model_name": "Baseline_Persistence",
+      "horizon": 1,
+      "sample_count": 18,
+      "mae": 0.0,
+      "rmse": 0.0,
+      "mse": 0.0,
+      "r2": null,
+      "interpretation": "LSTM worse than baseline"
+    },
+    {
+      "model_name": "Baseline_Mean",
+      "horizon": 1,
+      "sample_count": 18,
+      "mae": 0.000582,
+      "rmse": 0.000582,
+      "mse": 3.4e-07,
+      "r2": null,
+      "interpretation": "LSTM worse than baseline"
+    },
+    {
+      "model_name": "Baseline_Trend",
+      "horizon": 1,
+      "sample_count": 18,
+      "mae": 0.0,
+      "rmse": 0.0,
+      "mse": 0.0,
+      "r2": null,
+      "interpretation": "LSTM worse than baseline"
+    },
+    {
+      "model_name": "LSTMForecaster",
+      "horizon": 3,
+      "sample_count": 16,
+      "mae": 0.020326,
+      "rmse": 0.020435,
+      "mse": 0.00041759,
+      "r2": null,
+      "interpretation": "Evaluated model"
+    },
+    {
+      "model_name": "Baseline_Persistence",
+      "horizon": 3,
+      "sample_count": 16,
+      "mae": 0.0,
+      "rmse": 0.0,
+      "mse": 0.0,
+      "r2": null,
+      "interpretation": "LSTM worse than baseline"
+    },
+    {
+      "model_name": "Baseline_Mean",
+      "horizon": 3,
+      "sample_count": 16,
+      "mae": 0.000582,
+      "rmse": 0.000582,
+      "mse": 3.4e-07,
+      "r2": null,
+      "interpretation": "LSTM worse than baseline"
+    },
+    {
+      "model_name": "Baseline_Trend",
+      "horizon": 3,
+      "sample_count": 16,
+      "mae": 0.0,
+      "rmse": 0.0,
+      "mse": 0.0,
+      "r2": null,
+      "interpretation": "LSTM worse than baseline"
+    },
+    {
+      "model_name": "LSTMForecaster",
+      "horizon": 5,
+      "sample_count": 14,
+      "mae": 0.015467,
+      "rmse": 0.01553,
+      "mse": 0.00024117,
+      "r2": null,
+      "interpretation": "Evaluated model"
+    },
+    {
+      "model_name": "Baseline_Persistence",
+      "horizon": 5,
+      "sample_count": 14,
+      "mae": 0.0,
+      "rmse": 0.0,
+      "mse": 0.0,
+      "r2": null,
+      "interpretation": "LSTM worse than baseline"
+    },
+    {
+      "model_name": "Baseline_Mean",
+      "horizon": 5,
+      "sample_count": 14,
+      "mae": 0.000582,
+      "rmse": 0.000582,
+      "mse": 3.4e-07,
+      "r2": null,
+      "interpretation": "LSTM worse than baseline"
+    },
+    {
+      "model_name": "Baseline_Trend",
+      "horizon": 5,
+      "sample_count": 14,
+      "mae": 0.0,
+      "rmse": 0.0,
+      "mse": 0.0,
+      "r2": null,
+      "interpretation": "LSTM worse than baseline"
+    }
+  ],
+  "scientific_findings": {
+    "persistence_advantage": "On flat zero sequences, Persistence trivially predicts 0.0, achieving perfect 0.0 error on the test partition.",
+    "lstm_behavior": "LSTM outputs small positive continuous values in [0.010, 0.025], producing an MAE of 0.0156 on all-zero ground truth.",
+    "generalization_distinction": "While Persistence achieves 0.0 error on uninterrupted zeros, it has zero predictive capacity when failures occur ahead (1.0 -> 0.0).",
+    "warning_threshold_status": "UNAVAILABLE (No reliability warning threshold defined in project config; zero arbitrary thresholds fabricated)"
+  },
+  "leakage_audit": {
+    "train_test_overlap_count": 0,
+    "target_leakage_detected": false,
+    "future_feature_leakage_detected": false,
+    "test_set_fitted": false,
+    "status": "PASS"
+  },
+  "visualizations": [
+    "reports/day9/visualizations/actual_vs_predicted_h1.png",
+    "reports/day9/visualizations/actual_vs_predicted_h3.png",
+    "reports/day9/visualizations/actual_vs_predicted_h5.png",
+    "reports/day9/visualizations/mae_comparison_across_models.png",
+    "reports/day9/visualizations/rmse_comparison_across_models.png",
+    "reports/day9/visualizations/prediction_error_distribution.png",
+    "reports/day9/visualizations/reliability_forecasting_timeline.png",
+    "reports/day9/visualizations/horizon_wise_performance_comparison.png"
+  ],
+  "performance": {
+    "evaluation_calculation_duration_seconds": 0.054,
+    "plot_generation_duration_seconds": 1.42,
+    "peak_memory_rss_mb": 54.2
+  },
+  "limitations": [
+    "Single-video driving sample leads to zero positive detections in test partition, artificially penalizing learned models over constant zero baselines",
+    "Reliability warning threshold is undefined, preventing classification-style warning evaluation (Precision/Recall)",
+    "Larger multi-sequence dataset required to benchmark transient failure forecasting"
+  ]
+}

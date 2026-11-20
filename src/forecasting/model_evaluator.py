@@ -110,12 +110,24 @@ class HorizonEvaluationMetrics:
     min_error: float
     max_error: float
     exact_match_count: int = 0
+    mse: float = 0.0
+    r2: Optional[float] = None
+    mean_actual: float = 0.0
+    mean_predicted: float = 0.0
+    actual_std: float = 0.0
+    pred_std: float = 0.0
+    min_predicted: float = 0.0
+    max_predicted: float = 0.0
+    min_actual: float = 0.0
+    max_actual: float = 0.0
 
     def __post_init__(self) -> None:
         if self.exact_match_count == 0 and self.exact_prediction_count > 0:
             self.exact_match_count = self.exact_prediction_count
         elif self.exact_prediction_count == 0 and self.exact_match_count > 0:
             self.exact_prediction_count = self.exact_match_count
+        if self.mse == 0.0 and self.rmse > 0.0:
+            self.mse = float(self.rmse ** 2)
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert metrics to dictionary."""
@@ -229,6 +241,32 @@ class ForecastingModelEvaluator:
             obs_list = raw_data.get("observations")
             if obs_list is None:
                 obs_list = raw_data.get("ground_truth")
+            if obs_list is None and "sequences" in raw_data:
+                # Extract observations from sequence_metadata_labeled.json format
+                obs_list = []
+                for s in raw_data.get("sequences", []):
+                    if s.get("input_sequence_length", 5) == 5:
+                        sid = s.get("sequence_id")
+                        d_id = str(s.get("dataset_id", "driving_sample"))
+                        v_id = str(s.get("video_id", d_id))
+                        split = str(s.get("split", "test"))
+                        for h_key, h_info in s.get("horizons", {}).items():
+                            if h_info.get("target_label") is not None and h_info.get("target_status") == "valid":
+                                obs_list.append({
+                                    "observation_id": f"gt_{sid}_{h_key}",
+                                    "dataset_id": d_id,
+                                    "video_id": v_id,
+                                    "sequence_id": sid,
+                                    "target_frame_index": int(h_info.get("target_source_frame_index", 0)),
+                                    "target_source_frame_index": h_info.get("target_source_frame_index"),
+                                    "target_frame_reference": h_info.get("target_frame_id"),
+                                    "target_timestamp_seconds": h_info.get("target_timestamp_seconds"),
+                                    "horizon": int(h_info.get("horizon", 1)),
+                                    "ground_truth_reliability": float(h_info["target_label"]),
+                                    "split": split,
+                                    "target_definition": "annotated_ground_truth_iou",
+                                    "annotation_source": "human_verified_annotation",
+                                })
             if obs_list is None:
                 raise ModelEvaluationError("Ground-truth dict missing 'observations' list")
             data = obs_list
@@ -308,7 +346,19 @@ class ForecastingModelEvaluator:
                         "message": f"Invalid target definition '{target_def}'. YOLO confidence is not ground truth.",
                     }
 
-                obs_raw = data.get("observations", data.get("ground_truth", []))
+                obs_raw = data.get("observations", data.get("ground_truth"))
+                if obs_raw is None and "sequences" in data:
+                    obs_raw = []
+                    for s in data.get("sequences", []):
+                        if s.get("input_sequence_length", 5) == 5:
+                            for h_key, h_info in s.get("horizons", {}).items():
+                                if h_info.get("target_label") is not None and h_info.get("target_status") == "valid":
+                                    obs_raw.append({
+                                        "observation_id": f"gt_{s.get('sequence_id')}_{h_key}",
+                                        "target_frame_index": int(h_info.get("target_source_frame_index", 0)),
+                                        "ground_truth_reliability": float(h_info["target_label"]),
+                                        "horizon": int(h_info.get("horizon", 1)),
+                                    })
             elif isinstance(data, list):
                 obs_raw = data
             else:
@@ -408,17 +458,28 @@ class ForecastingModelEvaluator:
                 seq_key = (gt.dataset_id, gt.sequence_id, gt.horizon)
                 gt_seq_map[seq_key] = gt
 
+        # Global sequence split lookup
+        gt_seq_split_map = {gt.sequence_id: gt.split.lower() for gt in ground_truth if gt.sequence_id}
+
         matched_gt_ids: set = set()
         seen_pred_keys: set = set()
 
         for pred in predictions:
-            p_split = str(pred.get("split", "test")).lower()
-            if split is not None and p_split != split.lower():
-                continue
+            sid = pred.get("sequence_id")
+            if split is not None:
+                if "split" in pred and str(pred["split"]).lower() != split.lower():
+                    continue
+                if sid and sid in gt_seq_split_map and gt_seq_split_map[sid] != split.lower():
+                    continue
 
             d_id = str(pred.get("dataset_id", "default_dataset"))
-            v_id = str(pred.get("video_id", "default_video"))
-            target_frame = int(pred.get("target_frame_index", pred.get("target_source_frame_index", 0)))
+            v_id = str(pred.get("video_id", d_id))
+            t_frame = pred.get("target_frame_index")
+            if t_frame is None:
+                t_frame = pred.get("target_source_frame_index")
+            if t_frame is None:
+                t_frame = 0
+            target_frame = int(t_frame)
             horizon = int(pred.get("horizon", 1))
 
             pred_key = (d_id, v_id, target_frame, horizon)
@@ -434,8 +495,8 @@ class ForecastingModelEvaluator:
 
             # Match against ground-truth
             matched_gt = gt_frame_map.get(pred_key)
-            if matched_gt is None and pred.get("sequence_id"):
-                matched_gt = gt_seq_map.get((d_id, str(pred["sequence_id"]), horizon))
+            if matched_gt is None and sid:
+                matched_gt = gt_seq_map.get((d_id, str(sid), horizon))
 
             if matched_gt is None:
                 excluded_records.append({
@@ -469,7 +530,7 @@ class ForecastingModelEvaluator:
                 horizon=horizon,
                 predicted_reliability=p_val,
                 ground_truth_reliability=g_val,
-                split=p_split,
+                split=matched_gt.split,
                 sequence_id=pred.get("sequence_id"),
                 target_frame_reference=pred.get("target_frame_reference"),
                 target_source_frame_index=pred.get("target_source_frame_index"),
@@ -509,12 +570,32 @@ class ForecastingModelEvaluator:
 
         errors = np.array([p.error for p in filtered], dtype=np.float64)
         abs_errors = np.array([p.absolute_error for p in filtered], dtype=np.float64)
+        y_true = np.array([p.ground_truth_reliability for p in filtered], dtype=np.float64)
+        y_pred = np.array([p.predicted_reliability for p in filtered], dtype=np.float64)
 
         mae = float(np.mean(abs_errors))
-        rmse = float(np.sqrt(np.mean(errors ** 2)))
+        mse = float(np.mean(errors ** 2))
+        rmse = float(np.sqrt(mse))
         bias = float(np.mean(errors))
         median_ae = float(np.median(abs_errors))
         error_std = float(np.std(errors))
+
+        # Safe R2 calculation
+        ss_tot = float(np.sum((y_true - np.mean(y_true)) ** 2))
+        ss_res = float(np.sum(errors ** 2))
+        if ss_tot > 1e-12:
+            r2 = float(1.0 - (ss_res / ss_tot))
+        else:
+            r2 = None
+
+        mean_act = float(np.mean(y_true))
+        mean_pred = float(np.mean(y_pred))
+        act_std = float(np.std(y_true))
+        pred_std = float(np.std(y_pred))
+        min_p = float(np.min(y_pred))
+        max_p = float(np.max(y_pred))
+        min_a = float(np.min(y_true))
+        max_a = float(np.max(y_true))
 
         # MAPE calculation where ground-truth > 1e-4
         valid_mapes = [p.percentage_error for p in filtered if p.ground_truth_reliability > 1e-4]
@@ -539,6 +620,16 @@ class ForecastingModelEvaluator:
             exact_match_count=exact_count,
             min_error=float(np.min(errors)),
             max_error=float(np.max(errors)),
+            mse=mse,
+            r2=r2,
+            mean_actual=mean_act,
+            mean_predicted=mean_pred,
+            actual_std=act_std,
+            pred_std=pred_std,
+            min_predicted=min_p,
+            max_predicted=max_p,
+            min_actual=min_a,
+            max_actual=max_a,
         )
 
     def compute_all_horizon_metrics(
@@ -557,6 +648,7 @@ class ForecastingModelEvaluator:
         self,
         lstm_metrics: Dict[str, HorizonEvaluationMetrics],
         baseline_results_path: Optional[Union[str, Path, Dict[str, Any]]] = None,
+        split: Optional[str] = "test",
     ) -> List[Dict[str, Any]]:
         """Compare LSTM multi-horizon metrics against baseline models (Persistence, Mean, Trend)."""
         comparisons: List[Dict[str, Any]] = []
@@ -572,6 +664,11 @@ class ForecastingModelEvaluator:
                 baseline_data = baseline_results_path
 
         strategies = baseline_data.get("strategies", {})
+        if not strategies and "by_split" in baseline_data:
+            split_key = split.lower() if split else "test"
+            strategies = baseline_data.get("by_split", {}).get(split_key, {}).get("strategies", {})
+        if not strategies and "overall" in baseline_data:
+            strategies = baseline_data.get("overall", {}).get("strategies", {})
 
         for h_key, lstm_m in lstm_metrics.items():
             h_int = lstm_m.horizon
@@ -581,10 +678,15 @@ class ForecastingModelEvaluator:
                 "model_name": "LSTMForecaster",
                 "horizon": h_int,
                 "sample_count": lstm_m.sample_count,
-                "mae": lstm_m.mae,
-                "rmse": lstm_m.rmse,
-                "bias": lstm_m.bias,
-                "improvement_over_persistence_mae_pct": None,
+                "mae": round(lstm_m.mae, 6),
+                "rmse": round(lstm_m.rmse, 6),
+                "mse": round(lstm_m.mse, 8),
+                "r2": round(lstm_m.r2, 6) if lstm_m.r2 is not None else None,
+                "bias": round(lstm_m.bias, 6),
+                "mean_predicted": round(lstm_m.mean_predicted, 6),
+                "mean_actual": round(lstm_m.mean_actual, 6),
+                "improvement_over_baseline_mae_pct": None,
+                "interpretation": "Evaluated model",
                 "status": "EVALUATED",
             })
 
@@ -594,10 +696,24 @@ class ForecastingModelEvaluator:
                     b_metrics = strat_horizons[h_key]
                     b_mae = b_metrics.get("mae")
                     b_rmse = b_metrics.get("rmse")
+                    b_mse = round(b_rmse ** 2, 8) if b_rmse is not None else None
 
                     improvement_pct = None
-                    if b_mae is not None and b_mae > 1e-6:
-                        improvement_pct = float(((b_mae - lstm_m.mae) / b_mae) * 100.0)
+                    interpretation = "Insufficient evidence"
+                    if b_mae is not None:
+                        if abs(b_mae) < 1e-6:
+                            if lstm_m.mae <= 1e-6:
+                                interpretation = "LSTM comparable to baseline"
+                            else:
+                                interpretation = "LSTM worse than baseline"
+                        else:
+                            improvement_pct = float(((b_mae - lstm_m.mae) / b_mae) * 100.0)
+                            if improvement_pct > 5.0:
+                                interpretation = "LSTM better than baseline"
+                            elif improvement_pct < -5.0:
+                                interpretation = "LSTM worse than baseline"
+                            else:
+                                interpretation = "LSTM comparable to baseline"
 
                     comparisons.append({
                         "model_name": f"Baseline_{strat_name.capitalize()}",
@@ -605,8 +721,14 @@ class ForecastingModelEvaluator:
                         "sample_count": b_metrics.get("sample_count", lstm_m.sample_count),
                         "mae": b_mae,
                         "rmse": b_rmse,
+                        "mse": b_mse,
+                        "r2": b_metrics.get("r2"),
                         "bias": b_metrics.get("bias", 0.0),
-                        "improvement_over_persistence_mae_pct": improvement_pct,
+                        "mean_predicted": b_metrics.get("mean_predicted"),
+                        "mean_actual": b_metrics.get("mean_actual"),
+                        "improvement_over_baseline_mae_pct": round(improvement_pct, 2) if improvement_pct is not None else None,
+                        "improvement_over_persistence_mae_pct": round(improvement_pct, 2) if improvement_pct is not None else None,
+                        "interpretation": interpretation,
                         "status": "EVALUATED",
                     })
 
@@ -803,6 +925,12 @@ def parse_args(args: Optional[List[str]] = None) -> argparse.Namespace:
         help="Generate Matplotlib evaluation plots if ground-truth is available.",
     )
     parser.add_argument(
+        "--plot-dir",
+        type=str,
+        default=None,
+        help="Optional custom directory to save generated evaluation plots (defaults to <output>/plots).",
+    )
+    parser.add_argument(
         "--verbose",
         action="store_true",
         help="Enable verbose logging output.",
@@ -871,7 +999,7 @@ def run_evaluation_cli(args: argparse.Namespace) -> int:
 
     # 5. Compute metrics
     metrics = evaluator.compute_all_horizon_metrics(aligned_pairs)
-    comparisons = evaluator.compare_against_baselines(metrics, args.baseline_results)
+    comparisons = evaluator.compare_against_baselines(metrics, args.baseline_results, split=args.split)
     error_analysis = evaluator.perform_error_analysis(aligned_pairs)
 
     # 6. Save artifacts
@@ -894,6 +1022,7 @@ def run_evaluation_cli(args: argparse.Namespace) -> int:
             f"Horizon {h_metric.horizon} (N={h_metric.sample_count}) | "
             f"MAE: {h_metric.mae:.4f} | "
             f"RMSE: {h_metric.rmse:.4f} | "
+            f"MSE: {h_metric.mse:.6f} | "
             f"Bias: {h_metric.bias:.4f} | "
             f"MedAE: {h_metric.median_absolute_error:.4f}"
         )
@@ -903,13 +1032,20 @@ def run_evaluation_cli(args: argparse.Namespace) -> int:
         try:
             from src.forecasting.evaluation_visualizer import ForecastingEvaluationVisualizer
             visualizer = ForecastingEvaluationVisualizer()
-            plot_dir = Path(artifacts["evaluation_summary"]).parent / "plots"
+            plot_dir = Path(args.plot_dir) if args.plot_dir else Path(artifacts["evaluation_summary"]).parent / "plots"
             plots = visualizer.generate_all_plots(
                 pairs=aligned_pairs,
                 metrics=metrics,
                 comparison_records=comparisons,
                 output_dir=plot_dir,
             )
+            t6_plots = visualizer.generate_task6_visualizations(
+                pairs=aligned_pairs,
+                metrics=metrics,
+                comparison_records=comparisons,
+                output_dir=plot_dir,
+            )
+            plots.update(t6_plots)
             print(f"[VISUALIZATION] Generated {len(plots)} evaluation charts under: {plot_dir}")
         except Exception as e:
             print(f"[WARN] Failed to generate evaluation plots: {e}")

@@ -797,3 +797,154 @@ def test_evaluator_cli_missing_predictions_file(tmp_path, sample_ground_truth_di
     ]
     ret = main(test_args)
     assert ret == 1
+
+
+# ============================================================================
+# 4. Day 9 Task 6 Specific Verification Tests
+# ============================================================================
+
+def test_regression_metrics_calculation_accuracy():
+    """Verify exact numerical correctness of MAE, RMSE, MSE, and R2."""
+    ev = ForecastingModelEvaluator()
+    # y_true = [0.2, 0.4, 0.6, 0.8], y_pred = [0.25, 0.35, 0.65, 0.75]
+    # errors = [+0.05, -0.05, +0.05, -0.05]
+    # abs_errors = [0.05, 0.05, 0.05, 0.05]
+    # MAE = 0.05
+    # MSE = 0.0025
+    # RMSE = 0.05
+    # y_true mean = 0.5, ss_tot = 0.09 + 0.01 + 0.01 + 0.09 = 0.20
+    # ss_res = 4 * 0.0025 = 0.010
+    # R2 = 1 - (0.010 / 0.20) = 0.95
+    pairs = [
+        AlignedEvaluationPair("p1", "o1", "d", "v", 1, 2, 1, 0.25, 0.20, "test"),
+        AlignedEvaluationPair("p2", "o2", "d", "v", 2, 3, 1, 0.35, 0.40, "test"),
+        AlignedEvaluationPair("p3", "o3", "d", "v", 3, 4, 1, 0.65, 0.60, "test"),
+        AlignedEvaluationPair("p4", "o4", "d", "v", 4, 5, 1, 0.75, 0.80, "test"),
+    ]
+    m = ev.compute_horizon_metrics(pairs, horizon=1)
+    assert pytest.approx(m.mae, rel=1e-5) == 0.05
+    assert pytest.approx(m.mse, rel=1e-5) == 0.0025
+    assert pytest.approx(m.rmse, rel=1e-5) == 0.05
+    assert m.r2 is not None
+    assert pytest.approx(m.r2, rel=1e-5) == 0.95
+    assert pytest.approx(m.mean_actual, rel=1e-5) == 0.50
+    assert pytest.approx(m.mean_predicted, rel=1e-5) == 0.50
+
+
+def test_r2_constant_target_returns_none():
+    """Verify that when ground-truth targets are constant, R2 is None rather than dividing by zero."""
+    ev = ForecastingModelEvaluator()
+    pairs = [
+        AlignedEvaluationPair("p1", "o1", "d", "v", 1, 2, 1, 0.012, 0.0, "test"),
+        AlignedEvaluationPair("p2", "o2", "d", "v", 2, 3, 1, 0.015, 0.0, "test"),
+        AlignedEvaluationPair("p3", "o3", "d", "v", 3, 4, 1, 0.011, 0.0, "test"),
+    ]
+    m = ev.compute_horizon_metrics(pairs, horizon=1)
+    assert m.mae > 0
+    assert m.mse > 0
+    assert m.r2 is None  # SS_tot is zero, R2 is mathematically undefined
+
+
+def test_baseline_comparison_zero_baseline_safe_interpretation():
+    """Verify baseline comparison handles zero-error baseline gracefully without division by zero."""
+    ev = ForecastingModelEvaluator()
+    lstm_metrics = {
+        "h1": HorizonEvaluationMetrics(
+            horizon=1, sample_count=18, mae=0.0115, rmse=0.0116, mse=0.000135,
+            bias=0.0115, median_absolute_error=0.011, error_std=0.001, mape=None,
+            underprediction_count=0, overprediction_count=18, exact_prediction_count=0,
+            min_error=0.010, max_error=0.014
+        )
+    }
+    baseline_results = {
+        "strategies": {
+            "persistence": {
+                "h1": {"mae": 0.0, "rmse": 0.0, "sample_count": 18}
+            },
+            "mean": {
+                "h1": {"mae": 0.000582, "rmse": 0.000582, "sample_count": 18}
+            }
+        }
+    }
+    comps = ev.compare_against_baselines(lstm_metrics, baseline_results)
+    persist_comp = next(c for c in comps if c["model_name"] == "Baseline_Persistence")
+    assert persist_comp["improvement_over_baseline_mae_pct"] is None
+    assert persist_comp["interpretation"] == "LSTM worse than baseline"
+
+    mean_comp = next(c for c in comps if c["model_name"] == "Baseline_Mean")
+    assert mean_comp["interpretation"] == "LSTM worse than baseline"
+
+
+def test_real_evaluation_pipeline_artifacts_exist():
+    """Verify that official evaluation artifacts exist and conform to schemas."""
+    eval_dir = Path("experiments/forecasting/evaluation/official_evaluation_run")
+    assert eval_dir.exists(), "Evaluation directory does not exist"
+
+    summary_file = eval_dir / "evaluation_summary.json"
+    comp_file = eval_dir / "baseline_comparison.json"
+    err_file = eval_dir / "error_analysis.json"
+    results_file = eval_dir / "evaluation_results.json"
+
+    assert summary_file.exists()
+    assert comp_file.exists()
+    assert err_file.exists()
+    assert results_file.exists()
+
+    with open(summary_file, "r") as f:
+        summary = json.load(f)
+    assert summary["evaluation_status"] == "COMPLETED"
+    assert summary["total_aligned_pairs"] == 48
+
+    with open(comp_file, "r") as f:
+        comps = json.load(f)
+    assert len(comps) > 0
+
+    with open(results_file, "r") as f:
+        results = json.load(f)
+    assert len(results) == 48
+    for r in results:
+        assert r["split"] == "test"
+        assert 0.0 <= r["predicted_reliability"] <= 1.0
+        assert 0.0 <= r["ground_truth_reliability"] <= 1.0
+
+
+def test_data_leakage_and_split_isolation():
+    """Verify that evaluation on test split contains zero train sequences."""
+    with open("datasets/processed/driving_sample/reliability_labels/sequence_metadata_labeled.json") as f:
+        raw_meta = json.load(f)
+
+    train_seq_ids = {
+        s["sequence_id"] for s in raw_meta["sequences"]
+        if s.get("input_sequence_length") == 5 and s.get("split") == "train"
+    }
+    assert len(train_seq_ids) == 101
+
+    eval_results_file = Path("experiments/forecasting/evaluation/official_evaluation_run/evaluation_results.json")
+    if eval_results_file.exists():
+        with open(eval_results_file) as f:
+            pairs = json.load(f)
+        eval_seq_ids = {p["sequence_id"] for p in pairs}
+        overlap = train_seq_ids.intersection(eval_seq_ids)
+        assert len(overlap) == 0, f"DATA LEAKAGE DETECTED: {overlap}"
+
+
+def test_task6_visualizations_exist():
+    """Verify that all 8 required Task 6 visualization plots exist and have valid file sizes."""
+    vis_dir = Path("reports/day9/visualizations")
+    assert vis_dir.exists()
+
+    required_plots = [
+        "actual_vs_predicted_h1.png",
+        "actual_vs_predicted_h3.png",
+        "actual_vs_predicted_h5.png",
+        "mae_comparison_across_models.png",
+        "rmse_comparison_across_models.png",
+        "prediction_error_distribution.png",
+        "reliability_forecasting_timeline.png",
+        "horizon_wise_performance_comparison.png",
+    ]
+
+    for p_name in required_plots:
+        p_path = vis_dir / p_name
+        assert p_path.exists(), f"Missing visualization: {p_name}"
+        assert p_path.stat().st_size > 1000, f"Empty or tiny visualization: {p_name}"
