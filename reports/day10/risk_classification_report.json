@@ -1,0 +1,233 @@
+{
+  "dataset_id": "driving_sample",
+  "split_name": "val",
+  "sample_count": 54,
+  "horizon": null,
+  "calibration_status": "PROVISIONAL",
+  "risk_score_distribution": {
+    "count": 54.0,
+    "min": 0.960631,
+    "max": 0.989719,
+    "mean": 0.9818667962962961,
+    "median": 0.9822565000000001,
+    "p25": 0.97986175,
+    "p50": 0.9822565000000001,
+    "p75": 0.98613675,
+    "p90": 0.9886089,
+    "std": 0.005724041790681458
+  },
+  "ground_truth_distribution": {
+    "zeros_count": 54,
+    "non_zeros_count": 0,
+    "failure_rate": 1.0
+  },
+  "recommended_thresholds": {
+    "low_upper": 0.3,
+    "medium_upper": 0.6,
+    "high_upper": 0.85
+  },
+  "candidate_evaluations": [
+    {
+      "threshold": 0.1,
+      "true_positives": 54,
+      "false_positives": 0,
+      "true_negatives": 0,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "accuracy": 1.0
+    },
+    {
+      "threshold": 0.15,
+      "true_positives": 54,
+      "false_positives": 0,
+      "true_negatives": 0,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "accuracy": 1.0
+    },
+    {
+      "threshold": 0.2,
+      "true_positives": 54,
+      "false_positives": 0,
+      "true_negatives": 0,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "accuracy": 1.0
+    },
+    {
+      "threshold": 0.25,
+      "true_positives": 54,
+      "false_positives": 0,
+      "true_negatives": 0,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "accuracy": 1.0
+    },
+    {
+      "threshold": 0.3,
+      "true_positives": 54,
+      "false_positives": 0,
+      "true_negatives": 0,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "accuracy": 1.0
+    },
+    {
+      "threshold": 0.35,
+      "true_positives": 54,
+      "false_positives": 0,
+      "true_negatives": 0,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "accuracy": 1.0
+    },
+    {
+      "threshold": 0.4,
+      "true_positives": 54,
+      "false_positives": 0,
+      "true_negatives": 0,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "accuracy": 1.0
+    },
+    {
+      "threshold": 0.45,
+      "true_positives": 54,
+      "false_positives": 0,
+      "true_negatives": 0,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "accuracy": 1.0
+    },
+    {
+      "threshold": 0.5,
+      "true_positives": 54,
+      "false_positives": 0,
+      "true_negatives": 0,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "accuracy": 1.0
+    },
+    {
+      "threshold": 0.55,
+      "true_positives": 54,
+      "false_positives": 0,
+      "true_negatives": 0,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "accuracy": 1.0
+    },
+    {
+      "threshold": 0.6,
+      "true_positives": 54,
+      "false_positives": 0,
+      "true_negatives": 0,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "accuracy": 1.0
+    },
+    {
+      "threshold": 0.65,
+      "true_positives": 54,
+      "false_positives": 0,
+      "true_negatives": 0,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "accuracy": 1.0
+    },
+    {
+      "threshold": 0.7,
+      "true_positives": 54,
+      "false_positives": 0,
+      "true_negatives": 0,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "accuracy": 1.0
+    },
+    {
+      "threshold": 0.75,
+      "true_positives": 54,
+      "false_positives": 0,
+      "true_negatives": 0,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "accuracy": 1.0
+    },
+    {
+      "threshold": 0.8,
+      "true_positives": 54,
+      "false_positives": 0,
+      "true_negatives": 0,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "accuracy": 1.0
+    },
+    {
+      "threshold": 0.85,
+      "true_positives": 54,
+      "false_positives": 0,
+      "true_negatives": 0,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "accuracy": 1.0
+    },
+    {
+      "threshold": 0.9,
+      "true_positives": 54,
+      "false_positives": 0,
+      "true_negatives": 0,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "accuracy": 1.0
+    }
+  ],
+  "limitation_statement": "Validation ground-truth targets are 100% zero (single-class ground truth) due to zero-inflation on the single driving clip. Statistical multi-class optimization is degenerate; recommended thresholds are classified as PROVISIONAL and must be calibrated against multi-video BDD100K data.",
+  "warnings": [
+    "Single-class validation ground truth detected: 100% failure outcomes (y=0.0). Empirical multi-class optimization is degenerate. Status is PROVISIONAL."
+  ],
+  "created_at": "2026-11-20T08:59:35.785046+00:00",
+  "engine": "PerceptGuard AI Risk Classification & Threshold Calibration Engine",
+  "version": "1.0.0",
+  "task": "Day 10 Task 3",
+  "scientific_integrity": {
+    "leakage_prevention_enforced": true,
+    "test_data_used_for_calibration": false,
+    "train_data_used_for_calibration": false,
+    "ground_truth_zero_inflation_detected": true,
+    "calibration_status": "PROVISIONAL"
+  }
+}

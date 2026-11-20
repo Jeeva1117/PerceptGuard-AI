@@ -4,11 +4,14 @@ Transforms multi-horizon reliability forecasts into mathematically bounded,
 traceable perception failure risk scores and temporal degradation features.
 """
 
+from src.risk.risk_classifier import ClassificationResult, RiskClassifier
 from src.risk.risk_config import (
     AggregationConfig,
+    ClassificationConfig,
     RiskConfig,
     RiskConfigError,
     TemporalFeatureConfig,
+    ThresholdProfile,
     TransformationConfig,
 )
 from src.risk.risk_features import TemporalRiskFeatureExtractor
@@ -25,6 +28,13 @@ from src.risk.risk_validator import (
     validate_reliability_value,
     validate_risk_value,
 )
+from src.risk.threshold_calibrator import (
+    CalibrationError,
+    CalibrationReport,
+    CalibrationSample,
+    ThresholdCalibrator,
+    ThresholdCandidateEvaluation,
+)
 
 __all__ = [
     # Configuration
@@ -33,10 +43,16 @@ __all__ = [
     "TransformationConfig",
     "AggregationConfig",
     "TemporalFeatureConfig",
+    "ThresholdProfile",
+    "ClassificationConfig",
     # Data Models
     "HorizonRiskRecord",
     "AggregatedRiskRecord",
     "TemporalRiskFeatures",
+    "ClassificationResult",
+    "CalibrationSample",
+    "ThresholdCandidateEvaluation",
+    "CalibrationReport",
     # Validation
     "RiskValidationError",
     "validate_reliability_value",
@@ -45,7 +61,11 @@ __all__ = [
     "validate_aggregation_weights",
     # Feature Extraction
     "TemporalRiskFeatureExtractor",
-    # Core Engine
+    # Core Engine & Classification
     "ReliabilityRiskScorer",
     "RiskScoringError",
+    "RiskClassifier",
+    # Calibration
+    "ThresholdCalibrator",
+    "CalibrationError",
 ]

@@ -1,7 +1,8 @@
 """Configuration module for PerceptGuard AI Reliability Risk Scoring Engine.
 
 Defines strongly-typed, CPU-first configuration schemas and validation
-for transforming multi-horizon reliability forecasts into quantified risk scores.
+for transforming multi-horizon reliability forecasts into quantified risk scores,
+classifying operational risk tiers, and configuring threshold calibration.
 """
 
 from __future__ import annotations
@@ -107,12 +108,61 @@ class TemporalFeatureConfig:
 
 
 @dataclass(frozen=True)
+class ThresholdProfile:
+    """Cutoff boundaries and metadata for mapping continuous risk to discrete levels."""
+    low_upper: float = 0.30
+    medium_upper: float = 0.60
+    high_upper: float = 0.85
+    horizon: Optional[int] = None
+    calibration_status: str = "PROVISIONAL"  # "CALIBRATED", "PROVISIONAL", "NOT_CALIBRATED", "BLOCKED"
+    calibration_dataset_id: str = "driving_sample_val"
+    threshold_version: str = "1.0.0-provisional"
+    notes: str = "Provisional threshold profile under single-clip zero-inflation constraints."
+
+    def validate(self) -> List[str]:
+        errors = []
+        if not (0.0 < self.low_upper < self.medium_upper < self.high_upper < 1.0):
+            errors.append(
+                f"Threshold boundaries must satisfy 0.0 < low_upper ({self.low_upper}) < "
+                f"medium_upper ({self.medium_upper}) < high_upper ({self.high_upper}) < 1.0"
+            )
+        valid_statuses = {"CALIBRATED", "PROVISIONAL", "NOT_CALIBRATED", "BLOCKED"}
+        if self.calibration_status.upper() not in valid_statuses:
+            errors.append(
+                f"calibration_status '{self.calibration_status}' not in valid set: {valid_statuses}"
+            )
+        return errors
+
+
+@dataclass(frozen=True)
+class ClassificationConfig:
+    """Configuration for operational risk level classification."""
+    boundary_policy: str = "closed_right"  # "closed_right" (lower < x <= upper), "closed_left" (lower <= x < upper)
+    default_thresholds: ThresholdProfile = field(default_factory=ThresholdProfile)
+    horizon_thresholds: Dict[int, ThresholdProfile] = field(default_factory=dict)
+    missing_data_level: str = "UNKNOWN"
+    stale_data_level: str = "UNKNOWN"
+
+    def validate(self, supported_horizons: Sequence[int] = (1, 3, 5)) -> List[str]:
+        errors = []
+        if self.boundary_policy not in ["closed_right", "closed_left"]:
+            errors.append(f"classification.boundary_policy must be 'closed_right' or 'closed_left', got: {self.boundary_policy}")
+        errors.extend(self.default_thresholds.validate())
+        for h, profile in self.horizon_thresholds.items():
+            if h not in supported_horizons:
+                errors.append(f"classification.horizon_thresholds contains unsupported horizon: {h}")
+            errors.extend(profile.validate())
+        return errors
+
+
+@dataclass(frozen=True)
 class RiskConfig:
-    """Master configuration container for PerceptGuard AI Risk Scoring Engine."""
+    """Master configuration container for PerceptGuard AI Risk Scoring & Classification."""
     supported_horizons: Tuple[int, ...] = (1, 3, 5)
     transformation: TransformationConfig = field(default_factory=TransformationConfig)
     aggregation: AggregationConfig = field(default_factory=AggregationConfig)
     temporal: TemporalFeatureConfig = field(default_factory=TemporalFeatureConfig)
+    classification: ClassificationConfig = field(default_factory=ClassificationConfig)
     precision_decimals: int = 6
 
     def validate(self) -> List[str]:
@@ -126,6 +176,7 @@ class RiskConfig:
         errors.extend(self.transformation.validate())
         errors.extend(self.aggregation.validate(supported_horizons=self.supported_horizons))
         errors.extend(self.temporal.validate())
+        errors.extend(self.classification.validate(supported_horizons=self.supported_horizons))
 
         if self.precision_decimals < 1 or self.precision_decimals > 12:
             errors.append(f"precision_decimals must be between 1 and 12, got: {self.precision_decimals}")
@@ -154,7 +205,6 @@ class RiskConfig:
         # Aggregation
         a_data = data.get("aggregation", {})
         raw_weights = a_data.get("horizon_weights", {1: 0.50, 3: 0.35, 5: 0.15})
-        # Ensure keys are integers
         horizon_weights = {int(k): float(v) for k, v in raw_weights.items()}
 
         aggregation = AggregationConfig(
@@ -175,6 +225,42 @@ class RiskConfig:
             volatility_window_size=temp_data.get("volatility_window_size", 5),
         )
 
+        # Classification
+        c_data = data.get("classification", {})
+        def_t_data = c_data.get("default_thresholds", {})
+        default_thresholds = ThresholdProfile(
+            horizon=def_t_data.get("horizon"),
+            low_upper=float(def_t_data.get("low_upper", 0.30)),
+            medium_upper=float(def_t_data.get("medium_upper", 0.60)),
+            high_upper=float(def_t_data.get("high_upper", 0.85)),
+            calibration_status=def_t_data.get("calibration_status", "PROVISIONAL"),
+            calibration_dataset_id=def_t_data.get("calibration_dataset_id", "driving_sample_val"),
+            threshold_version=def_t_data.get("threshold_version", "1.0.0-provisional"),
+            notes=def_t_data.get("notes", "Provisional threshold profile under single-clip zero-inflation constraints."),
+        )
+
+        raw_h_t = c_data.get("horizon_thresholds", {})
+        horizon_thresholds = {}
+        for k, v in raw_h_t.items():
+            horizon_thresholds[int(k)] = ThresholdProfile(
+                horizon=int(k),
+                low_upper=float(v.get("low_upper", 0.30)),
+                medium_upper=float(v.get("medium_upper", 0.60)),
+                high_upper=float(v.get("high_upper", 0.85)),
+                calibration_status=v.get("calibration_status", "PROVISIONAL"),
+                calibration_dataset_id=v.get("calibration_dataset_id", "driving_sample_val"),
+                threshold_version=v.get("threshold_version", "1.0.0-provisional"),
+                notes=v.get("notes", ""),
+            )
+
+        classification = ClassificationConfig(
+            boundary_policy=c_data.get("boundary_policy", "closed_right"),
+            default_thresholds=default_thresholds,
+            horizon_thresholds=horizon_thresholds,
+            missing_data_level=c_data.get("missing_data_level", "UNKNOWN"),
+            stale_data_level=c_data.get("stale_data_level", "UNKNOWN"),
+        )
+
         precision = data.get("precision_decimals", 6)
 
         config = cls(
@@ -182,6 +268,7 @@ class RiskConfig:
             transformation=transformation,
             aggregation=aggregation,
             temporal=temporal,
+            classification=classification,
             precision_decimals=precision,
         )
 

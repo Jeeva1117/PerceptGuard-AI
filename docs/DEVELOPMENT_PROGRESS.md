@@ -2892,3 +2892,48 @@ Conducted an exhaustive, independent, evidence-based engineering audit of the en
 - **Commit Target:** `feat: add risk scoring`
 - **Commit Hash:** `6a46792`
 - **Status:** Committed and pushed to `origin/main`.
+
+
+### Day 10 — Task 3: Risk Classification & Threshold Calibration
+
+- **Date:** 2026-11-20
+- **Roles:** Principal Machine Learning Engineer, Senior Computer Vision Reliability Engineer, Production AI Architect
+- **Milestone Type:** Operational Risk Tier Categorization, Threshold Calibration Module, Boundary Policy Enforcement, Anti-Leakage Validation
+- **Audit Verdict:** **`PASS WITH LIMITATIONS`** (Calibration Status: **`PROVISIONAL`**)
+
+#### Summary of Accomplishments & Verifications:
+1. **Task 1 & 2 Readiness Gate Verification:**
+   - Audited Day 10 Task 1 architecture and Task 2 risk scoring modules.
+   - Decoupled `src/early_warning/__init__.py` from `src/risk/risk_scorer.py` to prevent potential circular package imports.
+   - Inspected validation split ground truth (`datasets/processed/driving_sample/reliability_labels/sequence_metadata_labeled.json`, $N=18$ sequences, 54 multi-horizon predictions) and confirmed 100% ground-truth zero-inflation ($y_i = 0.0$).
+2. **Deterministic Risk Classification Engine (`src/risk/risk_classifier.py`):**
+   - Implemented `RiskClassifier` conforming to `IRiskClassifier` with deterministic mapping to 4 operational tiers: `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`.
+   - Implemented `ClassificationResult` dataclass capturing assigned tier, score, applied thresholds, boundary policy, and audit metadata.
+   - Supported configurable boundary policies: `closed_right` ($S \le \theta$ belongs to lower tier) and `closed_left` ($S < \theta$ belongs to lower tier).
+   - Supported independent horizon classification ($H1, H3, H5$) and synthesized sequence classification (`AggregatedRiskRecord`).
+   - Implemented horizon-specific threshold profiles with default fallback.
+3. **Safety Sentinels & Fail-Safe Invariants:**
+   - Strictly mapped missing telemetry, expired TTL frames, and validation failures to `RiskLevel.UNKNOWN` via `classify_missing` and `classify_stale`.
+   - Guaranteed that **missing/stale/invalid data NEVER defaults to `RiskLevel.LOW`**.
+   - Strictly validated input scores: rejected `NaN`, `Inf`, negatives, and values $> 1.0$ with `RiskValidationError`.
+4. **Empirical Threshold Calibration Engine (`src/risk/threshold_calibrator.py`):**
+   - Implemented `ThresholdCalibrator` with anti-leakage guards: strictly forbids calibration on test or train splits (raising `CalibrationError`).
+   - Implemented grid search evaluation computing confusion matrices ($\text{TP}, \text{FP}, \text{TN}, \text{FN}$), Precision, Recall, Accuracy, and $F_1$ across candidate cutoffs ($0.10$ to $0.95$).
+   - Implemented automatic zero-inflation detection: identified that 100% of validation targets are zero (single-class ground truth) and honestly assigned calibration status as **`PROVISIONAL`** (preventing unwarranted claims of production calibration).
+   - Derived provisional baseline thresholds: $\theta_{\text{low}} = 0.30$, $\theta_{\text{med}} = 0.60$, $\theta_{\text{high}} = 0.85$.
+5. **Testing & Verification Suite:**
+   - Authored 17 focused unit/integration tests in `tests/risk/test_risk_classifier.py`.
+   - Authored 8 focused unit/integration tests in `tests/risk/test_threshold_calibrator.py`.
+   - Verified 100% pass rate: **70 / 70 tests passed in $1.58\text{ seconds}$** across `tests/risk/` and `tests/early_warning/`.
+6. **Deliverables Authored:**
+   - Authored [docs/RISK_CLASSIFICATION.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/RISK_CLASSIFICATION.md).
+   - Authored [docs/THRESHOLD_CALIBRATION.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/THRESHOLD_CALIBRATION.md).
+   - Authored [reports/day10/risk_classification_report.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/day10/risk_classification_report.md).
+   - Generated [reports/day10/risk_classification_report.json](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/day10/risk_classification_report.json).
+   - Updated [docs/DEVELOPMENT_PROGRESS.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/DEVELOPMENT_PROGRESS.md).
+
+#### Git Version Control
+- **Branch:** `main`
+- **Commit Target:** `feat: add risk classification`
+- **Commit Hash:** `PENDING`
+- **Status:** Staged for commit and push to `origin/main`.
