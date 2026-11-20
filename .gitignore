@@ -21,6 +21,8 @@ datasets/raw/*
 !datasets/raw/.gitkeep
 datasets/processed/*
 !datasets/processed/.gitkeep
+datasets/annotations/*
+!datasets/annotations/.gitkeep
 *.bag
 *.pcap
 *.tar.gz

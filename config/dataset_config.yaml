@@ -1,0 +1,70 @@
+schema_version: "1.0.0"
+
+dataset:
+  selected_dataset: "bdd100k"
+  dataset_name: "Berkeley DeepDrive 100K (BDD100K)"
+  task: "multiple_object_tracking"
+  sequence_id: "026c7465-309f6d33"
+  dataset_id: "driving_sample"
+  license: "UC Berkeley Regents Academic / Research License"
+  source_reference: "https://bdd-data.berkeley.edu/"
+
+paths:
+  raw_video_path: "datasets/raw/converted_026c7465-309f6d33.mp4"
+  raw_annotation_path: "datasets/annotations/bdd100k/bdd100k_mot_026c7465_309f6d33.json"
+  extracted_frames_dir: "datasets/processed/driving_sample/frames"
+  preprocessed_frames_dir: "datasets/processed/driving_sample/preprocessed_frames"
+  processed_annotation_dir: "datasets/processed/driving_sample/annotations"
+  standardized_annotation_path: "datasets/processed/driving_sample/annotations/ground_truth_annotations.json"
+  manifest_path: "datasets/processed/driving_sample/annotations/annotation_manifest.json"
+  validation_report_path: "datasets/processed/driving_sample/annotations/validation_report.json"
+
+coordinate_systems:
+  default_target_space: "canvas"
+  native_space:
+    width: 1280
+    height: 720
+    description: "Original BDD100K landscape video coordinate system"
+  raw_video_space:
+    width: 720
+    height: 1280
+    description: "Acquired video container frame coordinate system"
+  canvas_space:
+    width: 640
+    height: 360
+    description: "Standard preprocessed letterboxed canvas coordinate system for YOLO"
+    scale_factor: 0.28125
+    offset_x: 218.75
+    offset_y: 0.0
+
+class_mapping:
+  version: "1.0.0"
+  mapping:
+    pedestrian: "person"
+    rider: "person"
+    other person: "person"
+    car: "car"
+    truck: "truck"
+    bus: "bus"
+    train: "train"
+    motorcycle: "motorcycle"
+    bicycle: "bicycle"
+    traffic light: "traffic light"
+    traffic sign: "traffic light"
+    trailer: "truck"
+    other vehicle: "car"
+
+validation:
+  strict_mode: true
+  min_box_area_pixels: 4.0
+  allow_empty_frames: true
+  max_allowed_corrupt_frames: 0
+  max_allowed_out_of_bounds: 0
+
+splitting_policy:
+  strategy: "chronological_purged"
+  temporal_gap_frames: 25
+  split_ratios:
+    train: 0.70
+    val: 0.15
+    test: 0.15

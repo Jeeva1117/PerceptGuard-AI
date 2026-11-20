@@ -2036,6 +2036,41 @@ Conducted an exhaustive, independent, evidence-based engineering audit of the en
    - Published [reports/day8/ground_truth_readiness_audit.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/day8/ground_truth_readiness_audit.md)
    - Published [reports/day8/ground_truth_readiness_audit.json](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/day8/ground_truth_readiness_audit.json)
 
+### Task 2: Ground-Truth Dataset Selection & Integration
+- **Milestone:** Official BDD100K Multiple Object Tracking (MOT) Annotation Ingestion & Canvas Alignment
+- **Lead Roles:** Principal CV Engineer, Staff ML Engineer, ML Data Integration Architect
+- **Status:** **Task 2 Complete & Verified**
+
+#### Completed Tasks
+1. **Dataset Candidates Evaluation:**
+   - Evaluated 5 candidate datasets (BDD100K, KITTI, MOT17, MOT20, COCO) against temporal sequence structure, 2D bounding boxes, persistent tracking IDs, and ego-motion driving context.
+   - Formally selected **BDD100K Multiple Object Tracking (MOT)** as the optimal, authentic match for reference sequence `026c7465-309f6d33`.
+2. **Annotation Acquisition & Ingestion:**
+   - Acquired official BDD100K MOT annotations for sequence `026c7465-309f6d33` (2,055 KB, 202 frames, 5,171 raw annotations).
+   - Stored raw annotation locally in `datasets/annotations/bdd100k/bdd100k_mot_026c7465_309f6d33.json`.
+   - Updated `.gitignore` to strictly exclude `datasets/annotations/*`.
+3. **Annotation Adapter & Transformation Engine (`src/evaluation/bdd100k_adapter.py`):**
+   - Implemented production-grade `BDD100KAdapter` with `CoordinateTransformer`, `ClassMapper`, and dataclasses (`BoundingBox`, `GroundTruthObject`, `FrameGroundTruth`, `SequenceGroundTruth`).
+   - Mathematically verified the composite affine transform from native landscape ($1280 \times 720$) through rotated raw video ($720 \times 1280$) to preprocessed canvas space ($640 \times 360$):
+     $$x_{\text{canvas}} = (720 - y_{\text{nat}}) \cdot 0.28125 + 218.75, \quad y_{\text{canvas}} = x_{\text{nat}} \cdot 0.28125$$
+   - Verified active bounding box coverage in $[218.75, 421.25] \times [0.0, 360.0]$, aligning perfectly with YOLO predictions.
+   - Mapped BDD100K classes to standardized YOLO COCO categories (`car`, `truck`, `bus`, `person`, `motorcycle`, `bicycle`).
+4. **Data Assets & Manifest Generation:**
+   - Processed 200 frames matching `frame_000001.jpg` to `frame_000200.jpg` with 5,121 valid ground-truth boxes across 115 unique tracks.
+   - Generated portable dataset manifest `datasets/processed/driving_sample/annotations/annotation_manifest.json` using relative paths.
+   - Generated standardized annotations `datasets/processed/driving_sample/annotations/ground_truth_annotations.json`.
+5. **Data Integrity Auditing:**
+   - Validated: 0 corrupt frames, 0 missing images, 0 invalid bounding boxes, 0 duplicates, 0 out-of-bounds coordinates. Status: **`PASS`**.
+6. **Configuration & Testing:**
+   - Created centralized configuration `config/dataset_config.yaml`.
+   - Created test suite `tests/test_bdd100k_adapter.py` and `tests/evaluation/test_bdd100k_adapter.py`.
+   - Verified 16 / 16 tests passed in 1.48s (100% pass rate).
+7. **Documentation & Reports Created:**
+   - Published [docs/DATASET_SELECTION_INTEGRATION.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/docs/DATASET_SELECTION_INTEGRATION.md)
+   - Published [reports/day8/dataset_selection_integration.md](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/day8/dataset_selection_integration.md)
+   - Published [reports/day8/dataset_selection_integration.json](file:///c:/Users/acer/Desktop/PerceptGuard-AI/reports/day8/dataset_selection_integration.json)
+
+
 
 
 
