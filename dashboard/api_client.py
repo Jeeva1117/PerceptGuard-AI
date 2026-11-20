@@ -69,6 +69,7 @@ class DashboardApiClient:
         self._last_error: Optional[str] = None
 
         # Initialize or accept HTTP client
+        self._external_http_client = http_client is not None
         if http_client is not None:
             self._http_client = http_client
         else:
@@ -352,4 +353,5 @@ class DashboardApiClient:
 
     def close(self) -> None:
         """Release underlying HTTP client connections."""
-        self._http_client.close()
+        if not getattr(self, "_external_http_client", False):
+            self._http_client.close()
