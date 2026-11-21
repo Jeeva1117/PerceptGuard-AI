@@ -154,18 +154,37 @@ Ensure model weights exist in `models/`:
 
 ## 7. Running the Application
 
-### 7.1 Start the FastAPI Backend
-In your first terminal:
-```bash
-uvicorn src.api.app:app --host 127.0.0.1 --port 8000 --reload
+### 7.1 One-Command Startup (Windows 11)
+Launch both the FastAPI backend and Streamlit dashboard simultaneously with automated readiness checking:
+```powershell
+.\scripts\start_project.ps1
+```
+To gracefully stop all running services and free ports 8000 & 8501:
+```powershell
+.\scripts\stop_project.ps1
+```
+
+### 7.2 Manual Component Startup
+You can also run backend and dashboard in dedicated terminal sessions:
+
+**Terminal 1 — FastAPI Backend:**
+```powershell
+# Using launcher script
+.\scripts\start_backend.ps1
+
+# Or direct invocation
+uvicorn src.api.app:app --host 127.0.0.1 --port 8000
 ```
 - API Documentation: `http://127.0.0.1:8000/docs`
-- Health Check: `http://127.0.0.1:8000/health`
+- Health Check: `http://127.0.0.1:8000/health/live`
 
-### 7.2 Start the Streamlit Operations Dashboard
-In your second terminal:
-```bash
-streamlit run dashboard/app.py
+**Terminal 2 — Streamlit Operations Dashboard:**
+```powershell
+# Using launcher script
+.\scripts\start_dashboard.ps1
+
+# Or direct invocation
+streamlit run dashboard/app.py --server.port 8501
 ```
 The dashboard opens automatically at `http://localhost:8501`.
 

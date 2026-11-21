@@ -1,0 +1,138 @@
+{
+  "metadata": {
+    "project_name": "PerceptGuard AI",
+    "tagline": "Anticipating Detection Failures Before They Happen.",
+    "milestone": "Day 17 — Streamlit Application Integration, Repository Cleanup & Full Runtime Stabilization",
+    "audit_date": "2026-11-21",
+    "lead_roles": [
+      "Principal Software Engineer",
+      "Senior Staff Engineer",
+      "Streamlit Specialist",
+      "FastAPI Architect",
+      "Computer Vision Engineer",
+      "Machine Learning Engineer",
+      "DevOps Engineer",
+      "Senior QA Automation Engineer"
+    ],
+    "target_hardware": {
+      "cpu": "Intel Core i3 11th Gen (2 Cores / 4 Threads)",
+      "ram": "8 GB DDR4",
+      "os": "Windows 11 AMD64",
+      "execution_mode": "Pure CPU Execution (No CUDA)"
+    },
+    "verdict": "PASS WITH LIMITATIONS",
+    "calibration_status": "PROVISIONAL CALIBRATION"
+  },
+  "entry_points": {
+    "frontend": "dashboard/app.py",
+    "backend": "src/api/app.py",
+    "startup_script": "scripts/start_project.ps1",
+    "shutdown_script": "scripts/stop_project.ps1"
+  },
+  "startup_commands": {
+    "one_command_launcher": ".\\scripts\\start_project.ps1",
+    "backend_launcher": ".\\scripts\\start_backend.ps1",
+    "dashboard_launcher": ".\\scripts\\start_dashboard.ps1",
+    "shutdown_utility": ".\\scripts\\stop_project.ps1"
+  },
+  "test_suite_metrics": {
+    "total_tests": 1433,
+    "passed": 1433,
+    "failed": 0,
+    "skipped": 0,
+    "pass_rate_percentage": 100.0,
+    "breakdown": {
+      "day17_runtime_integration": {
+        "path": "tests/test_day17_runtime_integration.py",
+        "count": 7,
+        "passed": 7
+      },
+      "api_endpoints_and_lifecycle": {
+        "path": "tests/api/",
+        "count": 32,
+        "passed": 32
+      },
+      "frontend_ui_and_components": {
+        "path": "tests/frontend/",
+        "count": 41,
+        "passed": 41
+      },
+      "day16_end_to_end_validation": {
+        "path": "tests/test_day16_end_to_end_validation.py",
+        "count": 1,
+        "passed": 1
+      },
+      "detection_subsystem": {
+        "path": "tests/detection/",
+        "count": 78,
+        "passed": 78
+      },
+      "tracking_subsystem": {
+        "path": "tests/tracking/",
+        "count": 113,
+        "passed": 113
+      },
+      "feature_engineering": {
+        "path": "tests/features/",
+        "count": 282,
+        "passed": 282
+      },
+      "forecasting_and_lstm": {
+        "path": "tests/forecasting/",
+        "count": 275,
+        "passed": 275
+      },
+      "risk_and_early_warning": {
+        "path": "tests/risk/ and tests/early_warning/",
+        "count": 114,
+        "passed": 114
+      },
+      "regression_wrappers": {
+        "path": "tests/*.py",
+        "count": 490,
+        "passed": 490
+      }
+    }
+  },
+  "new_api_endpoints": [
+    "GET /api/v1/video/jobs/{job_id}/detections",
+    "GET /api/v1/video/jobs/{job_id}/tracking",
+    "GET /api/v1/video/jobs/{job_id}/features",
+    "GET /api/v1/video/jobs/{job_id}/forecast",
+    "GET /api/v1/video/jobs/{job_id}/risk",
+    "GET /api/v1/video/jobs/{job_id}/alerts"
+  ],
+  "end_to_end_validation": {
+    "clip_path": "outputs/day14_validation/clips/scenario_a_normal_daytime.mp4",
+    "frames_processed": 10,
+    "detections_verified": true,
+    "tracking_sustained": true,
+    "features_extracted_per_frame": 27,
+    "multi_horizon_forecasting_verified": true,
+    "risk_formula": "S = 1.0 - R",
+    "results_json_persisted": true,
+    "annotated_frames_generated": 10
+  },
+  "ml_artifacts": {
+    "yolo11n_weights": "models/detection/yolo11n.pt",
+    "lstm_checkpoint": "models/forecasting/model.pt",
+    "evaluation_video": "outputs/day14_validation/clips/scenario_a_normal_daytime.mp4"
+  },
+  "known_limitations": [
+    {
+      "limitation": "Provisional Calibration Status",
+      "impact": "Early warning thresholds ([0.35, 0.65, 0.85]) are provisional pending in-situ on-road multi-weather validation.",
+      "mitigation": "Clearly displayed in dashboard telemetry header and API status."
+    },
+    {
+      "limitation": "Single-Worker Video Queue",
+      "impact": "Concurrent video upload jobs execute sequentially.",
+      "mitigation": "ThreadPoolExecutor(max_workers=1) ensures CPU stability on 2-core / 4-thread hardware."
+    },
+    {
+      "limitation": "Automotive Domain Specificity",
+      "impact": "Models and 27 features are tuned for automotive forward camera views.",
+      "mitigation": "Documented in LIMITATIONS.md."
+    }
+  ]
+}

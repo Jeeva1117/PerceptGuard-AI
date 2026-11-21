@@ -76,19 +76,30 @@ Status: Full Day 1–15 Pipeline Implemented & Validated.
 
 ## 3. Starting the Application
 
-### 3.1 Start the FastAPI Backend Server
+### 3.1 One-Command Startup (Windows 11)
+Launch both services with automated health verification:
+```powershell
+.\scripts\start_project.ps1
+```
+To stop all services:
+```powershell
+.\scripts\stop_project.ps1
+```
+
+### 3.2 Manual Startup
+#### Step A: Start the FastAPI Backend Server
 In your first terminal (with `venv` activated):
 ```bash
-uvicorn src.api.app:app --host 127.0.0.1 --port 8000 --reload
+uvicorn src.api.app:app --host 127.0.0.1 --port 8000
 ```
 Verify the backend is live:
 - Swagger Documentation: `http://127.0.0.1:8000/docs`
-- Root Health Probe: `http://127.0.0.1:8000/health`
+- Root Health Probe: `http://127.0.0.1:8000/health/live`
 
-### 3.2 Start the Streamlit Operations Dashboard
+#### Step B: Start the Streamlit Operations Dashboard
 In a second terminal (with `venv` activated):
 ```bash
-streamlit run dashboard/app.py
+streamlit run dashboard/app.py --server.port 8501
 ```
 The dashboard interface will automatically open in your default browser at `http://localhost:8501`.
 

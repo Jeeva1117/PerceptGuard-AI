@@ -176,6 +176,27 @@ Returns execution state, stage, progress %, and summary metrics for an active or
 #### `GET /api/v1/video/jobs/{job_id}/results`
 Retrieves full structured RFC 8259-compliant `results.json` artifact containing per-frame bounding boxes, 27-feature vectors, risk scores, and alert triggers.
 
+#### `GET /api/v1/video/jobs/{job_id}/detections`
+Retrieves aggregated and per-frame object detections (bounding boxes, class labels, confidences).
+
+#### `GET /api/v1/video/jobs/{job_id}/tracking`
+Retrieves ByteTrack Kalman trajectory tracking data and unique track IDs.
+
+#### `GET /api/v1/video/jobs/{job_id}/features`
+Retrieves 27-dimensional feature vectors and visual quality metrics (Laplacian blur, brightness, contrast) per frame.
+
+#### `GET /api/v1/video/jobs/{job_id}/forecast`
+Retrieves multi-horizon predicted reliability forecasts ($H1, H3, H5$) and horizon-level risk summaries.
+
+#### `GET /api/v1/video/jobs/{job_id}/risk`
+Retrieves failure risk scores ($S = 1.0 - R$) and categorical risk assessments.
+
+#### `GET /api/v1/video/jobs/{job_id}/alerts`
+Retrieves early-warning alert notifications triggered during video processing.
+
+#### `DELETE /api/v1/video/jobs/{job_id}`
+Cancels or aborts an active in-flight processing job.
+
 #### `GET /api/v1/video/jobs`
 Lists recently submitted video processing jobs with pagination (`limit=20`).
 

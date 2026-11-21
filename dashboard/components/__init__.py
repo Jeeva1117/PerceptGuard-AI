@@ -10,7 +10,11 @@ from dashboard.components.overview import render_system_overview
 from dashboard.components.risk_cards import render_risk_overview
 from dashboard.components.temporal_chart import render_temporal_monitoring
 from dashboard.components.alerts_feed import render_early_warning_alerts
-from dashboard.components.tracking_view import render_detection_tracking
+from dashboard.components.tracking_view import (
+    render_detection_tracking,
+    render_object_detection,
+    render_object_tracking,
+)
 from dashboard.components.pipeline_accordion import render_pipeline_status_accordion
 from dashboard.components.video_view import render_video_processing_view
 from dashboard.components.feature_analytics import render_feature_analytics
@@ -28,6 +32,8 @@ __all__ = [
     "render_temporal_monitoring",
     "render_early_warning_alerts",
     "render_detection_tracking",
+    "render_object_detection",
+    "render_object_tracking",
     "render_pipeline_status_accordion",
     "render_video_processing_view",
     "render_feature_analytics",

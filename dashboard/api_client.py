@@ -419,6 +419,137 @@ class DashboardApiClient:
             fallback_args=(job_id,),
         )
 
+    def get_video_job_detections(self, job_id: str) -> Dict[str, Any]:
+        """Fetch aggregated object detections for a video job."""
+        def _fallback_dets(j_id):
+            res = self.get_video_job_results(j_id)
+            frames = res.get("frames", [])
+            all_dets = []
+            for f in frames:
+                for d in f.get("detections", []):
+                    item = dict(d)
+                    item["frame_index"] = f.get("frame_index")
+                    item["timestamp_seconds"] = f.get("timestamp_seconds")
+                    all_dets.append(item)
+            return {"job_id": j_id, "total_detections": len(all_dets), "frames_count": len(frames), "detections": all_dets}
+
+        return self._execute_request(
+            "GET",
+            f"/video/jobs/{job_id}/detections",
+            fallback_fn=_fallback_dets,
+            fallback_args=(job_id,),
+        )
+
+    def get_video_job_tracking(self, job_id: str) -> Dict[str, Any]:
+        """Fetch ByteTrack tracking context and trajectory telemetry for a video job."""
+        def _fallback_tracks(j_id):
+            res = self.get_video_job_results(j_id)
+            frames = res.get("frames", [])
+            all_tracks = []
+            for f in frames:
+                for t in f.get("tracks", []):
+                    item = dict(t)
+                    item["frame_index"] = f.get("frame_index")
+                    item["timestamp_seconds"] = f.get("timestamp_seconds")
+                    all_tracks.append(item)
+            return {"job_id": j_id, "unique_tracks": res.get("unique_tracks", 0), "frames_count": len(frames), "tracks": all_tracks}
+
+        return self._execute_request(
+            "GET",
+            f"/video/jobs/{job_id}/tracking",
+            fallback_fn=_fallback_tracks,
+            fallback_args=(job_id,),
+        )
+
+    def get_video_job_features(self, job_id: str) -> Dict[str, Any]:
+        """Fetch 27-dimensional feature vectors and visual quality telemetry for a video job."""
+        def _fallback_feats(j_id):
+            res = self.get_video_job_results(j_id)
+            frames = res.get("frames", [])
+            feats = []
+            for f in frames:
+                feats.append({
+                    "frame_index": f.get("frame_index"),
+                    "timestamp_seconds": f.get("timestamp_seconds"),
+                    "visual_quality": f.get("visual_quality", {}),
+                    "features": f.get("features", []),
+                    "detections_count": f.get("detections_count", 0),
+                    "tracks_count": f.get("tracks_count", 0),
+                })
+            return {"job_id": j_id, "frames_count": len(frames), "features": feats}
+
+        return self._execute_request(
+            "GET",
+            f"/video/jobs/{job_id}/features",
+            fallback_fn=_fallback_feats,
+            fallback_args=(job_id,),
+        )
+
+    def get_video_job_forecast(self, job_id: str) -> Dict[str, Any]:
+        """Fetch multi-horizon forecasted reliability and per-horizon risk for a video job."""
+        def _fallback_fc(j_id):
+            res = self.get_video_job_results(j_id)
+            frames = res.get("frames", [])
+            fc_rows = []
+            for f in frames:
+                fc_rows.append({
+                    "frame_index": f.get("frame_index"),
+                    "timestamp_seconds": f.get("timestamp_seconds"),
+                    "predicted_reliability": f.get("predicted_reliability", {}),
+                    "risk_scores": f.get("risk_scores", {}),
+                })
+            return {
+                "job_id": j_id,
+                "model_architecture": "LSTM (PyTorch CPU)",
+                "horizons": ["h1", "h3", "h5"],
+                "per_horizon_risk": res.get("per_horizon_risk", {}),
+                "frames_count": len(frames),
+                "forecasts": fc_rows,
+            }
+
+        return self._execute_request(
+            "GET",
+            f"/video/jobs/{job_id}/forecast",
+            fallback_fn=_fallback_fc,
+            fallback_args=(job_id,),
+        )
+
+    def get_video_job_risk(self, job_id: str) -> Dict[str, Any]:
+        """Fetch failure risk evaluation scores for a video job."""
+        def _fallback_risk(j_id):
+            res = self.get_video_job_results(j_id)
+            return {
+                "job_id": j_id,
+                "risk_formula": "S = 1.0 - R",
+                "per_horizon_risk": res.get("per_horizon_risk", {}),
+                "frames_count": len(res.get("frames", [])),
+            }
+
+        return self._execute_request(
+            "GET",
+            f"/video/jobs/{job_id}/risk",
+            fallback_fn=_fallback_risk,
+            fallback_args=(job_id,),
+        )
+
+    def get_video_job_alerts(self, job_id: str) -> Dict[str, Any]:
+        """Fetch early-warning alert notifications triggered during video processing."""
+        def _fallback_alerts(j_id):
+            res = self.get_video_job_results(j_id)
+            frames = res.get("frames", [])
+            alerts = []
+            for f in frames:
+                for a in f.get("alerts", []):
+                    alerts.append(a)
+            return {"job_id": j_id, "total_alerts": len(alerts), "alerts": alerts}
+
+        return self._execute_request(
+            "GET",
+            f"/video/jobs/{job_id}/alerts",
+            fallback_fn=_fallback_alerts,
+            fallback_args=(job_id,),
+        )
+
     def list_video_jobs(self, limit: int = 20) -> List[Dict[str, Any]]:
         """List recently submitted video jobs."""
         def _fallback_list(lim):

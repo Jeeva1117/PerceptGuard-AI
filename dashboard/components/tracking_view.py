@@ -70,7 +70,7 @@ def render_detection_tracking(client: DashboardApiClient) -> None:
 
     frames = job_results.get("frames", []) if (job_results and isinstance(job_results, dict)) else []
 
-    # KPI Metrics Header
+    # KPI Metrics Header (2 rows of 4 columns strictly maintained for regression tests)
     col1, col2, col3, col4 = st.columns(4)
     with col1:
         st.metric(
@@ -214,3 +214,13 @@ def render_detection_tracking(client: DashboardApiClient) -> None:
             message="Upload a video sequence or select a historical job in Processing History to inspect frame-wise detections and bounding boxes.",
             icon="🎯",
         )
+
+
+def render_object_detection(client: DashboardApiClient) -> None:
+    """Dedicated Object Detection view."""
+    render_detection_tracking(client)
+
+
+def render_object_tracking(client: DashboardApiClient) -> None:
+    """Dedicated Object Tracking view."""
+    render_detection_tracking(client)

@@ -257,6 +257,161 @@ def get_video_job_results(job_id: str):
     return results
 
 
+@router.get("/jobs/{job_id}/detections")
+def get_video_job_detections(job_id: str):
+    """Retrieve object detection results for a completed or active job."""
+    job_mgr = get_job_manager()
+    results = job_mgr.get_job_results(job_id)
+    if not results:
+        job_rec = job_mgr.get_job(job_id)
+        if not job_rec:
+            raise ResourceNotFoundError(f"Job '{job_id}' not found.")
+        return {"job_id": job_id, "status": job_rec.status.value, "detections": []}
+
+    frames = results.get("frames", [])
+    all_detections = []
+    for f in frames:
+        for d in f.get("detections", []):
+            item = dict(d)
+            item["frame_index"] = f.get("frame_index")
+            item["timestamp_seconds"] = f.get("timestamp_seconds")
+            all_detections.append(item)
+    return {
+        "job_id": job_id,
+        "total_detections": results.get("total_detections", len(all_detections)),
+        "frames_count": len(frames),
+        "detections": all_detections,
+    }
+
+
+@router.get("/jobs/{job_id}/tracking")
+def get_video_job_tracking(job_id: str):
+    """Retrieve ByteTrack tracking results and trajectory telemetry for a job."""
+    job_mgr = get_job_manager()
+    results = job_mgr.get_job_results(job_id)
+    if not results:
+        job_rec = job_mgr.get_job(job_id)
+        if not job_rec:
+            raise ResourceNotFoundError(f"Job '{job_id}' not found.")
+        return {"job_id": job_id, "status": job_rec.status.value, "tracks": []}
+
+    frames = results.get("frames", [])
+    all_tracks = []
+    for f in frames:
+        for t in f.get("tracks", []):
+            item = dict(t)
+            item["frame_index"] = f.get("frame_index")
+            item["timestamp_seconds"] = f.get("timestamp_seconds")
+            all_tracks.append(item)
+    return {
+        "job_id": job_id,
+        "unique_tracks": results.get("unique_tracks", 0),
+        "frames_count": len(frames),
+        "tracks": all_tracks,
+    }
+
+
+@router.get("/jobs/{job_id}/features")
+def get_video_job_features(job_id: str):
+    """Retrieve 27-dimensional feature vectors and visual quality telemetry per frame."""
+    job_mgr = get_job_manager()
+    results = job_mgr.get_job_results(job_id)
+    if not results:
+        job_rec = job_mgr.get_job(job_id)
+        if not job_rec:
+            raise ResourceNotFoundError(f"Job '{job_id}' not found.")
+        return {"job_id": job_id, "status": job_rec.status.value, "features": []}
+
+    frames = results.get("frames", [])
+    frame_features = []
+    for f in frames:
+        frame_features.append({
+            "frame_index": f.get("frame_index"),
+            "timestamp_seconds": f.get("timestamp_seconds"),
+            "visual_quality": f.get("visual_quality", {}),
+            "features": f.get("features", []),
+            "detections_count": f.get("detections_count", 0),
+            "tracks_count": f.get("tracks_count", 0),
+        })
+    return {
+        "job_id": job_id,
+        "frames_count": len(frames),
+        "features": frame_features,
+    }
+
+
+@router.get("/jobs/{job_id}/forecast")
+def get_video_job_forecast(job_id: str):
+    """Retrieve multi-horizon predicted reliability forecasts (H1, H3, H5) per frame."""
+    job_mgr = get_job_manager()
+    results = job_mgr.get_job_results(job_id)
+    if not results:
+        job_rec = job_mgr.get_job(job_id)
+        if not job_rec:
+            raise ResourceNotFoundError(f"Job '{job_id}' not found.")
+        return {"job_id": job_id, "status": job_rec.status.value, "forecasts": []}
+
+    frames = results.get("frames", [])
+    forecast_rows = []
+    for f in frames:
+        forecast_rows.append({
+            "frame_index": f.get("frame_index"),
+            "timestamp_seconds": f.get("timestamp_seconds"),
+            "predicted_reliability": f.get("predicted_reliability", {}),
+            "risk_scores": f.get("risk_scores", {}),
+        })
+    return {
+        "job_id": job_id,
+        "model_architecture": "LSTM (PyTorch CPU)",
+        "horizons": ["h1", "h3", "h5"],
+        "per_horizon_risk": results.get("per_horizon_risk", {}),
+        "frames_count": len(frames),
+        "forecasts": forecast_rows,
+    }
+
+
+@router.get("/jobs/{job_id}/risk")
+def get_video_job_risk(job_id: str):
+    """Retrieve failure risk scores (S = 1.0 - R) and categorical risk levels."""
+    job_mgr = get_job_manager()
+    results = job_mgr.get_job_results(job_id)
+    if not results:
+        job_rec = job_mgr.get_job(job_id)
+        if not job_rec:
+            raise ResourceNotFoundError(f"Job '{job_id}' not found.")
+        return {"job_id": job_id, "status": job_rec.status.value, "per_horizon_risk": {}}
+
+    return {
+        "job_id": job_id,
+        "risk_formula": "S = 1.0 - R",
+        "per_horizon_risk": results.get("per_horizon_risk", {}),
+        "frames_count": len(results.get("frames", [])),
+    }
+
+
+@router.get("/jobs/{job_id}/alerts")
+def get_video_job_alerts(job_id: str):
+    """Retrieve early-warning alert notifications triggered during video processing."""
+    job_mgr = get_job_manager()
+    results = job_mgr.get_job_results(job_id)
+    if not results:
+        job_rec = job_mgr.get_job(job_id)
+        if not job_rec:
+            raise ResourceNotFoundError(f"Job '{job_id}' not found.")
+        return {"job_id": job_id, "status": job_rec.status.value, "alerts": []}
+
+    frames = results.get("frames", [])
+    alerts = []
+    for f in frames:
+        for a in f.get("alerts", []):
+            alerts.append(a)
+    return {
+        "job_id": job_id,
+        "total_alerts": results.get("total_alerts", len(alerts)),
+        "alerts": alerts,
+    }
+
+
 @router.get("/jobs/{job_id}/frames/{frame_name}")
 def get_annotated_frame(job_id: str, frame_name: str):
     """Serve an annotated video frame image for frontend dashboard visualization."""
