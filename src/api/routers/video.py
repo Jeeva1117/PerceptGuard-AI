@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 import tempfile
 import uuid
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 import cv2
 from fastapi import APIRouter, File, Query, UploadFile, status
