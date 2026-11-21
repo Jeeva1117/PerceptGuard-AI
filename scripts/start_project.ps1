@@ -1,4 +1,4 @@
-# ==============================================================================
+﻿# ==============================================================================
 # PerceptGuard AI — Master One-Command Project Startup (Windows PowerShell)
 # Target Platform: Windows 11 AMD64 / Python 3.13 / Pure CPU Execution
 # ==============================================================================
@@ -29,8 +29,8 @@ if (-not (Test-Path $PythonExe) -or -not (Test-Path $StreamlitExe)) {
 Write-Host "[1/5] Python virtual environment verified." -ForegroundColor Green
 
 # 2. Model Checkpoints & Pretrained Weights Verification
-$YoloWeights = Join-Path $ProjectRoot "models\detection\yolo11n.pt"
-$LstmWeights = Join-Path $ProjectRoot "models\forecasting\model.pt"
+$YoloWeights = Join-Path $ProjectRoot "models\yolo\yolo11n.pt"
+$LstmWeights = Join-Path $ProjectRoot "models\forecasting\lstm\model.pt"
 
 if (Test-Path $YoloWeights) {
     Write-Host "[2/5] YOLO11n weights detected: $YoloWeights" -ForegroundColor Green
@@ -45,15 +45,15 @@ if (Test-Path $LstmWeights) {
 }
 
 # 3. Check and Launch FastAPI Backend
-$BackendUrl = "http://127.0.0.1:${BackendPort}"
-$BackendLiveUrl = "${BackendUrl}/health/live"
+$BackendUrl = "http://127.0.0.1:" + $BackendPort
+$BackendLiveUrl = $BackendUrl + "/health/live"
 $BackendRunning = $false
 
 $PortConn = Get-NetTCPConnection -LocalPort $BackendPort -ErrorAction SilentlyContinue | Where-Object { $_.State -eq "Listen" }
 if ($PortConn) {
     try {
         $Health = Invoke-RestMethod -Uri $BackendLiveUrl -TimeoutSec 2 -ErrorAction Stop
-        if ($Health.status -eq "ALIVE" -or $Health.status -eq "OK") {
+        if ($Health.status -eq "alive" -or $Health.status -eq "ALIVE" -or $Health.status -eq "OK") {
             Write-Host "[3/5] Backend already running and healthy at $BackendUrl" -ForegroundColor Green
             $BackendRunning = $true
         }
@@ -78,7 +78,7 @@ if (-not $BackendRunning) {
         $Elapsed++
         try {
             $Resp = Invoke-RestMethod -Uri $BackendLiveUrl -TimeoutSec 1 -ErrorAction Stop
-            if ($Resp.status -eq "ALIVE" -or $Resp.status -eq "OK") {
+            if ($Resp.status -eq "alive" -or $Resp.status -eq "ALIVE" -or $Resp.status -eq "OK") {
                 $BackendRunning = $true
                 break
             }
@@ -97,10 +97,10 @@ if (-not $BackendRunning) {
 # 4. Service Endpoint Summary
 Write-Host "[4/5] Active Service Endpoints:" -ForegroundColor Cyan
 Write-Host "  * REST API Base:       $BackendUrl" -ForegroundColor White
-Write-Host "  * Swagger API Docs:    ${BackendUrl}/docs" -ForegroundColor White
-Write-Host "  * OpenAPI JSON:        ${BackendUrl}/openapi.json" -ForegroundColor White
-Write-Host "  * System Health:       ${BackendUrl}/health" -ForegroundColor White
-Write-Host "  * Streamlit Dashboard: http://localhost:${DashboardPort}" -ForegroundColor White
+Write-Host ("  * Swagger API Docs:    " + $BackendUrl + "/docs") -ForegroundColor White
+Write-Host ("  * OpenAPI JSON:        " + $BackendUrl + "/openapi.json") -ForegroundColor White
+Write-Host ("  * System Health:       " + $BackendUrl + "/health") -ForegroundColor White
+Write-Host ("  * Streamlit Dashboard: http://localhost:" + $DashboardPort) -ForegroundColor White
 
 # 5. Launch Streamlit Operations Console
 Write-Host "[5/5] Launching Streamlit dashboard..." -ForegroundColor Green

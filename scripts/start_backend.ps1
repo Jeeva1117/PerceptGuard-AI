@@ -1,4 +1,4 @@
-# ==============================================================================
+﻿# ==============================================================================
 # PerceptGuard AI — Backend Service Startup Script (Windows PowerShell)
 # Target Platform: Windows 11 AMD64 / Python 3.13 / Intel Core i3 (CPU Execution)
 # ==============================================================================
@@ -27,8 +27,8 @@ if (-not (Test-Path $PythonExe)) {
 Write-Host "[OK] Python environment verified: $PythonExe" -ForegroundColor Green
 
 # 2. Verify Required Model Weights
-$YoloWeights = Join-Path $ProjectRoot "models\detection\yolo11n.pt"
-$LstmWeights = Join-Path $ProjectRoot "models\forecasting\model.pt"
+$YoloWeights = Join-Path $ProjectRoot "models\yolo\yolo11n.pt"
+$LstmWeights = Join-Path $ProjectRoot "models\forecasting\lstm\model.pt"
 
 if (-not (Test-Path $YoloWeights)) {
     Write-Warning "YOLO weights missing at $YoloWeights. Video detection will run in degraded mode."
@@ -43,13 +43,14 @@ if (-not (Test-Path $LstmWeights)) {
 }
 
 # 3. Check for Port Conflicts
+$TargetUrl = "http://" + $HostAddress + ":" + $Port
 $PortInUse = Get-NetTCPConnection -LocalPort $Port -ErrorAction SilentlyContinue | Where-Object { $_.State -eq "Listen" }
 if ($PortInUse) {
     Write-Host "[INFO] Port $Port is currently active. Probing backend health..." -ForegroundColor Yellow
     try {
-        $HealthResp = Invoke-RestMethod -Uri "http://${HostAddress}:${Port}/health/live" -TimeoutSec 2 -ErrorAction Stop
-        if ($HealthResp.status -eq "ALIVE" -or $HealthResp.status -eq "OK") {
-            Write-Host "[OK] PerceptGuard backend is already running on http://${HostAddress}:${Port}" -ForegroundColor Green
+        $HealthResp = Invoke-RestMethod -Uri ($TargetUrl + "/health/live") -TimeoutSec 2 -ErrorAction Stop
+        if ($HealthResp.status -eq "alive" -or $HealthResp.status -eq "ALIVE" -or $HealthResp.status -eq "OK") {
+            Write-Host ("[OK] PerceptGuard backend is already running on " + $TargetUrl) -ForegroundColor Green
             exit 0
         }
     } catch {
@@ -59,7 +60,7 @@ if ($PortInUse) {
 }
 
 # 4. Launch FastAPI Uvicorn Server
-Write-Host "[INFO] Starting FastAPI on http://${HostAddress}:${Port}..." -ForegroundColor Cyan
+Write-Host ("[INFO] Starting FastAPI on " + $TargetUrl + "...") -ForegroundColor Cyan
 $UvicornArgs = @("-m", "uvicorn", "src.api.app:app", "--host", $HostAddress, "--port", "$Port")
 if ($Reload) {
     $UvicornArgs += "--reload"

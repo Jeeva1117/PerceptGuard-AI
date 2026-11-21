@@ -1,4 +1,4 @@
-# ==============================================================================
+﻿# ==============================================================================
 # PerceptGuard AI — Streamlit Dashboard Startup Script (Windows PowerShell)
 # Target Platform: Windows 11 AMD64 / Streamlit / Intel Core i3 (CPU Execution)
 # ==============================================================================
@@ -28,7 +28,7 @@ Write-Host "[OK] Streamlit verified: $StreamlitExe" -ForegroundColor Green
 # 2. Check Backend Connectivity
 Write-Host "[INFO] Probing FastAPI backend at $BackendUrl..." -ForegroundColor Cyan
 try {
-    $HealthResp = Invoke-RestMethod -Uri "${BackendUrl}/health/live" -TimeoutSec 2 -ErrorAction Stop
+    $HealthResp = Invoke-RestMethod -Uri ($BackendUrl + "/health/live") -TimeoutSec 2 -ErrorAction Stop
     Write-Host "[OK] Backend connection established. Operational Mode: REST_API" -ForegroundColor Green
 } catch {
     Write-Warning "FastAPI backend at $BackendUrl is not responding. Streamlit will launch with IN_PROCESS fallback mode."
@@ -41,5 +41,5 @@ if ($PortInUse) {
 }
 
 # 4. Launch Streamlit
-Write-Host "[INFO] Starting Streamlit dashboard on http://localhost:${Port}..." -ForegroundColor Cyan
+Write-Host ("[INFO] Starting Streamlit dashboard on http://localhost:" + $Port + "...") -ForegroundColor Cyan
 & $StreamlitExe run dashboard/app.py --server.port $Port --browser.gatherUsageStats false

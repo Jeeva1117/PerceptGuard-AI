@@ -1,4 +1,4 @@
-# ==============================================================================
+﻿# ==============================================================================
 # PerceptGuard AI — Project Shutdown Script (Windows PowerShell)
 # Target Platform: Windows 11 AMD64
 # ==============================================================================
@@ -30,7 +30,7 @@ foreach ($Port in $Ports) {
                 $StoppedCount++
                 Write-Host "  [OK] PID $PidToStop terminated." -ForegroundColor Green
             } catch {
-                Write-Warning "  Could not stop PID $PidToStop: $_"
+                Write-Warning ("  Could not stop PID " + $PidToStop + ": " + $_)
             }
         }
     } else {
@@ -50,8 +50,9 @@ foreach ($Port in $Ports) {
 
 if ($Remaining.Count -eq 0) {
     Write-Host "==========================================================" -ForegroundColor Green
-    Write-Host "  All PerceptGuard services stopped. Ports 8000 & 8501 released." -ForegroundColor Green
+    Write-Host "  All PerceptGuard services stopped. Ports 8000 and 8501 released." -ForegroundColor Green
     Write-Host "==========================================================" -ForegroundColor Green
 } else {
-    Write-Warning "Ports still occupied: $($Remaining -join ', ')"
+    $Occupied = $Remaining -join ", "
+    Write-Warning "Ports still occupied: $Occupied"
 }
