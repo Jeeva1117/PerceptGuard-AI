@@ -52,7 +52,8 @@ class DashboardApiClient:
     def __init__(
         self,
         base_url: Optional[str] = None,
-        timeout: float = 10.0,
+        timeout: Optional[float] = None,
+        timeout_seconds: Optional[float] = None,
         settings: Optional[SystemSettings] = None,
         use_in_process_fallback: bool = True,
         http_client: Optional[httpx.Client] = None,
@@ -60,7 +61,19 @@ class DashboardApiClient:
         self.settings = settings or get_settings()
         self.base_url = (base_url or self.settings.dashboard.api_base_url).rstrip("/")
         self.api_prefix = self.settings.api.prefix.rstrip("/")
-        self.timeout = timeout
+
+        # Resolve timeout: support both timeout_seconds (explicit parameter / DashboardConfig) and timeout
+        if timeout_seconds is not None:
+            effective_timeout = float(timeout_seconds)
+        elif timeout is not None:
+            effective_timeout = float(timeout)
+        elif hasattr(self.settings.dashboard, "api_request_timeout_seconds"):
+            effective_timeout = float(self.settings.dashboard.api_request_timeout_seconds)
+        else:
+            effective_timeout = 10.0
+
+        self.timeout = effective_timeout
+        self.timeout_seconds = effective_timeout
         self.use_in_process_fallback = use_in_process_fallback
 
         self._in_process_service: Optional[DashboardService] = None

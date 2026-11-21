@@ -303,6 +303,7 @@ def test_dashboard_settings_parsing():
             "STREAMLIT_HOST": "127.0.0.1",
             "STREAMLIT_PORT": "8502",
             "API_BASE_URL": "http://127.0.0.1:8000",
+            "DASHBOARD_REQUEST_TIMEOUT_SECONDS": "18.5",
             "CALIBRATION_STATUS_LABEL": "VERIFIED PRODUCTION",
             "TELEMETRY_FRESHNESS_TTL_SECONDS": "45",
         }
@@ -310,6 +311,7 @@ def test_dashboard_settings_parsing():
     assert settings.dashboard.host == "127.0.0.1"
     assert settings.dashboard.port == 8502
     assert settings.dashboard.api_base_url == "http://127.0.0.1:8000"
+    assert settings.dashboard.api_request_timeout_seconds == 18.5
     assert settings.dashboard.calibration_status_label == "VERIFIED PRODUCTION"
     assert settings.dashboard.telemetry_freshness_ttl_seconds == 45
 

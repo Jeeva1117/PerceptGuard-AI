@@ -155,6 +155,7 @@ class DashboardConfig:
     auto_refresh_seconds: int = 5
     telemetry_freshness_ttl_seconds: int = 30
     calibration_status_label: str = "PROVISIONAL CALIBRATION"
+    api_request_timeout_seconds: float = 10.0
 
 
 @dataclass
@@ -235,6 +236,12 @@ class SystemSettings:
             1,
             3600,
             "Telemetry freshness TTL seconds",
+        )
+        validate_numeric_range(
+            self.dashboard.api_request_timeout_seconds,
+            0.1,
+            300.0,
+            "Dashboard API request timeout seconds",
         )
 
         # Validate forecast horizons
@@ -472,6 +479,13 @@ class SystemSettings:
             ),
             calibration_status_label=source_env.get(
                 "CALIBRATION_STATUS_LABEL", "PROVISIONAL CALIBRATION"
+            ),
+            api_request_timeout_seconds=_parse_float(
+                source_env.get(
+                    "DASHBOARD_REQUEST_TIMEOUT_SECONDS",
+                    source_env.get("API_REQUEST_TIMEOUT_SECONDS", "10.0"),
+                ),
+                "Dashboard API request timeout",
             ),
         )
 

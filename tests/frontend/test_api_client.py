@@ -50,7 +50,29 @@ class TestDashboardApiClientInitialization:
         )
         assert client.base_url == "http://custom-api:9000"
         assert client.timeout == 15.0
+        assert client.timeout_seconds == 15.0
         assert client.use_in_process_fallback is False
+        client.close()
+
+    def test_client_init_with_timeout_seconds(self):
+        """Test client initialization with explicit timeout_seconds keyword argument."""
+        client = DashboardApiClient(
+            base_url="http://custom-api:9000/",
+            timeout_seconds=25.0,
+            use_in_process_fallback=False,
+        )
+        assert client.base_url == "http://custom-api:9000"
+        assert client.timeout == 25.0
+        assert client.timeout_seconds == 25.0
+        assert client.use_in_process_fallback is False
+        client.close()
+
+    def test_client_init_from_system_settings_timeout(self):
+        """Test client automatically picks up api_request_timeout_seconds from settings."""
+        settings = get_settings()
+        client = DashboardApiClient(settings=settings)
+        assert client.timeout == settings.dashboard.api_request_timeout_seconds
+        assert client.timeout_seconds == settings.dashboard.api_request_timeout_seconds
         client.close()
 
 
