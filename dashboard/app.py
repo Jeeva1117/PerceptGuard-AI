@@ -42,6 +42,10 @@ from dashboard.components import (
     render_detection_tracking,
     render_pipeline_status_accordion,
     render_video_processing_view,
+    render_feature_analytics,
+    render_reliability_forecasting,
+    render_processing_history,
+    render_system_health,
 )
 
 
@@ -102,11 +106,15 @@ def main() -> None:
         nav_selection = st.radio(
             "Navigation Menu:",
             [
-                "📊 Operations Overview",
-                "🎥 Video Pipeline & Ingestion",
-                "📈 Temporal Risk & Tracking",
-                "🚨 Early-Warning Alerts",
-                "🔍 Diagnostics & Architecture",
+                "📊 Overview",
+                "🎥 Video Processing",
+                "🎯 Detection & Tracking",
+                "🔬 Feature Analytics",
+                "🔮 Reliability Forecasting",
+                "⚠️ Risk Assessment",
+                "🚨 Early Warning Alerts",
+                "📋 Processing History",
+                "🩺 System Health",
             ],
             index=0,
         )
@@ -144,39 +152,35 @@ def main() -> None:
             st.rerun()
 
         st.markdown("---")
-        st.caption("PerceptGuard AI — Day 13 Integrated Dashboard")
+        st.caption("PerceptGuard AI — Day 15 Professional Dashboard")
 
     # Render Active Navigation View
-    if nav_selection == "📊 Operations Overview":
+    if nav_selection == "📊 Overview":
         render_system_overview(client)
-        st.markdown("---")
-        render_risk_overview(client)
-        st.markdown("---")
-        render_temporal_monitoring(client)
-        st.markdown("---")
-        render_early_warning_alerts(client)
-        st.markdown("---")
-        render_detection_tracking(client)
-        st.markdown("---")
-        render_pipeline_status_accordion(client)
 
-    elif nav_selection == "🎥 Video Pipeline & Ingestion":
+    elif nav_selection == "🎥 Video Processing":
         render_video_processing_view(client)
 
-    elif nav_selection == "📈 Temporal Risk & Tracking":
-        render_risk_overview(client)
-        st.markdown("---")
-        render_temporal_monitoring(client)
-        st.markdown("---")
+    elif nav_selection == "🎯 Detection & Tracking":
         render_detection_tracking(client)
 
-    elif nav_selection == "🚨 Early-Warning Alerts":
+    elif nav_selection == "🔬 Feature Analytics":
+        render_feature_analytics(client)
+
+    elif nav_selection == "🔮 Reliability Forecasting":
+        render_reliability_forecasting(client)
+
+    elif nav_selection == "⚠️ Risk Assessment":
+        render_risk_overview(client)
+
+    elif nav_selection == "🚨 Early Warning Alerts":
         render_early_warning_alerts(client)
 
-    elif nav_selection == "🔍 Diagnostics & Architecture":
-        render_pipeline_status_accordion(client)
-        st.markdown("---")
-        render_system_overview(client)
+    elif nav_selection == "📋 Processing History":
+        render_processing_history(client)
+
+    elif nav_selection == "🩺 System Health":
+        render_system_health(client)
 
 
 

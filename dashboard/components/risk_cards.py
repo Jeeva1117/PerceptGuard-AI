@@ -1,8 +1,9 @@
-"""Section B: Multi-Horizon Reliability Risk Overview component (H1, H3, H5)."""
+"""Section: Reliability Risk Assessment & Multi-Horizon Failure Anticiption Component."""
 
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
+import pandas as pd
 import streamlit as st
 
 from dashboard.api_client import DashboardApiClient, FrontendAPIError
@@ -10,13 +11,19 @@ from dashboard.components.state_views import render_empty_state, render_error_bo
 
 
 def render_risk_overview(client: DashboardApiClient) -> None:
-    """Section B: Multi-Horizon Reliability Risk Overview (H1, H3, H5)."""
-    st.subheader("Section B — Multi-Horizon Reliability Risk Overview")
+    """Render comprehensive reliability risk assessment, category breakdown, and multi-horizon trajectories."""
+    st.markdown("### ⚠️ Perception Failure Risk Assessment")
+    st.caption(
+        "Anticipating detection failures before they occur. Failure risk $S \\in [0.0, 1.0]$ is derived "
+        "from predicted reliability ($S = 1.0 - R$) and classified into discrete operational severity tiers."
+    )
 
+    # Scientific calibration notice
     st.markdown(
         r"""
-        > ℹ️ **Notice:** Multi-horizon risk scores $S \in [0.0, 1.0]$ represent derived perception failure risk ($S = 1.0 - R$).
-        > Thresholds are currently designated as **PROVISIONAL** due to zero-inflation in single-clip driving data.
+        > ℹ️ **Mathematical & Calibration Notice:** Failure risk is formally derived as $S = 1.0 - R_{t+h}$.
+        > Classification thresholds are designated as **PROVISIONAL** pending multi-weather driving evaluations.
+        > Stale or unavailable predictions produce `UNKNOWN` and are never coerced to `LOW`.
         """
     )
 
@@ -40,6 +47,7 @@ def render_risk_overview(client: DashboardApiClient) -> None:
         )
         return
 
+    # Multi-Horizon Risk Cards
     col1, col2, col3 = st.columns(3)
 
     def _render_horizon_card(col, h_key: str, h_label: str, horizon_int: int):
@@ -51,7 +59,6 @@ def render_risk_overview(client: DashboardApiClient) -> None:
         volatility = data.get("volatility")
         obs_count = data.get("observation_count", 0)
 
-        # STRICT INTEGRITY: If score is None, level must NOT be LOW
         if score is None:
             level = "UNKNOWN"
             trend = "UNKNOWN"
@@ -63,43 +70,73 @@ def render_risk_overview(client: DashboardApiClient) -> None:
             "CRITICAL": "#e76f51",
             "UNKNOWN": "#6c757d",
         }
-        l_color = level_colors.get(level, "#6c757d")
-
-        trend_symbols = {
-            "INCREASING": "↗ INCREASING",
-            "DECREASING": "↘ DECREASING",
-            "STABLE": "→ STABLE",
-            "VOLATILE": "↕ VOLATILE",
-            "UNKNOWN": "— UNKNOWN",
-        }
-        t_sym = trend_symbols.get(trend, trend)
+        color = level_colors.get(level, "#6c757d")
 
         col.markdown(
             f"""
-            <div style="background: #181926; border: 1px solid #313244; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <h4 style="margin: 0; color: #cdd6f4;">{h_label} (H{horizon_int})</h4>
-                    <span style="background: {l_color}; color: #11111b; font-weight: 700; padding: 2px 8px; border-radius: 4px; font-size: 11px;">
+            <div style="background: #181926; border-left: 5px solid {color}; border-radius: 8px; padding: 16px; margin-bottom: 12px; border-top: 1px solid #313244; border-right: 1px solid #313244; border-bottom: 1px solid #313244;">
+                <div style="font-size: 13px; color: #a6adc8; font-weight: 600;">{h_label}</div>
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin: 8px 0;">
+                    <span style="font-size: 32px; font-weight: 700; color: #cdd6f4;">
+                        {f"{score:.4f}" if score is not None else "N/A"}
+                    </span>
+                    <span style="background: {color}; color: #ffffff; padding: 2px 8px; border-radius: 4px; font-weight: 700; font-size: 11px;">
                         {level}
                     </span>
                 </div>
-                <div style="font-size: 28px; font-weight: 700; color: #ffffff; margin-bottom: 4px;">
-                    {f'{score:.4f}' if score is not None else 'N/A'}
+                <div style="font-size: 12px; color: #a6adc8;">
+                    Trend: <strong>{trend}</strong> &nbsp;|&nbsp;
+                    Mean: <strong>{f"{rolling_mean:.4f}" if rolling_mean is not None else "N/A"}</strong>
                 </div>
-                <div style="font-size: 12px; color: #a6adc8; margin-bottom: 8px;">
-                    Trend: <strong>{t_sym}</strong>
-                </div>
-                <hr style="border: 0; border-top: 1px solid #313244; margin: 8px 0;"/>
-                <div style="font-size: 11px; color: #bac2de; line-height: 1.6;">
-                    <strong>Rolling Mean:</strong> {f'{rolling_mean:.4f}' if rolling_mean is not None else 'N/A'}<br/>
-                    <strong>Volatility (σ):</strong> {f'{volatility:.4f}' if volatility is not None else 'N/A'}<br/>
-                    <strong>Observations:</strong> {obs_count} frames
+                <div style="font-size: 11px; color: #6c7086; margin-top: 4px;">
+                    Observations: {obs_count} frames | Volatility: {f"{volatility:.4f}" if volatility is not None else "N/A"}
                 </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-    _render_horizon_card(col1, "h1", "Immediate Horizon (t+1)", 1)
-    _render_horizon_card(col2, "h3", "Intermediate Horizon (t+3)", 3)
-    _render_horizon_card(col3, "h5", "Extended Horizon (t+5)", 5)
+    _render_horizon_card(col1, "h1", "Horizon 1 — Immediate (t+1)", 1)
+    _render_horizon_card(col2, "h3", "Horizon 3 — Intermediate (t+3)", 3)
+    _render_horizon_card(col3, "h5", "Horizon 5 — Strategic (t+5)", 5)
+
+    # --------------------------------------------------------------------------
+    # Temporal Risk Trajectories Chart
+    # --------------------------------------------------------------------------
+    st.markdown("---")
+    st.markdown("#### Multi-Horizon Risk Trajectories (Time Series)")
+
+    try:
+        temp_data = client.get_temporal_data(limit=100)
+        horizons_hist = temp_data.get("horizons", {})
+        chart_rows = []
+        for h_k, records in horizons_hist.items():
+            h_lbl = h_k.upper()
+            for r in records:
+                if r.get("risk_score") is not None:
+                    chart_rows.append({
+                        "Timestamp (s)": float(r.get("timestamp_seconds", 0.0)),
+                        "Risk Score": float(r["risk_score"]),
+                        "Horizon": h_lbl,
+                    })
+
+        if chart_rows:
+            df_chart = pd.DataFrame(chart_rows).pivot_table(
+                index="Timestamp (s)", columns="Horizon", values="Risk Score"
+            )
+            st.line_chart(df_chart, use_container_width=True)
+    except Exception as e:
+        st.caption(f"Could not load risk trajectories: {e}")
+
+    # --------------------------------------------------------------------------
+    # Risk Classification Threshold Calibration Table
+    # --------------------------------------------------------------------------
+    st.markdown("---")
+    st.markdown("#### Operational Severity Boundaries & Calibration Matrix")
+    thresh_data = [
+        {"Severity Tier": "LOW", "Risk Interval (S)": "[0.00, 0.35)", "Reliability (R)": "> 65%", "Operational Action": "Nominal perception. Autonomous tracking continues unimpeded."},
+        {"Severity Tier": "MEDIUM", "Risk Interval (S)": "[0.35, 0.65)", "Reliability (R)": "35% – 65%", "Operational Action": "Elevated uncertainty. Increase Kalman tracking covariance weights."},
+        {"Severity Tier": "HIGH", "Risk Interval (S)": "[0.65, 0.85)", "Reliability (R)": "15% – 35%", "Operational Action": "Probable perception failure. Dispatch P2 early-warning alert."},
+        {"Severity Tier": "CRITICAL", "Risk Interval (S)": "[0.85, 1.00]", "Reliability (R)": "< 15%", "Operational Action": "Imminent detection collapse. Trigger P1 critical safety alert."},
+    ]
+    st.dataframe(pd.DataFrame(thresh_data), use_container_width=True)

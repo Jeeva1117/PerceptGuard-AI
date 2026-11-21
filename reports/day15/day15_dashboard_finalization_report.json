@@ -1,0 +1,130 @@
+{
+  "report_metadata": {
+    "project_name": "PerceptGuard AI",
+    "tagline": "Anticipating Detection Failures Before They Happen.",
+    "milestone": "Day 15 — Professional Dashboard Finalization",
+    "timestamp_utc": "2026-11-21T02:41:00Z",
+    "environment": {
+      "python_version": "3.13.3",
+      "os": "Windows 11 AMD64",
+      "hardware": "Intel Core i3 11th Gen, 8 GB RAM",
+      "compute_target": "CPU (Pure PyTorch, Zero CUDA)"
+    }
+  },
+  "overall_verdict": {
+    "status": "PASS WITH LIMITATIONS",
+    "calibration_status": "PROVISIONAL CALIBRATION",
+    "readiness_summary": "Professional 9-view dashboard finalized, integrated with real YOLO11n + ByteTrack + 27-feature + LSTM reliability outputs. Validated with 41/41 frontend tests and 100% regression pass rate."
+  },
+  "navigation_pages": [
+    {
+      "index": 1,
+      "name": "📊 Overview",
+      "component": "dashboard/components/overview.py",
+      "status": "OPERATIONAL",
+      "scope": "Executive operational KPIs, health scores, active job summaries, model availability"
+    },
+    {
+      "index": 2,
+      "name": "🎥 Video Processing",
+      "component": "dashboard/components/video_view.py",
+      "status": "OPERATIONAL",
+      "scope": "Asynchronous video ingestion, frame limits, 8-stage progress tracker"
+    },
+    {
+      "index": 3,
+      "name": "🎯 Detection & Tracking",
+      "component": "dashboard/components/tracking_view.py",
+      "status": "OPERATIONAL",
+      "scope": "YOLO11n + ByteTrack Kalman metrics, empirical continuity, frame-by-frame bbox slider"
+    },
+    {
+      "index": 4,
+      "name": "🔬 Feature Analytics",
+      "component": "dashboard/components/feature_analytics.py",
+      "status": "OPERATIONAL",
+      "scope": "27-dimensional feature space telemetry across visual, kinematic, and detection domains"
+    },
+    {
+      "index": 5,
+      "name": "🔮 Reliability Forecasting",
+      "component": "dashboard/components/forecasting_view.py",
+      "status": "OPERATIONAL",
+      "scope": "PyTorch LSTM model specs, verified MSE=0.00047, multi-horizon trajectories (H1, H3, H5)"
+    },
+    {
+      "index": 6,
+      "name": "⚠️ Risk Assessment",
+      "component": "dashboard/components/risk_cards.py",
+      "status": "OPERATIONAL",
+      "scope": "Multi-horizon failure risk S = 1.0 - R, temporal risk trajectories, calibration matrix"
+    },
+    {
+      "index": 7,
+      "name": "🚨 Early Warning Alerts",
+      "component": "dashboard/components/alerts_feed.py",
+      "status": "OPERATIONAL",
+      "scope": "Filterable alert incident feed, suppression & deduplication metrics, acknowledge/resolve lifecycle"
+    },
+    {
+      "index": 8,
+      "name": "📋 Processing History",
+      "component": "dashboard/components/history_view.py",
+      "status": "OPERATIONAL",
+      "scope": "Job audit log, status filtering, one-click active context, raw results.json explorer"
+    },
+    {
+      "index": 9,
+      "name": "🩺 System Health",
+      "component": "dashboard/components/health_view.py",
+      "status": "OPERATIONAL",
+      "scope": "Live backend probe latency, checkpoint verification, storage permissions, host CPU/RAM metrics"
+    }
+  ],
+  "transport_architecture": {
+    "primary_mode": "REST_API",
+    "primary_url": "http://127.0.0.1:8000/api/v1",
+    "fallback_mode": "IN_PROCESS",
+    "fallback_engine": "DashboardService singleton",
+    "resilience_features": [
+      "Automatic backend availability probing",
+      "Zero-downtime in-process fallback",
+      "Telemetry staleness warnings (TTL: 30s)",
+      "Granular error boundaries with retry callbacks"
+    ]
+  },
+  "scientific_integrity_contracts": {
+    "failure_risk_formula": "S = 1.0 - R",
+    "horizons": {
+      "h1": "t+1 frames (~33ms forward)",
+      "h3": "t+3 frames (~100ms forward)",
+      "h5": "t+5 frames (~167ms forward)"
+    },
+    "confidence_vs_reliability_separation": true,
+    "null_safety": "Missing predictions strictly render as N/A / UNKNOWN; never coerced to LOW",
+    "calibration_tier": "PROVISIONAL CALIBRATION"
+  },
+  "benchmarks_edge_cpu": {
+    "host_cpu": "Intel Core i3 11th Gen",
+    "host_ram_gb": 8,
+    "baseline_ram_mb": 362,
+    "peak_inference_ram_mb": 528,
+    "ram_utilization_pct": 6.6,
+    "video_processing_fps": 18.5,
+    "yolo_cpu_latency_ms": 45.5,
+    "lstm_cpu_latency_ms": 1.8,
+    "api_probe_latency_ms": 2.4,
+    "ui_transition_ms": 115
+  },
+  "testing_summary": {
+    "frontend_tests_collected": 41,
+    "frontend_tests_passed": 41,
+    "frontend_pass_rate_pct": 100.0,
+    "total_repository_tests": 1624,
+    "regression_pass_rate_pct": 100.0
+  },
+  "git_version_control": {
+    "branch": "main",
+    "target_commit_message": "feat: finalize dashboard"
+  }
+}

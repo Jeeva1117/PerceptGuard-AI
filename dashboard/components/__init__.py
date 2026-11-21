@@ -1,4 +1,4 @@
-"""Reusable UI components for the PerceptGuard AI dashboard."""
+"""Reusable UI components for the PerceptGuard AI professional dashboard."""
 
 from dashboard.components.state_views import (
     render_empty_state,
@@ -13,6 +13,10 @@ from dashboard.components.alerts_feed import render_early_warning_alerts
 from dashboard.components.tracking_view import render_detection_tracking
 from dashboard.components.pipeline_accordion import render_pipeline_status_accordion
 from dashboard.components.video_view import render_video_processing_view
+from dashboard.components.feature_analytics import render_feature_analytics
+from dashboard.components.forecasting_view import render_reliability_forecasting
+from dashboard.components.history_view import render_processing_history
+from dashboard.components.health_view import render_system_health
 
 __all__ = [
     "render_empty_state",
@@ -26,4 +30,8 @@ __all__ = [
     "render_detection_tracking",
     "render_pipeline_status_accordion",
     "render_video_processing_view",
+    "render_feature_analytics",
+    "render_reliability_forecasting",
+    "render_processing_history",
+    "render_system_health",
 ]
