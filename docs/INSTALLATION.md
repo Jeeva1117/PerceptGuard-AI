@@ -108,7 +108,30 @@ The dashboard interface will automatically open in your default browser at `http
 
 ---
 
-## 4. Troubleshooting & Common Questions
+## 4. Containerized Deployment (Docker & Docker Compose)
+
+PerceptGuard AI supports production-grade multi-container deployment via Docker:
+- **Backend Service:** `Dockerfile` (FastAPI REST service on port 8000, 2 GB RAM limit, 2.0 CPUs).
+- **Frontend Service:** `Dockerfile.frontend` (Streamlit operations console on port 8501, 1 GB RAM limit).
+
+### 4.1 Launch Containers
+```bash
+# Build and start services in background
+docker compose up --build -d
+
+# Verify container statuses and logs
+docker compose ps
+docker compose logs -f backend
+```
+
+### 4.2 Teardown
+```bash
+docker compose down
+```
+
+---
+
+## 5. Troubleshooting & Common Questions
 
 ### Issue: `PermissionError` on Windows during Ultralytics Initialization
 - **Cause:** Ultralytics checks for a global configuration file at `%APPDATA%\Ultralytics\settings.json`.

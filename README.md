@@ -269,11 +269,10 @@ Consult [docs/LIMITATIONS.md](docs/LIMITATIONS.md) for full operational boundari
 ## 13. Documentation Suite
 
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — Master system architecture and pipeline design.
-- [docs/INSTALLATION.md](docs/INSTALLATION.md) — Step-by-step setup and environment configuration.
+- [docs/INSTALLATION.md](docs/INSTALLATION.md) — Step-by-step setup, dependencies, and container deployment.
 - [docs/USER_GUIDE.md](docs/USER_GUIDE.md) — Operator manual for all 9 dashboard views.
 - [docs/API_REFERENCE.md](docs/API_REFERENCE.md) — FastAPI endpoints, schemas, and data contracts.
 - [docs/MODEL_AND_ML_VALIDATION.md](docs/MODEL_AND_ML_VALIDATION.md) — Machine learning validation and benchmarks.
-- [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) — Docker containerization and orchestration guide.
 - [docs/LIMITATIONS.md](docs/LIMITATIONS.md) — Operational boundaries and calibration constraints.
 - [CONTRIBUTING.md](CONTRIBUTING.md) — Open source contribution guidelines.
 - [LICENSE](LICENSE) — MIT License.

@@ -35,6 +35,12 @@
     "dashboard_launcher": ".\\scripts\\start_dashboard.ps1",
     "shutdown_utility": ".\\scripts\\stop_project.ps1"
   },
+  "markdown_cleanup_metrics": {
+    "initial_total_markdown_files": 162,
+    "markdown_files_deleted": 104,
+    "final_total_markdown_files": 58,
+    "reduction_percentage": 64.2
+  },
   "test_suite_metrics": {
     "total_tests": 1433,
     "passed": 1433,
