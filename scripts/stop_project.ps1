@@ -1,11 +1,11 @@
-﻿# ==============================================================================
+# ==============================================================================
 # PerceptGuard AI — Project Shutdown Script (Windows PowerShell)
 # Target Platform: Windows 11 AMD64
 # ==============================================================================
 
 [CmdletBinding()]
 param(
-    [int[]]$Ports = @(8000, 8501)
+    [int[]]$Ports = @(8000, 3000, 8501)
 )
 
 $ErrorActionPreference = "Continue"
@@ -50,7 +50,7 @@ foreach ($Port in $Ports) {
 
 if ($Remaining.Count -eq 0) {
     Write-Host "==========================================================" -ForegroundColor Green
-    Write-Host "  All PerceptGuard services stopped. Ports 8000 and 8501 released." -ForegroundColor Green
+    Write-Host "  All PerceptGuard services stopped. Ports 8000, 3000, and 8501 released." -ForegroundColor Green
     Write-Host "==========================================================" -ForegroundColor Green
 } else {
     $Occupied = $Remaining -join ", "

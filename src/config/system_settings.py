@@ -91,7 +91,14 @@ class APIConfig:
     reload: bool = False
     workers: int = 1
     cors_origins: List[str] = field(
-        default_factory=lambda: ["http://localhost:8501", "http://127.0.0.1:8501"]
+        default_factory=lambda: [
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+            "http://localhost:8501",
+            "http://127.0.0.1:8501",
+        ]
     )
     timeout_seconds: float = 30.0
 
@@ -383,7 +390,14 @@ class SystemSettings:
         if cors_raw is not None:
             cors_list = _parse_list(cors_raw)
         else:
-            cors_list = ["http://localhost:8501", "http://127.0.0.1:8501"]
+            cors_list = [
+                "http://localhost:3000",
+                "http://127.0.0.1:3000",
+                "http://localhost:5173",
+                "http://127.0.0.1:5173",
+                "http://localhost:8501",
+                "http://127.0.0.1:8501",
+            ]
 
         api_cfg = APIConfig(
             host=source_env.get("API_HOST", source_env.get("HOST", "0.0.0.0")),

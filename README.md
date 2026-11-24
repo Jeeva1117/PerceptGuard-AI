@@ -32,18 +32,36 @@ In automated driving systems (ADS) and advanced driver-assistance systems (ADAS)
 
 ---
 
-## 2. Solution & Key Features
+## 2. Solution & The Five Core Features
 
-PerceptGuard AI introduces an intelligent, predictive meta-perception monitoring layer:
+PerceptGuard AI organizes automotive safety intelligence into **exactly five primary modular features**:
 
-- **Multi-Horizon Reliability Forecasting:** Forecasts future bounding box IoU quality over $H1$ ($t+1, \sim 33\text{ ms}$), $H3$ ($t+3, \sim 100\text{ ms}$), and $H5$ ($t+5, \sim 167\text{ ms}$).
-- **27-Dimensional Multi-Modal Feature Fusion:** Real-time extraction of visual quality (Laplacian blur variance, brightness, contrast), kinematics (velocity, acceleration, curvature), and detection dynamics (confidence variance, entropy, regression slopes).
-- **Recurrent Sequence Modeling:** Pure PyTorch 2-layer LSTM trained on 10-frame sliding windows ($MSE = 0.00047$).
-- **Formal Failure Risk Formulation:** Mathematically grounded risk score:
-  $$S_{t+h} = 1.0 - R_{t+h}$$
-- **Proactive Early Warning Engine:** Automated incident triggering with exponential cooldown, duplicate suppression, and severity escalation (LOW, MEDIUM, HIGH, CRITICAL).
-- **Dual-Transport Operations Dashboard:** 9-view enterprise Streamlit dashboard connected to a FastAPI backend with automated zero-downtime in-process fallback.
-- **Pure CPU Edge Execution:** Fully optimized for commodity hardware (Intel Core i3, 8 GB RAM) without CUDA dependencies.
+1. **Camera & Weather Intelligence (`src/camera_weather/`)**
+   - Real-time optical degradation analysis: Laplacian blur variance, Dark Channel Prior haze/fog estimation, directional Sobel precipitation patterns, and illumination/glare detection.
+   - Temporal rolling tracking, degradation trend forecasting, and perception impact scoring ($P_{\text{impact}}$).
+
+2. **Object Detection & Multi-Object Tracking (`src/detection/` & `src/tracking/`)**
+   - High-throughput edge perception with Ultralytics YOLO11n ($45.5\text{ ms/frame}$ pure CPU).
+   - ByteTrack Kalman filter state association preserving persistent track IDs across occlusions.
+
+3. **Object & Trajectory Prediction (`src/trajectory_prediction/`)**
+   - Pinhole camera metric ground-plane projection converting image coordinates to road meters.
+   - 6-DoF Kalman filter trajectory forecasting across $H_1$ ($1\text{s}$), $H_3$ ($3\text{s}$), and $H_5$ ($5\text{s}$) horizons with acceleration damping ($0.88^k$).
+   - Multi-agent interaction modeling: closing speed, time-to-headway ($TTH$), and crossing trajectory detection.
+
+4. **Collision & Road Risk Assessment (`src/collision_risk/`)**
+   - First-order linear and second-order accelerated Time-to-Collision ($TTC$) calculation.
+   - Travel corridor angle gating ($> 65^\circ$ lateral crossings marked invalid for 1D longitudinal TTC).
+   - Synchronous spatio-temporal conflict analysis across horizons $H_1, H_3, H_5$ eliminating false crossing alarms.
+   - Multi-source uncertainty fusion ($U_{\text{weather}}, U_{\text{det}}, U_{\text{track}}$) triggering `UNKNOWN` when $U > 0.70$ or visibility $< 20\%$.
+
+5. **Early Warning & Vehicle Stop Recommendation (`src/safety_recommendation/`)**
+   - Final decision-support layer consuming outputs from Features 1–4.
+   - 6 explainable recommendation states: `NORMAL`, `CAUTION`, `REDUCE SPEED`, `PREPARE TO STOP`, `STOP RECOMMENDED`, and `UNKNOWN`.
+   - 4 warning priority tiers: `INFO`, `ADVISORY`, `WARNING`, and `CRITICAL`.
+   - Temporal early warning monitoring: risk escalation detection, rapidly decreasing TTC alerts, and pedestrian corridor intrusion.
+   - Warning priority arbitration, duplicate alert suppression window ($0.35\text{s}$), and 2-frame de-escalation hysteresis.
+   - **Advisory Prototype Safety Gate:** All recommendations are explicitly qualified as advisory ("when safe to do so") and must never be connected directly to vehicle brake actuators or CAN bus commands. Operational safety remains the driver's responsibility.
 
 ---
 
@@ -97,7 +115,7 @@ For complete technical specifications, consult [docs/ARCHITECTURE.md](docs/ARCHI
 | **Object Tracking** | ByteTrack (Kalman Filter + Two-Stage Association) |
 | **Deep Learning** | PyTorch (Pure CPU-optimized execution, zero CUDA required) |
 | **Backend API** | FastAPI, Uvicorn, Starlette, Pydantic v2 |
-| **Frontend UI** | Streamlit, Pandas, NumPy, Matplotlib |
+| **Frontend UI** | React 19 + TypeScript + Vite + Tailwind CSS (Primary Cockpit) & Streamlit (Legacy Inspector) |
 | **Hardware Target** | Intel Core i3 11th Gen, 8 GB RAM, Windows 11 AMD64 (Pure CPU) |
 | **Testing & CI/CD** | Pytest, AnyIO, GitHub Actions |
 

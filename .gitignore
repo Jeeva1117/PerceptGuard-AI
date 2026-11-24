@@ -74,3 +74,10 @@ desktop.ini
 .pytest_cache/
 .coverage
 htmlcov/
+.ultralytics/
+
+# Frontend (Node / Vite / React)
+frontend/node_modules/
+frontend/dist/
+frontend/.tmp/
+

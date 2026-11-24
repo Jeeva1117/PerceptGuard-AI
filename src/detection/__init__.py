@@ -5,7 +5,16 @@ road obstacles, vehicles, pedestrians, and cyclists across video frames.
 Extracts bounding boxes, detection confidences, and object classes.
 """
 
+import os
+from pathlib import Path
 import warnings
+
+# Ensure Ultralytics config is placed in workspace
+if "YOLO_CONFIG_DIR" not in os.environ:
+    _cfg = Path.cwd() / ".ultralytics"
+    _cfg.mkdir(parents=True, exist_ok=True)
+    os.environ["YOLO_CONFIG_DIR"] = str(_cfg)
+
 warnings.filterwarnings("ignore", category=RuntimeWarning, message=".*found in sys.modules.*")
 
 from src.detection.batch_detector import (

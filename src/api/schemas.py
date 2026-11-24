@@ -277,6 +277,12 @@ class JobStatusResponse(BaseModel):
     alerts_count: int = 0
     error_message: Optional[str] = None
     result_summary: Optional[Dict[str, Any]] = None
+    video_path: Optional[str] = None
+    has_source_video: bool = False
+    rotation: int = 0
+    analysis_mode: Optional[str] = "FULL_BALANCED"
+    sample_fps: Optional[float] = 2.0
+    timeline_telemetry: Optional[Dict[str, Any]] = None
 
 
 class JobSubmissionResponse(BaseModel):
@@ -288,4 +294,6 @@ class JobSubmissionResponse(BaseModel):
     message: str
     max_frames: int
     created_at: str
+    analysis_mode: Optional[str] = "FULL_BALANCED"
+    sample_fps: Optional[float] = None
 

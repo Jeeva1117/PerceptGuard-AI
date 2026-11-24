@@ -1,4 +1,4 @@
-﻿# ==============================================================================
+# ==============================================================================
 # PerceptGuard AI — Master One-Command Project Startup (Windows PowerShell)
 # Target Platform: Windows 11 AMD64 / Python 3.13 / Pure CPU Execution
 # ==============================================================================
@@ -6,7 +6,7 @@
 [CmdletBinding()]
 param(
     [int]$BackendPort = 8000,
-    [int]$DashboardPort = 8501
+    [int]$FrontendPort = 3000
 )
 
 $ErrorActionPreference = "Stop"
@@ -20,13 +20,17 @@ Write-Host "==========================================================" -Foregro
 
 # 1. Environment & Python Executable Verification
 $PythonExe = Join-Path $ProjectRoot "venv\Scripts\python.exe"
-$StreamlitExe = Join-Path $ProjectRoot "venv\Scripts\streamlit.exe"
+$FrontendDir = Join-Path $ProjectRoot "frontend"
 
-if (-not (Test-Path $PythonExe) -or -not (Test-Path $StreamlitExe)) {
-    Write-Error "Virtual environment missing or incomplete. Setup instructions:`n  python -m venv venv`n  .\venv\Scripts\pip install -r requirements.txt"
+if (-not (Test-Path $PythonExe)) {
+    Write-Error "Python virtual environment missing. Setup instructions:`n  python -m venv venv`n  .\venv\Scripts\pip install -r requirements.txt"
     exit 1
 }
-Write-Host "[1/5] Python virtual environment verified." -ForegroundColor Green
+if (-not (Test-Path $FrontendDir)) {
+    Write-Error "Frontend directory missing at $FrontendDir."
+    exit 1
+}
+Write-Host "[1/5] Python virtual environment & React frontend verified." -ForegroundColor Green
 
 # 2. Model Checkpoints & Pretrained Weights Verification
 $YoloWeights = Join-Path $ProjectRoot "models\yolo\yolo11n.pt"
@@ -100,13 +104,13 @@ Write-Host "  * REST API Base:       $BackendUrl" -ForegroundColor White
 Write-Host ("  * Swagger API Docs:    " + $BackendUrl + "/docs") -ForegroundColor White
 Write-Host ("  * OpenAPI JSON:        " + $BackendUrl + "/openapi.json") -ForegroundColor White
 Write-Host ("  * System Health:       " + $BackendUrl + "/health") -ForegroundColor White
-Write-Host ("  * Streamlit Dashboard: http://localhost:" + $DashboardPort) -ForegroundColor White
+Write-Host ("  * React ADAS Frontend: http://localhost:" + $FrontendPort) -ForegroundColor White
 
-# 5. Launch Streamlit Operations Console
-Write-Host "[5/5] Launching Streamlit dashboard..." -ForegroundColor Green
+# 5. Launch React Operations Console
+Write-Host "[5/5] Launching React ADAS Frontend..." -ForegroundColor Green
 Write-Host "==========================================================" -ForegroundColor Cyan
-Write-Host "Press Ctrl+C to stop the dashboard." -ForegroundColor Yellow
+Write-Host "Press Ctrl+C to stop the frontend." -ForegroundColor Yellow
 Write-Host "To stop background backend: .\scripts\stop_project.ps1" -ForegroundColor Yellow
 Write-Host "==========================================================" -ForegroundColor Cyan
 
-& $StreamlitExe run dashboard/app.py --server.port $DashboardPort --browser.gatherUsageStats false
+npm run dev --prefix frontend -- --port $FrontendPort --host

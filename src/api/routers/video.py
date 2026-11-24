@@ -10,7 +10,9 @@ import uuid
 from typing import List, Optional
 
 import cv2
-from fastapi import APIRouter, File, Query, UploadFile, status
+from fastapi import APIRouter, File, Query, Request, UploadFile, status
+from fastapi.responses import StreamingResponse
+from starlette.responses import FileResponse, Response
 
 from src.api.exceptions import InvalidInputError, InvalidVideoError, ResourceNotFoundError
 from src.api.job_manager import JobManager, get_job_manager
@@ -21,12 +23,78 @@ from src.api.schemas import (
     VideoProcessResponse,
     VideoValidationResponse,
 )
-from starlette.responses import FileResponse
 
 router = APIRouter(prefix="/video", tags=["Video Processing"])
 
 ALLOWED_VIDEO_EXTENSIONS = {".mp4", ".avi", ".mov", ".mkv"}
 MAX_FILE_SIZE_BYTES = 100 * 1024 * 1024  # 100 MB max for CPU safety
+
+
+def _stream_video_file(file_path: Path, request: Request) -> Response:
+    """Stream video file with support for HTTP 206 Partial Content byte ranges."""
+    if not file_path.exists() or not file_path.is_file():
+        raise ResourceNotFoundError(f"Video file '{file_path.name}' does not exist on disk.")
+
+    file_size = file_path.stat().st_size
+    if file_size == 0:
+        raise ResourceNotFoundError(f"Video file '{file_path.name}' is empty (0 bytes).")
+
+    ext = file_path.suffix.lower()
+    media_type = "video/mp4"
+    if ext == ".mov":
+        media_type = "video/quicktime"
+    elif ext == ".avi":
+        media_type = "video/x-msvideo"
+    elif ext == ".mkv":
+        media_type = "video/x-matroska"
+
+    range_header = request.headers.get("range")
+    if not range_header:
+        return FileResponse(
+            str(file_path),
+            media_type=media_type,
+            headers={
+                "Accept-Ranges": "bytes",
+                "Content-Length": str(file_size),
+            },
+        )
+
+    try:
+        bytes_part = range_header.replace("bytes=", "").strip()
+        parts = bytes_part.split("-")
+        start = int(parts[0]) if parts[0] else 0
+        end = int(parts[1]) if len(parts) > 1 and parts[1] else file_size - 1
+        end = min(end, file_size - 1)
+        if start > end or start >= file_size:
+            return Response(
+                status_code=416,
+                headers={"Content-Range": f"bytes */{file_size}"},
+            )
+        chunk_size = (end - start) + 1
+    except Exception:
+        start = 0
+        end = file_size - 1
+        chunk_size = file_size
+
+    def iterfile():
+        with open(file_path, "rb") as f:
+            f.seek(start)
+            bytes_left = chunk_size
+            while bytes_left > 0:
+                read_size = min(64 * 1024, bytes_left)
+                data = f.read(read_size)
+                if not data:
+                    break
+                bytes_left -= len(data)
+                yield data
+
+    headers = {
+        "Content-Range": f"bytes {start}-{end}/{file_size}",
+        "Accept-Ranges": "bytes",
+        "Content-Length": str(chunk_size),
+        "Content-Type": media_type,
+    }
+    return StreamingResponse(iterfile(), status_code=206, headers=headers)
 
 
 def _inspect_video_capture(file_path: Path, filename: str, size_bytes: int) -> VideoMetadataSchema:
@@ -173,7 +241,10 @@ async def process_video(
 @router.post("/jobs", response_model=JobSubmissionResponse, status_code=status.HTTP_202_ACCEPTED)
 async def submit_video_job(
     file: UploadFile = File(...),
-    max_frames: int = Query(30, ge=5, le=100, description="Max frames to extract and process on CPU."),
+    max_frames: Optional[int] = Query(None, ge=1, le=5000, description="Optional upper cap on frames to process."),
+    rotation: int = Query(0, ge=0, le=270, description="Video rotation in degrees clockwise (0, 90, 180, 270)."),
+    analysis_mode: str = Query("FULL_BALANCED", description="Analysis mode: FULL_BALANCED, FULL_DETAILED, or QUICK_PREVIEW."),
+    sample_fps: Optional[float] = Query(None, ge=0.1, le=60.0, description="Sampling rate in frames per second."),
 ) -> JobSubmissionResponse:
     """Submit a video for asynchronous pipeline execution (YOLO + ByteTrack + LSTM + Risk + Alerts)."""
     filename = Path(file.filename or "uploaded_video.mp4").name
@@ -207,6 +278,9 @@ async def submit_video_job(
         video_path=temp_target,
         filename=filename,
         max_frames=max_frames,
+        rotation=rotation,
+        analysis_mode=analysis_mode,
+        sample_fps=sample_fps,
     )
 
     return JobSubmissionResponse(
@@ -215,16 +289,52 @@ async def submit_video_job(
         status=job_rec.status.value,
         stage=job_rec.stage,
         message=job_rec.message,
-        max_frames=max_frames,
+        max_frames=max_frames or 0,
         created_at=job_rec.created_at,
+        analysis_mode=analysis_mode,
+        sample_fps=sample_fps,
     )
+
+
+@router.post("/upload", response_model=JobSubmissionResponse, status_code=status.HTTP_202_ACCEPTED, summary="Upload road video for asynchronous pipeline execution (session alias)")
+async def upload_video(
+    file: UploadFile = File(...),
+    max_frames: Optional[int] = Query(None, ge=1, le=5000, description="Optional upper cap on frames to process."),
+    rotation: int = Query(0, ge=0, le=270, description="Video rotation in degrees clockwise (0, 90, 180, 270)."),
+    analysis_mode: str = Query("FULL_BALANCED", description="Analysis mode: FULL_BALANCED, FULL_DETAILED, or QUICK_PREVIEW."),
+    sample_fps: Optional[float] = Query(None, ge=0.1, le=60.0, description="Sampling rate in frames per second."),
+) -> JobSubmissionResponse:
+    """Session-based alias for submit_video_job."""
+    return await submit_video_job(
+        file=file,
+        max_frames=max_frames,
+        rotation=rotation,
+        analysis_mode=analysis_mode,
+        sample_fps=sample_fps,
+    )
+
+
+@router.get("/upload/{session_id}/status", response_model=JobStatusResponse, summary="Retrieve processing status by session ID")
+def get_upload_status(session_id: str) -> JobStatusResponse:
+    """Retrieve execution status for an uploaded video session."""
+    return get_video_job_status(job_id=session_id)
+
+
+@router.get("/upload/{session_id}/results", summary="Retrieve processing results by session ID")
+def get_upload_results(session_id: str):
+    """Retrieve analysis results for an uploaded video session."""
+    return get_video_job_results(job_id=session_id)
 
 
 @router.get("/jobs", response_model=List[JobStatusResponse])
 def list_video_jobs(limit: int = Query(20, ge=1, le=100)) -> List[JobStatusResponse]:
     """List recent video processing jobs and their live execution status."""
+    try:
+        resolved_limit = int(limit)
+    except (TypeError, ValueError):
+        resolved_limit = 20
     job_mgr = get_job_manager()
-    jobs = job_mgr.list_jobs(limit=limit)
+    jobs = job_mgr.list_jobs(limit=resolved_limit)
     return [JobStatusResponse(**j.to_dict()) for j in jobs]
 
 
@@ -255,6 +365,40 @@ def get_video_job_results(job_id: str):
             "results": None,
         }
     return results
+
+
+@router.get("/jobs/{job_id}/timeline")
+def get_video_job_timeline(job_id: str):
+    """Retrieve segmented chronological event timeline for interactive video scrubbing."""
+    job_mgr = get_job_manager()
+    results = job_mgr.get_job_results(job_id)
+    if not results:
+        job_rec = job_mgr.get_job(job_id)
+        if not job_rec:
+            raise ResourceNotFoundError(f"Job '{job_id}' not found.")
+        return {"job_id": job_id, "status": job_rec.status.value, "timeline": []}
+    return {
+        "job_id": job_id,
+        "total_events": len(results.get("event_timeline", [])),
+        "timeline": results.get("event_timeline", []),
+        "timeline_telemetry": results.get("timeline_telemetry", {}),
+    }
+
+
+@router.get("/jobs/{job_id}/timeline-telemetry")
+def get_video_job_timeline_telemetry(job_id: str):
+    """Retrieve duration, sampling rate, coverage percentage, and speed metrics."""
+    job_mgr = get_job_manager()
+    results = job_mgr.get_job_results(job_id)
+    if not results:
+        job_rec = job_mgr.get_job(job_id)
+        if not job_rec:
+            raise ResourceNotFoundError(f"Job '{job_id}' not found.")
+        return {"job_id": job_id, "status": job_rec.status.value, "timeline_telemetry": {}}
+    return {
+        "job_id": job_id,
+        "timeline_telemetry": results.get("timeline_telemetry", {}),
+    }
 
 
 @router.get("/jobs/{job_id}/detections")
@@ -412,6 +556,114 @@ def get_video_job_alerts(job_id: str):
     }
 
 
+@router.get("/jobs/{job_id}/weather")
+def get_video_job_weather(job_id: str):
+    """Retrieve camera and weather intelligence analytics across frames (Feature 1)."""
+    job_mgr = get_job_manager()
+    results = job_mgr.get_job_results(job_id)
+    if not results:
+        job_rec = job_mgr.get_job(job_id)
+        if not job_rec:
+            raise ResourceNotFoundError(f"Job '{job_id}' not found.")
+        return {"job_id": job_id, "status": job_rec.status.value, "frames": [], "weather_summary": {}}
+
+    frames = results.get("frames", [])
+    weather_frames = []
+    for f in frames:
+        weather_frames.append({
+            "frame_index": f.get("frame_index"),
+            "timestamp_seconds": f.get("timestamp_seconds"),
+            "weather_intelligence": f.get("weather_intelligence", {}),
+        })
+    return {
+        "job_id": job_id,
+        "weather_summary": results.get("weather_summary", {}),
+        "frames_count": len(frames),
+        "frames": weather_frames,
+    }
+
+
+@router.get("/jobs/{job_id}/trajectories")
+def get_video_job_trajectories(job_id: str):
+    """Retrieve multi-horizon trajectory predictions and kinematics telemetry (Feature 3)."""
+    job_mgr = get_job_manager()
+    results = job_mgr.get_job_results(job_id)
+    if not results:
+        job_rec = job_mgr.get_job(job_id)
+        if not job_rec:
+            raise ResourceNotFoundError(f"Job '{job_id}' not found.")
+        return {"job_id": job_id, "status": job_rec.status.value, "frames": [], "trajectory_summary": {}}
+
+    frames = results.get("frames", [])
+    traj_frames = []
+    for f in frames:
+        traj_frames.append({
+            "frame_index": f.get("frame_index"),
+            "timestamp_seconds": f.get("timestamp_seconds"),
+            "trajectories": f.get("trajectories", []),
+        })
+    return {
+        "job_id": job_id,
+        "trajectory_summary": results.get("trajectory_summary", {}),
+        "frames_count": len(frames),
+        "frames": traj_frames,
+    }
+
+
+@router.get("/jobs/{job_id}/collision-risk")
+def get_video_job_collision_risk(job_id: str):
+    """Retrieve Time-To-Collision (TTC) and fused collision risk assessments (Feature 4)."""
+    job_mgr = get_job_manager()
+    results = job_mgr.get_job_results(job_id)
+    if not results:
+        job_rec = job_mgr.get_job(job_id)
+        if not job_rec:
+            raise ResourceNotFoundError(f"Job '{job_id}' not found.")
+        return {"job_id": job_id, "status": job_rec.status.value, "frames": [], "collision_summary": {}}
+
+    frames = results.get("frames", [])
+    risk_frames = []
+    for f in frames:
+        risk_frames.append({
+            "frame_index": f.get("frame_index"),
+            "timestamp_seconds": f.get("timestamp_seconds"),
+            "collision_risk": f.get("collision_risk", {}),
+        })
+    return {
+        "job_id": job_id,
+        "collision_summary": results.get("collision_summary", {}),
+        "frames_count": len(frames),
+        "frames": risk_frames,
+    }
+
+
+@router.get("/jobs/{job_id}/safety-recommendations")
+def get_video_job_safety_recommendations(job_id: str):
+    """Retrieve actionable stop and speed recommendations with evidence chains (Feature 5)."""
+    job_mgr = get_job_manager()
+    results = job_mgr.get_job_results(job_id)
+    if not results:
+        job_rec = job_mgr.get_job(job_id)
+        if not job_rec:
+            raise ResourceNotFoundError(f"Job '{job_id}' not found.")
+        return {"job_id": job_id, "status": job_rec.status.value, "frames": [], "safety_summary": {}}
+
+    frames = results.get("frames", [])
+    rec_frames = []
+    for f in frames:
+        rec_frames.append({
+            "frame_index": f.get("frame_index"),
+            "timestamp_seconds": f.get("timestamp_seconds"),
+            "safety_recommendation": f.get("safety_recommendation", {}),
+        })
+    return {
+        "job_id": job_id,
+        "safety_summary": results.get("safety_summary", {}),
+        "frames_count": len(frames),
+        "frames": rec_frames,
+    }
+
+
 @router.get("/jobs/{job_id}/frames/{frame_name}")
 def get_annotated_frame(job_id: str, frame_name: str):
     """Serve an annotated video frame image for frontend dashboard visualization."""
@@ -431,12 +683,94 @@ def get_annotated_frame(job_id: str, frame_name: str):
     return FileResponse(str(img_path), media_type="image/jpeg")
 
 
-@router.delete("/jobs/{job_id}")
-def cancel_video_job(job_id: str):
-    """Cancel or abort an in-flight video processing job."""
+@router.get("/jobs/{job_id}/source-video")
+def get_job_source_video(job_id: str, request: Request):
+    """Stream the authentic source road video for a given job session with HTTP 206 range support."""
     job_mgr = get_job_manager()
-    success = job_mgr.cancel_job(job_id)
+    job_rec = job_mgr.get_job(job_id)
+    if not job_rec:
+        raise ResourceNotFoundError(f"Job '{job_id}' not found.")
+
+    # 1. Check job_rec.video_path
+    if job_rec.video_path:
+        p = Path(job_rec.video_path)
+        if p.exists() and p.is_file() and p.stat().st_size > 0:
+            return _stream_video_file(p, request)
+
+    # 2. Check outputs/jobs/uploads/
+    uploads_dir = job_mgr.jobs_dir / "uploads"
+    if uploads_dir.exists():
+        candidates = [uploads_dir / job_rec.filename]
+        clean_name = job_rec.filename.split("_", 2)[-1] if job_rec.filename.startswith("up_") else job_rec.filename
+        for f in uploads_dir.iterdir():
+            if f.is_file() and (f.name == job_rec.filename or clean_name in f.name):
+                candidates.append(f)
+        for c in candidates:
+            if c.exists() and c.is_file() and c.stat().st_size > 0:
+                return _stream_video_file(c, request)
+
+    # 3. Check results_dir / "source_video.mp4"
+    if job_rec.results_dir:
+        res_source = Path(job_rec.results_dir) / "source_video.mp4"
+        if res_source.exists() and res_source.stat().st_size > 0:
+            return _stream_video_file(res_source, request)
+
+    raise ResourceNotFoundError(f"Source video file for job '{job_id}' is not available on disk.")
+
+
+@router.get("/jobs/{job_id}/annotated-video")
+def get_job_annotated_video(job_id: str, request: Request):
+    """Stream the pre-rendered annotated continuous video for a given job session with HTTP 206 range support."""
+    job_mgr = get_job_manager()
+    job_rec = job_mgr.get_job(job_id)
+    if not job_rec:
+        raise ResourceNotFoundError(f"Job '{job_id}' not found.")
+
+    # 1. Check job_rec.results_dir / "annotated_video.mp4"
+    if job_rec.results_dir:
+        p = Path(job_rec.results_dir) / "annotated_video.mp4"
+        if p.exists() and p.is_file() and p.stat().st_size > 0:
+            return _stream_video_file(p, request)
+
+    # 2. Check if results.json has annotated_video_path
+    results = job_mgr.get_job_results(job_id)
+    if results and results.get("annotated_video_path"):
+        p2 = Path(results["annotated_video_path"])
+        if p2.exists() and p2.is_file() and p2.stat().st_size > 0:
+            return _stream_video_file(p2, request)
+
+    raise ResourceNotFoundError(f"Annotated video file for job '{job_id}' is not available or still processing.")
+
+
+@router.get("/uploads/{filename}/stream")
+def stream_uploaded_video(filename: str, request: Request):
+    """Stream an uploaded raw video file by filename with byte range support."""
+    job_mgr = get_job_manager()
+    safe_name = Path(filename).name
+    p = job_mgr.jobs_dir / "uploads" / safe_name
+    if not p.exists() or not p.is_file():
+        raise ResourceNotFoundError(f"Uploaded video '{safe_name}' not found on server.")
+    return _stream_video_file(p, request)
+
+
+@router.delete("/jobs/{job_id}")
+def delete_video_job(
+    job_id: str,
+    delete_disk: bool = Query(True, description="Whether to also remove on-disk result artifacts"),
+):
+    """Cancel and delete a video processing job record and its artifacts."""
+    job_mgr = get_job_manager()
+    job_mgr.cancel_job(job_id)
+    success = job_mgr.delete_job(job_id, delete_disk=delete_disk)
     if not success:
-        raise ResourceNotFoundError(f"Job '{job_id}' could not be cancelled or does not exist.")
-    return {"job_id": job_id, "status": "CANCELLED", "message": "Job cancelled successfully."}
+        raise ResourceNotFoundError(f"Job '{job_id}' could not be deleted or does not exist.")
+    return {"job_id": job_id, "status": "DELETED", "message": "Job record and associated artifacts removed."}
+
+
+@router.post("/jobs/clean-stale")
+def clean_stale_jobs():
+    """Remove historical sample, dummy or unbacked test jobs from memory and storage."""
+    job_mgr = get_job_manager()
+    cleaned = job_mgr.clean_stale_jobs()
+    return {"cleaned_count": cleaned, "message": f"Successfully cleaned {cleaned} stale test jobs."}
 

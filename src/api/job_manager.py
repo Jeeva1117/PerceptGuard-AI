@@ -14,9 +14,10 @@ from enum import Enum
 import json
 import logging
 from pathlib import Path
+import shutil
 import threading
 import time
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 import uuid
 
 from src.video_processing.video_pipeline_runner import VideoPipelineRunResult, VideoPipelineRunner
@@ -48,6 +49,7 @@ class JobRecord:
     started_at: Optional[str] = None
     completed_at: Optional[str] = None
     max_frames_requested: int = 30
+    rotation: int = 0
     frames_processed: int = 0
     total_detections: int = 0
     unique_tracks: int = 0
@@ -55,6 +57,12 @@ class JobRecord:
     error_message: Optional[str] = None
     results_dir: Optional[str] = None
     result_summary: Optional[Dict[str, Any]] = None
+    video_path: Optional[str] = None
+    has_source_video: bool = False
+    analysis_mode: str = "FULL_BALANCED"
+    sample_fps: Optional[float] = 2.0
+    timeline_telemetry: Optional[Dict[str, Any]] = None
+    event_timeline: Optional[List[Dict[str, Any]]] = None
 
     def to_dict(self) -> Dict[str, Any]:
         data = asdict(self)
@@ -90,6 +98,35 @@ class JobManager:
         self._initialized = True
         logger.info(f"Initialized JobManager (max_workers={max_workers}, jobs_dir={self.jobs_dir}, rehydrated={len(self._jobs)})")
 
+    def _find_source_video(self, data: Dict[str, Any], child_dir: Path) -> Tuple[Optional[str], bool]:
+        """Attempt to locate the authentic source video on disk for a job."""
+        candidates = []
+        if data.get("video_path"):
+            candidates.append(Path(data["video_path"]))
+
+        candidates.append(child_dir / "source_video.mp4")
+
+        uploads_dir = self.jobs_dir / "uploads"
+        v_filename = data.get("video_filename") or data.get("video_metadata", {}).get("filename")
+        if v_filename:
+            candidates.append(uploads_dir / v_filename)
+            candidates.append(self.base_dir / "outputs" / "uploads" / v_filename)
+
+        if uploads_dir.exists() and v_filename:
+            clean_name = v_filename.split("_", 2)[-1] if v_filename.startswith("up_") else v_filename
+            for f in uploads_dir.iterdir():
+                if f.is_file() and (f.name == v_filename or clean_name in f.name):
+                    candidates.append(f)
+
+        for c in candidates:
+            try:
+                if c and c.exists() and c.is_file() and c.stat().st_size > 0:
+                    return str(c.resolve()), True
+            except OSError:
+                continue
+
+        return None, False
+
     def _rehydrate_existing_jobs(self) -> None:
         """Scan jobs_dir and rehydrate completed job records into memory on startup for restart persistence."""
         if not self.jobs_dir.exists():
@@ -102,6 +139,7 @@ class JobManager:
                         with open(res_file, "r", encoding="utf-8") as f:
                             data = json.load(f)
                         job_id = data.get("job_id", child.name)
+                        source_path, has_video = self._find_source_video(data, child)
                         rec = JobRecord(
                             job_id=job_id,
                             filename=data.get("video_filename", "video.mp4"),
@@ -117,6 +155,12 @@ class JobManager:
                             unique_tracks=data.get("unique_tracks", 0),
                             alerts_count=data.get("total_alerts", 0),
                             results_dir=str(child),
+                            video_path=source_path,
+                            has_source_video=has_video,
+                            analysis_mode=data.get("timeline_telemetry", {}).get("analysis_mode", "FULL_BALANCED"),
+                            sample_fps=data.get("timeline_telemetry", {}).get("effective_sampling_fps", 2.0),
+                            timeline_telemetry=data.get("timeline_telemetry"),
+                            event_timeline=data.get("event_timeline"),
                             result_summary={
                                 "frames_processed": data.get("frames_processed", 0),
                                 "total_detections": data.get("total_detections", 0),
@@ -125,6 +169,7 @@ class JobManager:
                                 "active_alerts": data.get("active_alerts", 0),
                                 "total_duration_seconds": data.get("total_duration_seconds", 0.0),
                                 "per_horizon_risk": data.get("per_horizon_risk", {}),
+                                "timeline_telemetry": data.get("timeline_telemetry"),
                             },
                         )
                         self._jobs[job_id] = rec
@@ -135,12 +180,18 @@ class JobManager:
         self,
         video_path: Union[str, Path],
         filename: str,
-        max_frames: int = 30,
+        max_frames: Optional[int] = None,
+        rotation: int = 0,
+        analysis_mode: str = "FULL_BALANCED",
+        sample_fps: Optional[float] = None,
     ) -> JobRecord:
         """Submit a video file for asynchronous pipeline processing."""
         job_id = f"job_{uuid.uuid4().hex[:12]}"
         job_out_dir = self.jobs_dir / job_id
         job_out_dir.mkdir(parents=True, exist_ok=True)
+
+        vpath = Path(video_path).resolve()
+        has_video = vpath.exists() and vpath.stat().st_size > 0
 
         record = JobRecord(
             job_id=job_id,
@@ -149,8 +200,13 @@ class JobManager:
             stage="QUEUED",
             progress_percentage=0.0,
             message="Queued for processing",
-            max_frames_requested=max_frames,
+            max_frames_requested=max_frames or 0,
+            rotation=rotation,
             results_dir=str(job_out_dir),
+            video_path=str(vpath),
+            has_source_video=has_video,
+            analysis_mode=analysis_mode,
+            sample_fps=sample_fps or (2.0 if analysis_mode == "FULL_BALANCED" else (5.0 if analysis_mode == "FULL_DETAILED" else None)),
         )
 
         with self._jobs_lock:
@@ -163,8 +219,11 @@ class JobManager:
             Path(video_path),
             job_out_dir,
             max_frames,
+            rotation,
+            analysis_mode,
+            sample_fps,
         )
-        logger.info(f"Submitted job {job_id} for video '{filename}' (max_frames={max_frames})")
+        logger.info(f"Submitted job {job_id} for video '{filename}' (mode={analysis_mode}, max_frames={max_frames}, rotation={rotation})")
         return record
 
     def _execute_job_worker(
@@ -172,7 +231,10 @@ class JobManager:
         job_id: str,
         video_path: Path,
         job_out_dir: Path,
-        max_frames: int,
+        max_frames: Optional[int],
+        rotation: int = 0,
+        analysis_mode: str = "FULL_BALANCED",
+        sample_fps: Optional[float] = None,
     ) -> None:
         """Worker thread entry point executing the VideoPipelineRunner."""
         record = self.get_job(job_id)
@@ -198,6 +260,9 @@ class JobManager:
                 job_id=job_id,
                 output_dir=job_out_dir,
                 max_frames=max_frames,
+                rotation=rotation,
+                analysis_mode=analysis_mode,
+                sample_fps=sample_fps,
                 progress_callback=_on_progress,
             )
 
@@ -210,7 +275,9 @@ class JobManager:
                 record.total_detections = result.total_detections
                 record.unique_tracks = result.unique_tracks
                 record.alerts_count = result.total_alerts
-                record.message = f"Completed successfully. {result.frames_processed} frames analyzed."
+                record.timeline_telemetry = result.timeline_telemetry
+                record.event_timeline = result.event_timeline
+                record.message = f"Completed successfully. {result.frames_processed} frames analyzed across video timeline."
                 record.result_summary = {
                     "frames_processed": result.frames_processed,
                     "total_detections": result.total_detections,
@@ -219,6 +286,7 @@ class JobManager:
                     "active_alerts": result.active_alerts,
                     "total_duration_seconds": result.total_duration_seconds,
                     "per_horizon_risk": result.per_horizon_risk,
+                    "timeline_telemetry": result.timeline_telemetry,
                 }
             logger.info(f"Job {job_id} completed successfully in {result.total_duration_seconds:.2f}s")
 
@@ -231,23 +299,24 @@ class JobManager:
                 record.error_message = str(exc)
                 record.message = f"Pipeline execution failed: {exc}"
         finally:
-            try:
-                if video_path.exists() and "uploads" in str(video_path):
-                    video_path.unlink()
-            except OSError:
-                pass
+            # Preserve user uploaded video for session traceability and audit retention
+            pass
 
     def get_job(self, job_id: str) -> Optional[JobRecord]:
         """Retrieve job record by ID."""
         with self._jobs_lock:
             return self._jobs.get(job_id)
 
-    def list_jobs(self, limit: int = 20) -> List[JobRecord]:
+    def list_jobs(self, limit: Any = 20) -> List[JobRecord]:
         """List recently submitted jobs sorted by creation timestamp descending."""
         with self._jobs_lock:
             jobs = list(self._jobs.values())
         jobs.sort(key=lambda j: j.created_at, reverse=True)
-        return jobs[:limit]
+        try:
+            lim = int(limit)
+            return jobs[:lim]
+        except (TypeError, ValueError):
+            return jobs[:20]
 
     def get_job_results(self, job_id: str) -> Optional[Dict[str, Any]]:
         """Retrieve full structured results.json artifact for a completed job."""
@@ -269,6 +338,52 @@ class JobManager:
                 rec.message = "Job cancelled by operator."
                 return True
         return False
+
+    def delete_job(self, job_id: str, delete_disk: bool = True) -> bool:
+        """Cancel if running, remove from memory, and optionally delete on-disk artifacts."""
+        with self._jobs_lock:
+            rec = self._jobs.pop(job_id, None)
+
+        # Check if directory exists on disk even if not in memory
+        target_dir = self.jobs_dir / job_id
+        if delete_disk and target_dir.exists() and target_dir.is_dir():
+            try:
+                shutil.rmtree(target_dir, ignore_errors=True)
+            except Exception as e:
+                logger.warning(f"Failed to delete disk directory for job {job_id}: {e}")
+
+        if rec and delete_disk and rec.results_dir:
+            try:
+                r_dir = Path(rec.results_dir)
+                if r_dir.exists() and r_dir.is_dir() and r_dir != target_dir:
+                    shutil.rmtree(r_dir, ignore_errors=True)
+            except Exception as e:
+                logger.warning(f"Failed to delete results_dir for job {job_id}: {e}")
+
+        logger.info(f"Deleted job {job_id} (delete_disk={delete_disk})")
+        return rec is not None or target_dir.exists()
+
+    def clean_stale_jobs(self) -> int:
+        """Remove sample, dummy, or corrupted test jobs from memory and disk."""
+        stale_ids = []
+        with self._jobs_lock:
+            for jid, rec in self._jobs.items():
+                is_sample = (
+                    "sample" in rec.filename.lower()
+                    or "scenario_a" in rec.filename.lower()
+                    or "dummy" in rec.filename.lower()
+                )
+                is_unbacked = not rec.has_source_video and (
+                    rec.frames_processed == 0 or rec.status == JobStatus.FAILED
+                )
+                if is_sample or is_unbacked:
+                    stale_ids.append(jid)
+
+        count = 0
+        for jid in stale_ids:
+            if self.delete_job(jid, delete_disk=True):
+                count += 1
+        return count
 
 
 def get_job_manager() -> JobManager:
