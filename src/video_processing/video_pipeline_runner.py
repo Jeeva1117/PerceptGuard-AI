@@ -348,6 +348,7 @@ def _compute_trajectories_and_kinematics(
             "track_id": tid,
             "class_name": trk.class_name,
             "confidence": round(float(trk.confidence), 3),
+            "track_lifecycle": getattr(trk, "track_lifecycle", "CONFIRMED"),
             "bbox": [round(c, 2) for c in bbox],
             "center": [round(cx, 2), round(cy, 2)],
             "speed_kmh": round(speed_kmh, 1),

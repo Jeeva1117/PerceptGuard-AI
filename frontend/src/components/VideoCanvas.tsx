@@ -39,7 +39,7 @@ function getTrackColor(trackId: number): string {
 export const VideoCanvas: React.FC<VideoCanvasProps> = ({
   showTrajectories: initialShowTrajectories = true,
   showDetections: initialShowDetections = true,
-  highlightTrackId = null,
+  highlightTrackId: propHighlightTrackId = null,
 }) => {
   const {
     activeJobId,
@@ -50,12 +50,15 @@ export const VideoCanvas: React.FC<VideoCanvasProps> = ({
     playbackMode,
     isVoiceMuted,
     videoRef,
+    selectedTrackId,
     setPlaybackMode,
     toggleVoiceMute,
     handleTimeUpdate,
     handleDurationChange,
     setIsPlaying,
   } = useJob();
+
+  const highlightTrackId = propHighlightTrackId ?? selectedTrackId;
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [videoError, setVideoError] = useState(false);

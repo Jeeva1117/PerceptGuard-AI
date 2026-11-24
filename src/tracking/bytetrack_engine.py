@@ -21,6 +21,7 @@ import sys
 import time
 from types import ModuleType
 from typing import Any, Dict, List, Optional, Sequence, Set, Tuple, Union
+from enum import Enum
 
 # Ensure project root is in sys.path
 _project_root = Path(__file__).resolve().parents[2]
@@ -125,6 +126,21 @@ class InvalidDetectionInputError(TrackingEngineError):
 
 
 # ==============================================================================
+# Domain Enumerations & Lifecycle States
+# ==============================================================================
+
+
+class TrackLifecycle(str, Enum):
+    """Formal lifecycle states for ByteTrack tracking."""
+
+    TENTATIVE = "TENTATIVE"
+    CONFIRMED = "CONFIRMED"
+    LOST = "LOST"
+    REIDENTIFIED = "REIDENTIFIED"
+    REMOVED = "REMOVED"
+
+
+# ==============================================================================
 # Data Contracts: TrackRecord
 # ==============================================================================
 
@@ -141,6 +157,7 @@ class TrackRecord:
         bbox_xyxy (List[float]): Bounding box in [x1, y1, x2, y2] coordinates.
         detection_index (Optional[int]): Originating detection index in source frame.
         track_status (str): Current status ('active', 'tracked', 'lost').
+        track_lifecycle (str): ByteTrack lifecycle state ('TENTATIVE', 'CONFIRMED', 'LOST', 'REIDENTIFIED', 'REMOVED').
     """
 
     track_id: int
@@ -150,6 +167,7 @@ class TrackRecord:
     bbox_xyxy: List[float]
     detection_index: Optional[int] = None
     track_status: str = "active"
+    track_lifecycle: str = "CONFIRMED"
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert track record to JSON-serializable dictionary."""
@@ -161,6 +179,7 @@ class TrackRecord:
             "bbox_xyxy": [round(float(c), 2) for c in self.bbox_xyxy],
             "detection_index": int(self.detection_index) if self.detection_index is not None else None,
             "track_status": str(self.track_status),
+            "track_lifecycle": str(self.track_lifecycle),
         }
 
 
@@ -245,6 +264,10 @@ class ByteTrackEngine:
 
         self._frame_count = 0
         self._unique_track_ids: Set[int] = set()
+        self._track_observations: Dict[int, int] = {}
+        self._active_track_ids: Set[int] = set()
+        self._lost_track_ids: Set[int] = set()
+        self._removed_track_ids: Set[int] = set()
 
     @staticmethod
     def _resolve_config(
@@ -397,6 +420,7 @@ class ByteTrackEngine:
             ) from e
 
         track_records: List[TrackRecord] = []
+        current_active_ids: Set[int] = set()
 
         if raw_tracks is not None and len(raw_tracks) > 0:
             for row in raw_tracks:
@@ -411,7 +435,20 @@ class ByteTrackEngine:
                 det_idx = int(row[7]) if len(row) > 7 and row[7] >= 0 else None
 
                 self._unique_track_ids.add(track_id)
+                current_active_ids.add(track_id)
                 cls_name = class_name_map.get(cls_id, str(cls_id))
+
+                # Track lifecycle state determination
+                obs_count = self._track_observations.get(track_id, 0) + 1
+                self._track_observations[track_id] = obs_count
+
+                if track_id in self._lost_track_ids:
+                    lifecycle = TrackLifecycle.REIDENTIFIED.value
+                    self._lost_track_ids.remove(track_id)
+                elif obs_count < 3:
+                    lifecycle = TrackLifecycle.TENTATIVE.value
+                else:
+                    lifecycle = TrackLifecycle.CONFIRMED.value
 
                 record = TrackRecord(
                     track_id=track_id,
@@ -421,8 +458,16 @@ class ByteTrackEngine:
                     bbox_xyxy=[x1, y1, x2, y2],
                     detection_index=det_idx,
                     track_status="active",
+                    track_lifecycle=lifecycle,
                 )
                 track_records.append(record)
+
+        # Mark previously active tracks not present in current frame as LOST
+        for prev_id in self._active_track_ids:
+            if prev_id not in current_active_ids:
+                self._lost_track_ids.add(prev_id)
+
+        self._active_track_ids = current_active_ids
 
         duration_ms = (time.perf_counter() - start_t) * 1000.0
         logger.debug(
@@ -445,4 +490,8 @@ class ByteTrackEngine:
             self.tracker.reset_id()
         self._frame_count = 0
         self._unique_track_ids.clear()
+        self._track_observations.clear()
+        self._active_track_ids.clear()
+        self._lost_track_ids.clear()
+        self._removed_track_ids.clear()
         logger.info("ByteTrackEngine state reset successfully.")

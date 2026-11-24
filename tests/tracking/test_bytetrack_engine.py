@@ -259,6 +259,24 @@ class TestByteTrackEngine(unittest.TestCase):
         self.assertEqual(d["confidence"], 0.8765)
         self.assertEqual(d["bbox_xyxy"], [100.12, 200.46, 300.79, 400.01])
         self.assertEqual(d["detection_index"], 3)
+        self.assertEqual(d["track_lifecycle"], "CONFIRMED")
+
+    def test_18_track_lifecycle_progression(self) -> None:
+        """Test track lifecycle progression from TENTATIVE to CONFIRMED."""
+        dets1 = [{"bbox_xyxy": [100.0, 100.0, 200.0, 200.0], "confidence": 0.9, "class_id": 2}]
+        tracks1 = self.engine.update(dets1)
+        self.assertEqual(len(tracks1), 1)
+        self.assertEqual(tracks1[0].track_lifecycle, "TENTATIVE")
+
+        # Frame 2: Still tentative
+        tracks2 = self.engine.update(dets1)
+        self.assertEqual(len(tracks2), 1)
+        self.assertEqual(tracks2[0].track_lifecycle, "TENTATIVE")
+
+        # Frame 3: Reached 3 observations -> CONFIRMED
+        tracks3 = self.engine.update(dets1)
+        self.assertEqual(len(tracks3), 1)
+        self.assertEqual(tracks3[0].track_lifecycle, "CONFIRMED")
 
 
 if __name__ == "__main__":

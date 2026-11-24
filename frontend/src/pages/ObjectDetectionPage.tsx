@@ -15,9 +15,14 @@ import { VideoCanvas } from '../components/VideoCanvas';
 import { PlaybackControls } from '../components/PlaybackControls';
 import { FilterBar, DEFAULT_FILTER_STATE, type FilterState } from '../components/FilterBar';
 
-export const ObjectDetectionPage: React.FC = () => {
-  const { results, currentFrame, currentFrameIndex } = useJob();
-  const [selectedTrackId, setSelectedTrackId] = useState<number | null>(null);
+export interface ObjectDetectionPageProps {
+  isEmbedded?: boolean;
+}
+
+export const ObjectDetectionPage: React.FC<ObjectDetectionPageProps> = ({ isEmbedded = false }) => {
+  const { results, currentFrame, currentFrameIndex, selectedTrackId: globalTrackId, setSelectedTrackId: setGlobalTrackId } = useJob();
+  const selectedTrackId = globalTrackId;
+  const setSelectedTrackId = setGlobalTrackId;
   const [filters, setFilters] = useState<FilterState>({
     ...DEFAULT_FILTER_STATE,
     minConfidence: 0.25,
@@ -117,7 +122,105 @@ export const ObjectDetectionPage: React.FC = () => {
         showSeverityFilters={false}
       />
 
-      {/* Main Grid: Visual Feed & Playback Scrubber */}
+      {/* Main Grid or Embedded View */}
+      {isEmbedded ? (
+        <div className="space-y-4">
+          {/* Reliability Forecasts Card (H1, H3, H5) */}
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-cyan-400" />
+                Anticipated Reliability Forecast
+              </span>
+              <span className="text-[10px] font-mono text-slate-500 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                LSTM CPU
+              </span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { horizon: 'H1 (+1 Frame)', key: 'h1', time: '+0.03s' },
+                { horizon: 'H3 (+3 Frames)', key: 'h3', time: '+0.10s' },
+                { horizon: 'H5 (+5 Frames)', key: 'h5', time: '+0.17s' },
+              ].map(({ horizon, key, time }) => {
+                const score = relScores[key] ?? 0.85;
+                const pct = Math.round(score * 100);
+                return (
+                  <div key={key} className="bg-slate-950/80 border border-slate-800/80 rounded-xl p-3 text-center">
+                    <span className="text-[10px] text-slate-500 block uppercase font-mono">{horizon} ({time})</span>
+                    <span className="text-2xl font-extrabold font-mono text-white block my-1">
+                      {pct}%
+                    </span>
+                    <span
+                      className={`text-[10px] font-medium px-2 py-0.5 rounded-full inline-block ${
+                        pct >= 80
+                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                          : pct >= 60
+                          ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                          : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                      }`}
+                    >
+                      {pct >= 80 ? 'Reliable' : pct >= 60 ? 'Uncertain' : 'Failure Risk'}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Active Classes Breakdown Chips */}
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                <Layers className="w-4 h-4 text-cyan-400" />
+                Active Class Distribution
+              </span>
+              <span className="text-xs font-mono text-cyan-400 font-semibold">
+                {tracks.length} active tracks
+              </span>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {Object.keys(classCounts).length === 0 ? (
+                <p className="text-xs text-slate-500 italic">No targets above confidence threshold in this frame.</p>
+              ) : (
+                Object.entries(classCounts).map(([cls, count]) => (
+                  <div
+                    key={cls}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-xs font-medium text-slate-200"
+                  >
+                    {getClassIcon(cls)}
+                    <span className="capitalize">{cls}</span>
+                    <span className="px-1.5 py-0.2 rounded bg-slate-800 text-cyan-400 font-mono text-[11px] font-bold">
+                      {count}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Confidence Slider Filter */}
+            <div className="pt-2 border-t border-slate-800/80">
+              <div className="flex justify-between items-center text-xs mb-1.5">
+                <span className="text-slate-400 flex items-center gap-1">
+                  <Filter className="w-3.5 h-3.5 text-slate-500" />
+                  Min Confidence Filter:
+                </span>
+                <span className="font-mono text-cyan-400 font-bold">{Math.round(filters.minConfidence * 100)}%</span>
+              </div>
+              <input
+                type="range"
+                min="0.10"
+                max="0.85"
+                step="0.05"
+                value={filters.minConfidence}
+                onChange={(e) => setFilters((prev) => ({ ...prev, minConfidence: Number(e.target.value) }))}
+                className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+              />
+            </div>
+          </div>
+        </div>
+      ) : (
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left 7 Cols: Video Canvas & Scrubber */}
         <div className="lg:col-span-7 space-y-4">
@@ -223,6 +326,7 @@ export const ObjectDetectionPage: React.FC = () => {
           </div>
         </div>
       </div>
+      )}
 
       {/* Tracked Objects Table */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg">
@@ -243,6 +347,7 @@ export const ObjectDetectionPage: React.FC = () => {
                 <th className="py-2.5 px-3">Track ID</th>
                 <th className="py-2.5 px-3">Class</th>
                 <th className="py-2.5 px-3">Confidence</th>
+                <th className="py-2.5 px-3">Lifecycle State</th>
                 <th className="py-2.5 px-3">BBox Coordinates (x1, y1, x2, y2)</th>
                 <th className="py-2.5 px-3">Centroid (cx, cy)</th>
                 <th className="py-2.5 px-3 text-right">Actions</th>
@@ -251,7 +356,7 @@ export const ObjectDetectionPage: React.FC = () => {
             <tbody className="divide-y divide-slate-800/60 font-mono">
               {tracks.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-6 text-center text-slate-500 italic">
+                  <td colSpan={7} className="py-6 text-center text-slate-500 italic">
                     No active tracks meeting filter criteria in this frame.
                   </td>
                 </tr>
@@ -261,6 +366,7 @@ export const ObjectDetectionPage: React.FC = () => {
                   const cx = Math.round((x1 + x2) / 2);
                   const cy = Math.round((y1 + y2) / 2);
                   const isSelected = selectedTrackId === t.track_id;
+                  const lifecycle = t.track_lifecycle || 'CONFIRMED';
 
                   return (
                     <tr
@@ -284,6 +390,21 @@ export const ObjectDetectionPage: React.FC = () => {
                       <td className="py-2.5 px-3">
                         <span className="px-2 py-0.5 rounded bg-slate-950 border border-slate-800 text-slate-200">
                           {(t.confidence * 100).toFixed(1)}%
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
+                            lifecycle === 'CONFIRMED'
+                              ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                              : lifecycle === 'TENTATIVE'
+                              ? 'bg-amber-500/15 text-amber-400 border-amber-500/30'
+                              : lifecycle === 'REIDENTIFIED'
+                              ? 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30'
+                              : 'bg-slate-800 text-slate-400 border-slate-700'
+                          }`}
+                        >
+                          {lifecycle}
                         </span>
                       </td>
                       <td className="py-2.5 px-3 text-slate-400">

@@ -20,7 +20,11 @@ import { VideoCanvas } from '../components/VideoCanvas';
 import { PlaybackControls } from '../components/PlaybackControls';
 import { FilterBar, DEFAULT_FILTER_STATE, type FilterState } from '../components/FilterBar';
 
-export const SafetyAlertsPage: React.FC = () => {
+export interface SafetyAlertsPageProps {
+  isEmbedded?: boolean;
+}
+
+export const SafetyAlertsPage: React.FC<SafetyAlertsPageProps> = ({ isEmbedded = false }) => {
   const { results, currentFrame, currentFrameIndex, seekToFrame, seekToTimestamp } = useJob();
   const [ttcThreshold, setTtcThreshold] = useState<number>(1.8);
   const [visThreshold, setVisThreshold] = useState<number>(60);
@@ -298,15 +302,17 @@ export const SafetyAlertsPage: React.FC = () => {
       </div>
 
       {/* Main Grid: Visual Feed & Playback Scrubber */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className={isEmbedded ? "space-y-4" : "grid grid-cols-1 lg:grid-cols-12 gap-6"}>
         {/* Left 7 Cols: Video Canvas & Scrubber */}
-        <div className="lg:col-span-7 space-y-4">
-          <VideoCanvas />
-          <PlaybackControls />
-        </div>
+        {!isEmbedded && (
+          <div className="lg:col-span-7 space-y-4">
+            <VideoCanvas />
+            <PlaybackControls />
+          </div>
+        )}
 
         {/* Right 5 Cols: Explainable Evidence Chain & Threshold Controls */}
-        <div className="lg:col-span-5 space-y-4">
+        <div className={isEmbedded ? "space-y-4" : "lg:col-span-5 space-y-4"}>
           {/* Explainable Evidence Chain Card */}
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-3">
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">

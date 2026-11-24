@@ -78,6 +78,8 @@ export interface Detection {
   class_name: string;
 }
 
+export type TrackLifecycleState = 'TENTATIVE' | 'CONFIRMED' | 'LOST' | 'REIDENTIFIED' | 'REMOVED';
+
 export interface Track {
   track_id: number;
   bbox_xyxy: [number, number, number, number];
@@ -86,6 +88,8 @@ export interface Track {
   class_name: string;
   start_frame?: number;
   age?: number;
+  track_status?: string;
+  track_lifecycle?: TrackLifecycleState;
 }
 
 export interface VisualQuality {
@@ -253,6 +257,7 @@ export interface TrajectoryData {
   class_name: string;
   object_class?: string;
   confidence: number;
+  track_lifecycle?: TrackLifecycleState;
   bbox: [number, number, number, number];
   center: [number, number];
   motion_state?: 'STATIONARY' | 'CRUISING' | 'ACCELERATING' | 'DECELERATING' | 'TURNING_LEFT' | 'TURNING_RIGHT' | 'UNSTABLE';

@@ -14,15 +14,18 @@ import { useJob } from '../context/JobContext';
 import { VideoCanvas } from '../components/VideoCanvas';
 import { PlaybackControls } from '../components/PlaybackControls';
 
-export const TrajectoryPredictionPage: React.FC = () => {
-  const { results, currentFrame } = useJob();
+export interface TrajectoryPredictionPageProps {
+  isEmbedded?: boolean;
+}
+
+export const TrajectoryPredictionPage: React.FC<TrajectoryPredictionPageProps> = ({ isEmbedded = false }) => {
+  const { results, currentFrame, selectedTrackId: globalSelectedTrackId, setSelectedTrackId } = useJob();
   const [selectedHorizon, setSelectedHorizon] = useState<'h1' | 'h3' | 'h5'>('h3');
-  const [selectedTrackId, setSelectedTrackId] = useState<number | null>(null);
   const [selectedHypothesisMode, setSelectedHypothesisMode] = useState<string>('PRIMARY_CONTINUATION');
 
   const trajectories = currentFrame?.trajectories || [];
   const selectedTrack =
-    trajectories.find((t) => t.track_id === selectedTrackId) ||
+    trajectories.find((t) => t.track_id === globalSelectedTrackId) ||
     trajectories[0] ||
     null;
 
@@ -119,12 +122,17 @@ export const TrajectoryPredictionPage: React.FC = () => {
       </div>
 
       {/* Main Grid: Visual Feed & Playback Scrubber */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className={isEmbedded ? "space-y-4" : "grid grid-cols-1 lg:grid-cols-12 gap-6"}>
         {/* Left 7 Cols: Video Canvas & Scrubber */}
-        <div className="lg:col-span-7 space-y-4">
-          <VideoCanvas highlightTrackId={selectedTrack?.track_id ?? null} />
-          <PlaybackControls />
+        {!isEmbedded && (
+          <div className="lg:col-span-7 space-y-4">
+            <VideoCanvas highlightTrackId={selectedTrack?.track_id ?? null} />
+            <PlaybackControls />
+          </div>
+        )}
 
+        {/* Right 5 Cols: Horizon Selector & Kinematics Telemetry */}
+        <div className={isEmbedded ? "space-y-4" : "lg:col-span-5 space-y-4"}>
           {/* Multimodal Hypotheses Card */}
           {selectedTrack && selectedTrack.alternative_hypotheses && selectedTrack.alternative_hypotheses.length > 0 && (
             <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
@@ -193,10 +201,7 @@ export const TrajectoryPredictionPage: React.FC = () => {
               )}
             </div>
           )}
-        </div>
 
-        {/* Right 5 Cols: Horizon Selector & Kinematics Telemetry */}
-        <div className="lg:col-span-5 space-y-4">
           {/* Horizon Selection Pill Group */}
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg space-y-3">
             <div className="flex items-center justify-between">

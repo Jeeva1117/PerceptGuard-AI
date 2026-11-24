@@ -31,6 +31,8 @@ interface JobContextType {
   isBackendOnline: boolean;
   error: string | null;
   videoRef: React.RefObject<HTMLVideoElement | null>;
+  selectedTrackId: number | null;
+  setSelectedTrackId: (id: number | null) => void;
   refreshJobs: () => Promise<void>;
   selectJob: (jobId: string) => Promise<void>;
   clearActiveJob: () => void;
@@ -87,6 +89,7 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isBackendOnline, setIsBackendOnline] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedTrackId, setSelectedTrackId] = useState<number | null>(null);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const prevJobIdRef = useRef<string | null>(null);
@@ -381,6 +384,8 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         isBackendOnline,
         error,
         videoRef,
+        selectedTrackId,
+        setSelectedTrackId,
         refreshJobs,
         selectJob,
         clearActiveJob,

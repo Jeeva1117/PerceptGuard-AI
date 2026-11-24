@@ -26,18 +26,92 @@ export const Header: React.FC = () => {
   } = useJob();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { currentFrame } = useJob();
+
+  // Top Status Banner: Driving Status, Collision Status, Risk Level
+  const hasData = Boolean(results && results.frames && results.frames.length > 0);
+  
+  let drivingStatus: 'NORMAL' | 'CAUTION' | 'HAZARD' | 'UNKNOWN' = 'UNKNOWN';
+  let collisionStatus: 'NO COLLISION RISK DETECTED' | 'COLLISION RISK DETECTED' | 'UNKNOWN' = 'UNKNOWN';
+  let riskLevel: 'LOW' | 'MODERATE' | 'HIGH' | 'CRITICAL' | 'UNKNOWN' = 'UNKNOWN';
+
+  if (hasData && currentFrame) {
+    const colRisk = currentFrame.collision_risk;
+    const safety = currentFrame.safety_recommendation;
+
+    riskLevel = (colRisk?.risk_state as any) || 'LOW';
+
+    const hasCollision = riskLevel === 'CRITICAL' || (colRisk?.conflicting_pairs && colRisk.conflicting_pairs.length > 0);
+    if (hasCollision || safety?.urgency_level === 'CRITICAL') {
+      collisionStatus = 'COLLISION RISK DETECTED';
+    } else {
+      collisionStatus = 'NO COLLISION RISK DETECTED';
+    }
+
+    const recState: string = safety?.recommendation_state || 'NORMAL';
+    if (riskLevel === 'CRITICAL' || safety?.urgency_level === 'CRITICAL' || recState === 'STOP RECOMMENDED' || recState === 'HAZARD') {
+      drivingStatus = 'HAZARD';
+    } else if (riskLevel === 'HIGH' || riskLevel === 'MODERATE' || safety?.urgency_level === 'WARNING' || recState === 'CAUTION' || recState === 'WARNING' || recState === 'REDUCE SPEED' || recState === 'PREPARE TO STOP') {
+      drivingStatus = 'CAUTION';
+    } else {
+      drivingStatus = 'NORMAL';
+    }
+  } else if (hasData) {
+    drivingStatus = 'NORMAL';
+    collisionStatus = 'NO COLLISION RISK DETECTED';
+    riskLevel = 'LOW';
+  }
+
+  const getDrivingBadgeColor = (s: string) => {
+    switch (s) {
+      case 'NORMAL':
+        return 'bg-emerald-500/15 text-emerald-400 border-emerald-500/40';
+      case 'CAUTION':
+        return 'bg-amber-500/15 text-amber-400 border-amber-500/40';
+      case 'HAZARD':
+        return 'bg-rose-500/20 text-rose-400 border-rose-500/50 animate-pulse';
+      default:
+        return 'bg-slate-800 text-slate-400 border-slate-700';
+    }
+  };
+
+  const getCollisionBadgeColor = (s: string) => {
+    switch (s) {
+      case 'NO COLLISION RISK DETECTED':
+        return 'bg-emerald-500/15 text-emerald-400 border-emerald-500/40';
+      case 'COLLISION RISK DETECTED':
+        return 'bg-rose-500/20 text-rose-400 border-rose-500/50 animate-pulse';
+      default:
+        return 'bg-slate-800 text-slate-400 border-slate-700';
+    }
+  };
+
+  const getRiskBadgeColor = (s: string) => {
+    switch (s) {
+      case 'LOW':
+        return 'bg-emerald-500/15 text-emerald-400 border-emerald-500/40';
+      case 'MODERATE':
+        return 'bg-amber-500/15 text-amber-400 border-amber-500/40';
+      case 'HIGH':
+        return 'bg-orange-500/15 text-orange-400 border-orange-500/40';
+      case 'CRITICAL':
+        return 'bg-rose-500/20 text-rose-400 border-rose-500/50 animate-pulse';
+      default:
+        return 'bg-slate-800 text-slate-400 border-slate-700';
+    }
+  };
 
   return (
     <>
-      <header className="h-16 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-6 flex items-center justify-between shrink-0 select-none">
+      <header className="h-16 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-6 flex items-center justify-between shrink-0 select-none gap-4">
         {/* Left Section: Active Job Selector & Status */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 shrink-0">
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-slate-400">Target Stream:</span>
             <select
               value={activeJobId || ''}
               onChange={(e) => selectJob(e.target.value)}
-              className="bg-slate-950 border border-slate-700/80 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-cyan-500 font-mono max-w-[280px] truncate"
+              className="bg-slate-950 border border-slate-700/80 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-cyan-500 font-mono max-w-[220px] truncate"
             >
               <option value="">+ New Video Upload / Clean State</option>
               {jobs.map((j) => {
@@ -72,7 +146,7 @@ export const Header: React.FC = () => {
 
           {/* Active Job State Pill */}
           {activeJob && (
-            <div className="hidden lg:flex items-center gap-2 text-xs">
+            <div className="hidden xl:flex items-center gap-2 text-xs">
               <span
                 className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${
                   activeJob.status === 'COMPLETED'
@@ -91,16 +165,37 @@ export const Header: React.FC = () => {
               </span>
             </div>
           )}
+        </div>
 
-          {/* Calibration Status Badge */}
-          <span className="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-800/80 border border-slate-700 text-[10px] font-mono text-cyan-300">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-            {results?.calibration_status || 'PROVISIONAL CALIBRATION'}
-          </span>
+        {/* Center Section: Master Standardized Status Banner */}
+        <div className="flex items-center gap-2.5 overflow-x-auto py-1">
+          {/* Driving Status */}
+          <div className="flex items-center gap-1.5 bg-slate-950/70 border border-slate-800 px-2.5 py-1 rounded-xl">
+            <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Driving:</span>
+            <span className={`px-2 py-0.5 rounded-md text-[11px] font-extrabold font-mono border ${getDrivingBadgeColor(drivingStatus)}`}>
+              {drivingStatus}
+            </span>
+          </div>
+
+          {/* Collision Status */}
+          <div className="flex items-center gap-1.5 bg-slate-950/70 border border-slate-800 px-2.5 py-1 rounded-xl">
+            <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Collision:</span>
+            <span className={`px-2 py-0.5 rounded-md text-[11px] font-extrabold font-mono border ${getCollisionBadgeColor(collisionStatus)}`}>
+              {collisionStatus}
+            </span>
+          </div>
+
+          {/* Risk Level */}
+          <div className="flex items-center gap-1.5 bg-slate-950/70 border border-slate-800 px-2.5 py-1 rounded-xl">
+            <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Risk:</span>
+            <span className={`px-2 py-0.5 rounded-md text-[11px] font-extrabold font-mono border ${getRiskBadgeColor(riskLevel)}`}>
+              {riskLevel}
+            </span>
+          </div>
         </div>
 
         {/* Right Section: Telemetry Counters, API Indicator & Upload Button */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 shrink-0">
           {/* Quick Metrics from Current Job */}
           {results && results.frames && results.frames.length > 0 && (
             <div className="hidden md:flex items-center gap-3 text-xs text-slate-400 pr-3 border-r border-slate-800">

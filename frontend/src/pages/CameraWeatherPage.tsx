@@ -27,7 +27,11 @@ import {
   ComposedChart,
 } from 'recharts';
 
-export const CameraWeatherPage: React.FC = () => {
+export interface CameraWeatherPageProps {
+  isEmbedded?: boolean;
+}
+
+export const CameraWeatherPage: React.FC<CameraWeatherPageProps> = ({ isEmbedded = false }) => {
   const { results, currentFrame, activeJob } = useJob();
 
   const weather = currentFrame?.weather_intelligence;
@@ -219,10 +223,10 @@ export const CameraWeatherPage: React.FC = () => {
       </div>
 
       {/* Primary Video Upload & Ingestion Interface */}
-      <VideoUploadSection />
+      {!isEmbedded && <VideoUploadSection />}
 
       {/* Stream Failure Alert Banner */}
-      {activeJob?.status === 'FAILED' && (
+      {!isEmbedded && activeJob?.status === 'FAILED' && (
         <div className="bg-rose-500/10 border border-rose-500/30 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="p-2.5 bg-rose-500/20 text-rose-400 rounded-xl shrink-0">
@@ -242,6 +246,169 @@ export const CameraWeatherPage: React.FC = () => {
       )}
 
       {/* Main Grid: Visual Feed & Playback Scrubber */}
+      {isEmbedded ? (
+        <div className="space-y-4">
+          {/* Section B: Camera Condition Summary */}
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg relative overflow-hidden">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                <Gauge className="w-4 h-4 text-cyan-400" />
+                Optical Visibility Index
+              </span>
+              <span
+                className={`px-3 py-1 rounded-full text-xs font-bold border ${getConditionColor(
+                  primaryCondition
+                )}`}
+              >
+                {primaryCondition}
+              </span>
+            </div>
+
+            <div className="flex items-baseline justify-between mb-2">
+              <div className="flex items-baseline gap-3">
+                <span className="text-4xl font-extrabold text-white font-mono tracking-tight">
+                  {visScore != null ? `${visScore.toFixed(0)}%` : '--'}
+                </span>
+                <span
+                  className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${
+                    visLevel === 'EXCELLENT'
+                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                      : visLevel === 'GOOD'
+                      ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20'
+                      : visLevel === 'DEGRADED'
+                      ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                      : visLevel === 'CRITICAL'
+                      ? 'bg-red-500/10 text-red-400 border-red-500/20 animate-pulse'
+                      : 'bg-slate-800 text-slate-400 border-slate-700'
+                  }`}
+                >
+                  {visLevel}
+                </span>
+              </div>
+
+              <div className="text-right">
+                <span className="text-[10px] text-slate-500 uppercase block">Camera Quality</span>
+                <strong className="text-sm font-mono text-cyan-300">
+                  {camQuality != null ? `${camQuality.toFixed(0)} / 100` : '-- / 100'}
+                </strong>
+              </div>
+            </div>
+
+            {/* Visibility Gauge Bar */}
+            <div className="w-full bg-slate-950 h-2.5 rounded-full overflow-hidden border border-slate-800 mb-4">
+              <div
+                className={`h-full transition-all duration-300 rounded-full ${
+                  visScore != null && visScore >= 80
+                    ? 'bg-gradient-to-r from-emerald-500 to-cyan-500'
+                    : visScore != null && visScore >= 65
+                    ? 'bg-gradient-to-r from-cyan-500 to-blue-500'
+                    : visScore != null && visScore >= 45
+                    ? 'bg-gradient-to-r from-amber-500 to-yellow-500'
+                    : 'bg-gradient-to-r from-red-600 to-rose-500'
+                }`}
+                style={{ width: `${visScore != null ? Math.max(5, Math.min(100, visScore)) : 0}%` }}
+              />
+            </div>
+
+            {/* Confidence & Uncertainty Chips */}
+            <div className="grid grid-cols-2 gap-2 pb-3 mb-3 border-b border-slate-800/80 text-xs">
+              <div className="bg-slate-950 rounded-xl p-2.5 border border-slate-800">
+                <span className="text-[10px] text-slate-500 uppercase block">Confidence</span>
+                <strong className="text-xs font-mono text-emerald-400">
+                  {confidence != null ? `${confidence}%` : '--%'}
+                </strong>
+              </div>
+              <div className="bg-slate-950 rounded-xl p-2.5 border border-slate-800">
+                <span className="text-[10px] text-slate-500 uppercase block">Uncertainty</span>
+                <strong className="text-xs font-mono text-amber-400">
+                  {uncertainty != null ? `±${uncertainty}%` : '±--%'}
+                </strong>
+              </div>
+            </div>
+
+            {/* Explainable Reasons */}
+            <div className="space-y-1.5">
+              <span className="text-[11px] font-semibold uppercase text-slate-500">
+                Explainable Diagnostics
+              </span>
+              <div className="space-y-1 bg-slate-950/70 rounded-xl p-3 border border-slate-800 text-xs text-slate-300">
+                {degradationReasons.map((line, i) => (
+                  <p key={i} className="flex items-start gap-2">
+                    <span className="text-cyan-400 font-mono mt-0.5">•</span>
+                    <span>{line}</span>
+                  </p>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Section E: Perception Impact Interface Card */}
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                <ShieldAlert className="w-4 h-4 text-cyan-400" />
+                Downstream Perception Impact
+              </span>
+              <span className="text-[10px] font-mono text-cyan-400 bg-cyan-950 px-2 py-0.5 rounded border border-cyan-800/60">
+                Estimated Indicator
+              </span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="bg-slate-950 rounded-xl p-2.5 border border-slate-800">
+                <span className="text-[10px] text-slate-500 uppercase block">Conf Penalty</span>
+                <strong className="text-sm font-mono text-rose-400">
+                  {hasData ? `-${((perceptionImpact?.expected_confidence_penalty ?? 0.05) * 100).toFixed(1)}%` : '--'}
+                </strong>
+              </div>
+              <div className="bg-slate-950 rounded-xl p-2.5 border border-slate-800">
+                <span className="text-[10px] text-slate-500 uppercase block">Boundary Risk</span>
+                <span
+                  className={`text-[11px] font-mono font-bold block mt-0.5 ${
+                    !hasData
+                      ? 'text-slate-500'
+                      : perceptionImpact?.boundary_degradation_risk === 'CRITICAL'
+                      ? 'text-red-400'
+                      : perceptionImpact?.boundary_degradation_risk === 'HIGH'
+                      ? 'text-orange-400'
+                      : perceptionImpact?.boundary_degradation_risk === 'MODERATE'
+                      ? 'text-amber-400'
+                      : 'text-emerald-400'
+                  }`}
+                >
+                  {hasData ? (perceptionImpact?.boundary_degradation_risk ?? 'LOW') : 'UNKNOWN'}
+                </span>
+              </div>
+              <div className="bg-slate-950 rounded-xl p-2.5 border border-slate-800">
+                <span className="text-[10px] text-slate-500 uppercase block">Small Target Risk</span>
+                <span
+                  className={`text-[11px] font-mono font-bold block mt-0.5 ${
+                    !hasData
+                      ? 'text-slate-500'
+                      : perceptionImpact?.small_object_risk === 'CRITICAL'
+                      ? 'text-red-400'
+                      : perceptionImpact?.small_object_risk === 'HIGH'
+                      ? 'text-orange-400'
+                      : perceptionImpact?.small_object_risk === 'MODERATE'
+                      ? 'text-amber-400'
+                      : 'text-emerald-400'
+                  }`}
+                >
+                  {hasData ? (perceptionImpact?.small_object_risk ?? 'LOW') : 'UNKNOWN'}
+                </span>
+              </div>
+            </div>
+
+            <div className="bg-slate-950/80 rounded-xl p-3 border border-slate-800 text-[11px] text-slate-300 flex items-start gap-2">
+              <span className="font-semibold text-cyan-400 uppercase tracking-wider shrink-0">Mode:</span>
+              <span>
+                <strong>{hasData ? (perceptionImpact?.suggested_detection_sensitivity ?? 'NORMAL') : 'INACTIVE'}</strong> —{' '}
+                {hasData ? (perceptionImpact?.rationale || 'Nominal optical conditions.') : 'No frame telemetry available.'}
+              </span>
+            </div>
+          </div>
+        </div>
+      ) : (
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left 7 Cols: Video Canvas & Scrubber */}
         <div className="lg:col-span-7 space-y-4">
@@ -412,6 +579,7 @@ export const CameraWeatherPage: React.FC = () => {
           </div>
         </div>
       </div>
+      )}
 
       {/* Section C: Multi-Condition Analysis Grid (Rain, Fog, Blur, Darkness, Glare) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">

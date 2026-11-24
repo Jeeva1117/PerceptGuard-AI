@@ -14,7 +14,11 @@ import { useJob } from '../context/JobContext';
 import { VideoCanvas } from '../components/VideoCanvas';
 import { PlaybackControls } from '../components/PlaybackControls';
 
-export const CollisionRiskPage: React.FC = () => {
+export interface CollisionRiskPageProps {
+  isEmbedded?: boolean;
+}
+
+export const CollisionRiskPage: React.FC<CollisionRiskPageProps> = ({ isEmbedded = false }) => {
   const { results, currentFrame } = useJob();
 
   const colRisk = currentFrame?.collision_risk;
@@ -127,12 +131,17 @@ export const CollisionRiskPage: React.FC = () => {
       </div>
 
       {/* Main Grid: Visual Feed & Playback Scrubber */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className={isEmbedded ? "space-y-4" : "grid grid-cols-1 lg:grid-cols-12 gap-6"}>
         {/* Left 7 Cols: Video Canvas & Scrubber */}
-        <div className="lg:col-span-7 space-y-4">
-          <VideoCanvas highlightTrackId={closestTrack} />
-          <PlaybackControls />
+        {!isEmbedded && (
+          <div className="lg:col-span-7 space-y-4">
+            <VideoCanvas highlightTrackId={closestTrack} />
+            <PlaybackControls />
+          </div>
+        )}
 
+        {/* Right 5 Cols: TTC & Fused Collision Risk Telemetry */}
+        <div className={isEmbedded ? "space-y-4" : "lg:col-span-5 space-y-4"}>
           {/* Explainable Contributing Factors Card */}
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-3">
             <div className="flex items-center justify-between">
@@ -168,10 +177,7 @@ export const CollisionRiskPage: React.FC = () => {
               </div>
             )}
           </div>
-        </div>
 
-        {/* Right 5 Cols: TTC & Fused Collision Risk Telemetry */}
-        <div className="lg:col-span-5 space-y-4">
           {/* TTC Primary Hazard Card */}
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg relative overflow-hidden space-y-4">
             <div className="flex items-center justify-between">
