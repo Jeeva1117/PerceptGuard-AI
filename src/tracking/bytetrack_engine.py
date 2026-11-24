@@ -108,6 +108,20 @@ from src.tracking.tracker_config import (
 
 logger = logging.getLogger("PerceptGuard.ByteTrackEngine")
 
+# Standard COCO road user class mapping for reliable semantic tracking
+DEFAULT_ROAD_CLASSES: Dict[int, str] = {
+    0: "person",
+    1: "bicycle",
+    2: "car",
+    3: "motorcycle",
+    4: "airplane",
+    5: "bus",
+    6: "train",
+    7: "truck",
+    9: "traffic light",
+    11: "stop sign",
+}
+
 # ==============================================================================
 # Domain Exceptions
 # ==============================================================================
@@ -265,6 +279,7 @@ class ByteTrackEngine:
         self._frame_count = 0
         self._unique_track_ids: Set[int] = set()
         self._track_observations: Dict[int, int] = {}
+        self._track_classes: Dict[int, Tuple[int, str]] = {}
         self._active_track_ids: Set[int] = set()
         self._lost_track_ids: Set[int] = set()
         self._removed_track_ids: Set[int] = set()
@@ -334,17 +349,21 @@ class ByteTrackEngine:
                 bbox = det.get("bbox_xyxy")
                 conf = det.get("confidence")
                 cls_id = det.get("class_id")
-                cls_name = det.get("class_name", str(cls_id))
+                cls_name = det.get("class_name")
+                if not cls_name or cls_name == str(cls_id):
+                    cls_name = DEFAULT_ROAD_CLASSES.get(int(cls_id) if cls_id is not None else -1, str(cls_id))
             elif hasattr(det, "bbox_xyxy") and hasattr(det, "confidence"):
                 bbox = getattr(det, "bbox_xyxy")
                 conf = getattr(det, "confidence")
                 cls_id = getattr(det, "class_id")
-                cls_name = getattr(det, "class_name", str(cls_id))
+                cls_name = getattr(det, "class_name", None)
+                if not cls_name or cls_name == str(cls_id):
+                    cls_name = DEFAULT_ROAD_CLASSES.get(int(cls_id) if cls_id is not None else -1, str(cls_id))
             elif isinstance(det, (list, tuple, np.ndarray)) and len(det) >= 6:
                 bbox = list(det[:4])
                 conf = float(det[4])
                 cls_id = int(det[5])
-                cls_name = str(cls_id)
+                cls_name = DEFAULT_ROAD_CLASSES.get(cls_id, str(cls_id))
             else:
                 raise InvalidDetectionInputError(
                     f"Unsupported detection record format at index {idx}: {det}"
@@ -436,7 +455,20 @@ class ByteTrackEngine:
 
                 self._unique_track_ids.add(track_id)
                 current_active_ids.add(track_id)
-                cls_name = class_name_map.get(cls_id, str(cls_id))
+
+                # Class identification with persistence across occlusions and confidence dips
+                raw_cls_name = class_name_map.get(cls_id, DEFAULT_ROAD_CLASSES.get(cls_id, str(cls_id)))
+                if track_id in self._track_classes:
+                    prev_cls_id, prev_cls_name = self._track_classes[track_id]
+                    # Retain persistent class if current is generic/numeric or score is low
+                    if raw_cls_name == str(cls_id) or score < 0.35:
+                        cls_id, cls_name = prev_cls_id, prev_cls_name
+                    else:
+                        cls_name = raw_cls_name
+                        self._track_classes[track_id] = (cls_id, cls_name)
+                else:
+                    cls_name = raw_cls_name
+                    self._track_classes[track_id] = (cls_id, cls_name)
 
                 # Track lifecycle state determination
                 obs_count = self._track_observations.get(track_id, 0) + 1
@@ -491,6 +523,7 @@ class ByteTrackEngine:
         self._frame_count = 0
         self._unique_track_ids.clear()
         self._track_observations.clear()
+        self._track_classes.clear()
         self._active_track_ids.clear()
         self._lost_track_ids.clear()
         self._removed_track_ids.clear()

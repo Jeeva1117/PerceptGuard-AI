@@ -1076,36 +1076,42 @@ class VideoPipelineRunner:
             # Save raw frame
             cv2.imwrite(str(raw_frame_path), frame_bgr)
 
-            # --- A. Detection (YOLO) ---
+            # --- A. Detection (YOLO with road user classes) ---
             t0 = time.perf_counter()
             rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
+            # Predict with conf=0.10 and road user classes so ByteTrack receives both
+            # high-confidence detections for Stage 1 association and low-confidence
+            # detections for Stage 2 occlusion/blur recovery (crucial for motorcycles).
             yolo_out = self._yolo_model.predict(
                 source=rgb,
-                conf=0.25,
+                conf=0.10,
                 iou=0.45,
+                classes=[0, 1, 2, 3, 5, 7],
                 device=self.device,
                 verbose=False,
             )
             boxes = yolo_out[0].boxes
-            detections: List[Dict[str, Any]] = []
+            raw_detections: List[Dict[str, Any]] = []
             if boxes is not None and len(boxes) > 0:
                 xyxy = boxes.xyxy.cpu().numpy()
                 confs = boxes.conf.cpu().numpy()
                 classes = boxes.cls.cpu().numpy().astype(int)
                 for i in range(len(xyxy)):
                     cls_id = int(classes[i])
-                    detections.append({
+                    raw_detections.append({
                         "bbox_xyxy": [round(float(c), 2) for c in xyxy[i]],
                         "confidence": round(float(confs[i]), 4),
                         "class_id": cls_id,
                         "class_name": self._yolo_model.names.get(cls_id, "object"),
                     })
+            # Prominent detections (conf >= 0.20) for telemetry and visual bounding boxes
+            detections = [d for d in raw_detections if d["confidence"] >= 0.20]
             total_detections += len(detections)
             durations_det_ms += (time.perf_counter() - t0) * 1000.0
 
-            # --- B. Tracking (ByteTrack) ---
+            # --- B. Tracking (ByteTrack with two-stage association) ---
             t0 = time.perf_counter()
-            active_tracks = tracker.update(detections)
+            active_tracks = tracker.update(raw_detections)
             tracks_info: List[Dict[str, Any]] = [t.to_dict() for t in active_tracks]
             durations_track_ms += (time.perf_counter() - t0) * 1000.0
 

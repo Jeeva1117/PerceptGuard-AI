@@ -827,21 +827,50 @@ def get_video_job_safety_recommendations(job_id: str):
 
 @router.get("/jobs/{job_id}/frames/{frame_name}")
 def get_annotated_frame(job_id: str, frame_name: str):
-    """Serve an annotated video frame image for frontend dashboard visualization."""
+    """Serve an annotated or raw video frame image for frontend dashboard visualization."""
     job_mgr = get_job_manager()
     job_rec = job_mgr.get_job(job_id)
     if not job_rec or not job_rec.results_dir:
         raise ResourceNotFoundError(f"Job '{job_id}' not found.")
 
-    safe_name = Path(frame_name).name
-    img_path = Path(job_rec.results_dir) / "annotated" / safe_name
-    if not img_path.exists():
-        # Check raw_frames
-        img_path = Path(job_rec.results_dir) / "raw_frames" / safe_name
-    if not img_path.exists():
-        raise ResourceNotFoundError(f"Frame '{safe_name}' not found for job '{job_id}'.")
+    results_dir = Path(job_rec.results_dir)
+    annotated_dir = results_dir / "annotated"
+    raw_dir = results_dir / "raw_frames"
 
-    return FileResponse(str(img_path), media_type="image/jpeg")
+    safe_name = Path(frame_name).name
+    candidates = [
+        annotated_dir / safe_name,
+        raw_dir / safe_name,
+    ]
+
+    # Handle numeric indices (e.g. "0", "15")
+    if safe_name.isdigit():
+        idx = int(safe_name)
+        candidates.extend([
+            annotated_dir / f"annotated_{idx:06d}.jpg",
+            raw_dir / f"frame_{idx:06d}.jpg",
+        ])
+
+    # Handle missing .jpg extension
+    if not safe_name.endswith((".jpg", ".jpeg", ".png")):
+        candidates.extend([
+            annotated_dir / f"{safe_name}.jpg",
+            raw_dir / f"{safe_name}.jpg",
+        ])
+
+    for p in candidates:
+        if p.exists() and p.is_file():
+            return FileResponse(str(p), media_type="image/jpeg")
+
+    # Fallback: if numeric index requested, clamp to available frames
+    if safe_name.isdigit() and annotated_dir.exists():
+        idx = int(safe_name)
+        existing = sorted(annotated_dir.glob("*.jpg"))
+        if existing:
+            clamped_idx = max(0, min(idx, len(existing) - 1))
+            return FileResponse(str(existing[clamped_idx]), media_type="image/jpeg")
+
+    raise ResourceNotFoundError(f"Frame '{safe_name}' not found for job '{job_id}'.")
 
 
 @router.get("/jobs/{job_id}/source-video")
