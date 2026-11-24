@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { UploadCloud, X, AlertCircle, CheckCircle, Loader2, Film } from 'lucide-react';
-import { submitVideoJob } from '../services/api';
+import { uploadVideoFile, startProcessingVideo, getVideoStreamUrl } from '../services/api';
 import { useJob } from '../context/JobContext';
 
 interface VideoUploadModalProps {
@@ -9,7 +9,7 @@ interface VideoUploadModalProps {
 }
 
 export const VideoUploadModal: React.FC<VideoUploadModalProps> = ({ isOpen, onClose }) => {
-  const { refreshJobs, selectJob } = useJob();
+  const { refreshJobs, selectJob, setStagedVideo, clearActiveJob } = useJob();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [maxFrames, setMaxFrames] = useState<number>(30);
   const [isUploading, setIsUploading] = useState<boolean>(false);
@@ -22,7 +22,7 @@ export const VideoUploadModal: React.FC<VideoUploadModalProps> = ({ isOpen, onCl
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      const validExts = ['.mp4', '.avi', '.mov', '.mkv'];
+      const validExts = ['.mp4', '.avi', '.mov', '.mkv', '.webm'];
       const ext = '.' + file.name.split('.').pop()?.toLowerCase();
       if (!validExts.includes(ext)) {
         setErrorMessage(`Invalid video format '${ext}'. Supported: ${validExts.join(', ')}`);
@@ -41,14 +41,26 @@ export const VideoUploadModal: React.FC<VideoUploadModalProps> = ({ isOpen, onCl
     setErrorMessage(null);
 
     try {
-      const resp = await submitVideoJob(selectedFile, maxFrames);
-      setSuccessJobId(resp.job_id);
+      clearActiveJob();
+      // 1. Upload & validate on server
+      const uploadResp = await uploadVideoFile(selectedFile);
+      setStagedVideo(getVideoStreamUrl(uploadResp.video_id), uploadResp.video_id, uploadResp);
+
+      // 2. Start background pipeline
+      const procResp = await startProcessingVideo({
+        video_id: uploadResp.video_id,
+        analysis_mode: 'FULL_BALANCED',
+        max_frames: maxFrames,
+      });
+
+      setSuccessJobId(procResp.job_id);
       await refreshJobs();
-      await selectJob(resp.job_id);
+      await selectJob(procResp.job_id);
+
       setTimeout(() => {
         setIsUploading(false);
         onClose();
-      }, 1200);
+      }, 1000);
     } catch (err: any) {
       setIsUploading(false);
       setErrorMessage(err.message || 'Failed to submit video processing job.');
@@ -109,7 +121,7 @@ export const VideoUploadModal: React.FC<VideoUploadModalProps> = ({ isOpen, onCl
                   Click or drag video file here
                 </p>
                 <p className="text-xs text-slate-500">
-                  MP4, AVI, MOV, MKV (Max 100 MB, CPU-safe)
+                  MP4, AVI, MOV, MKV, WebM (Max 100 MB, CPU-safe)
                 </p>
               </div>
             )}

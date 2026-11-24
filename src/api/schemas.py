@@ -297,3 +297,24 @@ class JobSubmissionResponse(BaseModel):
     analysis_mode: Optional[str] = "FULL_BALANCED"
     sample_fps: Optional[float] = None
 
+
+class VideoUploadResponse(BaseModel):
+    """Acknowledgement returned upon successful standalone video file upload."""
+    video_id: str
+    filename: str
+    size_bytes: int
+    format: str
+    metadata: VideoMetadataSchema
+    stream_url: str
+    message: str = "Video successfully uploaded, validated, and ready for processing."
+
+
+class StartProcessingRequest(BaseModel):
+    """Payload to initiate analysis on an uploaded video."""
+    video_id: str
+    analysis_mode: str = "FULL_BALANCED"
+    rotation: int = 0
+    sample_fps: Optional[float] = None
+    max_frames: Optional[int] = None
+
+

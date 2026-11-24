@@ -91,12 +91,57 @@ class JobManager:
         self.jobs_dir.mkdir(parents=True, exist_ok=True)
 
         self._jobs: Dict[str, JobRecord] = {}
+        self._uploaded_videos: Dict[str, Dict[str, Any]] = {}
         self._jobs_lock = threading.RLock()
         self._executor = ThreadPoolExecutor(max_workers=max_workers, thread_name_prefix="pg_worker")
         self._runner = VideoPipelineRunner(project_root=Path.cwd())
         self._rehydrate_existing_jobs()
         self._initialized = True
         logger.info(f"Initialized JobManager (max_workers={max_workers}, jobs_dir={self.jobs_dir}, rehydrated={len(self._jobs)})")
+
+    def register_uploaded_video(
+        self,
+        video_id: str,
+        file_path: Union[str, Path],
+        filename: str,
+        metadata: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """Store catalog entry for a validated user-uploaded video."""
+        p = Path(file_path).resolve()
+        entry = {
+            "video_id": video_id,
+            "filename": filename,
+            "file_path": str(p),
+            "size_bytes": p.stat().st_size if p.exists() else 0,
+            "uploaded_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "metadata": metadata,
+        }
+        with self._jobs_lock:
+            self._uploaded_videos[video_id] = entry
+        logger.info(f"Registered uploaded video {video_id} ('{filename}', {entry['size_bytes']} bytes)")
+        return entry
+
+    def get_uploaded_video(self, video_id: str) -> Optional[Dict[str, Any]]:
+        """Retrieve uploaded video catalog entry by video_id."""
+        with self._jobs_lock:
+            if video_id in self._uploaded_videos:
+                return self._uploaded_videos[video_id]
+            uploads_dir = self.jobs_dir / "uploads"
+            if uploads_dir.exists():
+                for f in uploads_dir.iterdir():
+                    if f.is_file() and (f.name == video_id or f.name.startswith(f"{video_id}_")):
+                        clean_name = f.name[len(video_id) + 1:] if f.name.startswith(f"{video_id}_") else f.name
+                        entry = {
+                            "video_id": video_id,
+                            "filename": clean_name,
+                            "file_path": str(f.resolve()),
+                            "size_bytes": f.stat().st_size,
+                            "uploaded_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                            "metadata": {},
+                        }
+                        self._uploaded_videos[video_id] = entry
+                        return entry
+        return None
 
     def _find_source_video(self, data: Dict[str, Any], child_dir: Path) -> Tuple[Optional[str], bool]:
         """Attempt to locate the authentic source video on disk for a job."""
@@ -254,6 +299,11 @@ class JobManager:
                 record.progress_percentage = pct
                 record.message = msg
 
+        def _is_cancelled() -> bool:
+            with self._jobs_lock:
+                rec = self._jobs.get(job_id)
+                return rec is not None and rec.status == JobStatus.CANCELLED
+
         try:
             result: VideoPipelineRunResult = self._runner.run(
                 video_path=video_path,
@@ -264,9 +314,13 @@ class JobManager:
                 analysis_mode=analysis_mode,
                 sample_fps=sample_fps,
                 progress_callback=_on_progress,
+                is_cancelled_callback=_is_cancelled,
             )
 
             with self._jobs_lock:
+                if record.status == JobStatus.CANCELLED:
+                    logger.info(f"Job {job_id} aborted following operator cancellation request.")
+                    return
                 record.status = JobStatus.COMPLETED
                 record.stage = "COMPLETED"
                 record.progress_percentage = 100.0
@@ -330,12 +384,15 @@ class JobManager:
         return None
 
     def cancel_job(self, job_id: str) -> bool:
-        """Mark a queued job as cancelled if not yet completed."""
+        """Mark a queued or running job as cancelled."""
         with self._jobs_lock:
             rec = self._jobs.get(job_id)
-            if rec and rec.status in (JobStatus.QUEUED, JobStatus.PROCESSING):
+            if rec and rec.status in (JobStatus.QUEUED, JobStatus.PROCESSING, JobStatus.VALIDATING):
                 rec.status = JobStatus.CANCELLED
+                rec.stage = "CANCELLED"
                 rec.message = "Job cancelled by operator."
+                rec.completed_at = datetime.datetime.now(datetime.timezone.utc).isoformat()
+                logger.info(f"Job {job_id} set to CANCELLED state.")
                 return True
         return False
 

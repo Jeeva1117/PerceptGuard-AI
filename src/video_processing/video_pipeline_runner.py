@@ -862,6 +862,7 @@ class VideoPipelineRunner:
         analysis_mode: str = "FULL_BALANCED",
         sample_fps: Optional[float] = None,
         progress_callback: Optional[Callable[[str, float, str], None]] = None,
+        is_cancelled_callback: Optional[Callable[[], bool]] = None,
     ) -> VideoPipelineRunResult:
         """Execute the end-to-end perception reliability pipeline on a video file.
 
@@ -1033,6 +1034,11 @@ class VideoPipelineRunner:
 
         curr_container_idx = 0
         for frame_idx, target_source_idx in enumerate(target_source_indices):
+            # Check for cancellation before expensive operations
+            if is_cancelled_callback and is_cancelled_callback():
+                logger.info(f"Job {job_id}: Processing loop cancelled by operator at frame {frame_idx}/{frames_to_process}.")
+                break
+
             # Fast-forward container to target_source_idx using fast grab()
             while curr_container_idx < target_source_idx:
                 grab_ok = cap.grab()

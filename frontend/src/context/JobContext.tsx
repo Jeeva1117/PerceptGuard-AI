@@ -10,6 +10,7 @@ import type {
   JobStatusResponse,
   VideoPipelineRunResult,
   FrameProcessingDetail,
+  VideoUploadResponse,
 } from '../types/api';
 import { listJobs, getJobResults, fetchHealth, deleteJob, cleanStaleJobs } from '../services/api';
 import { useVoiceAlerts } from '../hooks/useVoiceAlerts';
@@ -32,7 +33,12 @@ interface JobContextType {
   error: string | null;
   videoRef: React.RefObject<HTMLVideoElement | null>;
   selectedTrackId: number | null;
+  stagedVideoSrc: string | null;
+  uploadedVideoId: string | null;
+  uploadedVideoMetadata: VideoUploadResponse | null;
   setSelectedTrackId: (id: number | null) => void;
+  setStagedVideo: (src: string | null, videoId?: string | null, metadata?: VideoUploadResponse | null) => void;
+  clearStagedVideo: () => void;
   refreshJobs: () => Promise<void>;
   selectJob: (jobId: string) => Promise<void>;
   clearActiveJob: () => void;
@@ -90,6 +96,9 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isBackendOnline, setIsBackendOnline] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedTrackId, setSelectedTrackId] = useState<number | null>(null);
+  const [stagedVideoSrc, setStagedVideoSrc] = useState<string | null>(null);
+  const [uploadedVideoId, setUploadedVideoId] = useState<string | null>(null);
+  const [uploadedVideoMetadata, setUploadedVideoMetadata] = useState<VideoUploadResponse | null>(null);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const prevJobIdRef = useRef<string | null>(null);
@@ -98,6 +107,18 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const activeJob = jobs.find((j) => j.job_id === activeJobId) || null;
   const currentFrame = results?.frames?.[currentFrameIndex] || null;
+
+  const setStagedVideo = useCallback((src: string | null, videoId?: string | null, metadata?: VideoUploadResponse | null) => {
+    setStagedVideoSrc(src);
+    if (videoId !== undefined) setUploadedVideoId(videoId);
+    if (metadata !== undefined) setUploadedVideoMetadata(metadata);
+  }, []);
+
+  const clearStagedVideo = useCallback(() => {
+    setStagedVideoSrc(null);
+    setUploadedVideoId(null);
+    setUploadedVideoMetadata(null);
+  }, []);
 
   // Check health periodically
   useEffect(() => {
@@ -124,6 +145,10 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCurrentFrameIndex(0);
     setCurrentTime(0);
     setDuration(0);
+    setSelectedTrackId(null);
+    setStagedVideoSrc(null);
+    setUploadedVideoId(null);
+    setUploadedVideoMetadata(null);
     if (videoRef.current) {
       try {
         videoRef.current.pause();
@@ -385,7 +410,12 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         error,
         videoRef,
         selectedTrackId,
+        stagedVideoSrc,
+        uploadedVideoId,
+        uploadedVideoMetadata,
         setSelectedTrackId,
+        setStagedVideo,
+        clearStagedVideo,
         refreshJobs,
         selectJob,
         clearActiveJob,

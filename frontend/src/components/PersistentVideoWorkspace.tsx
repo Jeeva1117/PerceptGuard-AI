@@ -7,10 +7,10 @@ import { VideoUploadSection } from './VideoUploadSection';
 import { ShieldAlert, Upload, ChevronDown, ChevronUp } from 'lucide-react';
 
 export const PersistentVideoWorkspace: React.FC = () => {
-  const { activeJobId, activeJob, results } = useJob();
+  const { activeJobId, activeJob, results, stagedVideoSrc, uploadedVideoId } = useJob();
   const [showUploadDrawer, setShowUploadDrawer] = useState(false);
 
-  const hasVideoLoaded = Boolean(activeJobId || results);
+  const hasVideoLoaded = Boolean(activeJobId || results || stagedVideoSrc || uploadedVideoId);
 
   return (
     <div className="space-y-4">

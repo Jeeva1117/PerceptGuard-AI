@@ -19,15 +19,35 @@ from src.api.job_manager import JobManager, get_job_manager
 from src.api.schemas import (
     JobStatusResponse,
     JobSubmissionResponse,
+    StartProcessingRequest,
     VideoMetadataSchema,
     VideoProcessResponse,
+    VideoUploadResponse,
     VideoValidationResponse,
 )
 
 router = APIRouter(prefix="/video", tags=["Video Processing"])
 
-ALLOWED_VIDEO_EXTENSIONS = {".mp4", ".avi", ".mov", ".mkv"}
+ALLOWED_VIDEO_EXTENSIONS = {".mp4", ".avi", ".mov", ".mkv", ".webm"}
 MAX_FILE_SIZE_BYTES = 100 * 1024 * 1024  # 100 MB max for CPU safety
+
+
+def _validate_video_magic_bytes(header: bytes) -> bool:
+    """Verify binary signature of uploaded file matches supported video containers."""
+    if len(header) < 4:
+        return False
+    # WebM / MKV (Matroska): starts with EBML ID \x1a\x45\xdf\xa3
+    if header.startswith(b"\x1a\x45\xdf\xa3"):
+        return True
+    # AVI: starts with RIFF and has AVI in bytes 8-12
+    if header.startswith(b"RIFF") and len(header) >= 12 and header[8:12] == b"AVI ":
+        return True
+    # MP4 / QuickTime: check for standard box types
+    if len(header) >= 8 and header[4:8] in (b"ftyp", b"moov", b"mdat", b"wide", b"skip"):
+        return True
+    if b"ftyp" in header[:64] or b"moov" in header[:64]:
+        return True
+    return False
 
 
 def _stream_video_file(file_path: Path, request: Request) -> Response:
@@ -45,8 +65,10 @@ def _stream_video_file(file_path: Path, request: Request) -> Response:
         media_type = "video/quicktime"
     elif ext == ".avi":
         media_type = "video/x-msvideo"
-    elif ext == ".mkv":
+    elif ext in (".mkv", ".matroska"):
         media_type = "video/x-matroska"
+    elif ext == ".webm":
+        media_type = "video/webm"
 
     range_header = request.headers.get("range")
     if not range_header:
@@ -158,6 +180,14 @@ async def validate_video(file: UploadFile = File(...)) -> VideoValidationRespons
         if total_bytes == 0:
             raise InvalidVideoError("Uploaded video file is empty (0 bytes).")
 
+        # Validate magic bytes against supported containers
+        with open(temp_path, "rb") as f_check:
+            hdr = f_check.read(128)
+        if not _validate_video_magic_bytes(hdr):
+            raise InvalidVideoError(
+                f"Corrupt or invalid video file: '{filename}' binary header does not match a valid video container signature."
+            )
+
         metadata = _inspect_video_capture(temp_path, filename, total_bytes)
 
         return VideoValidationResponse(
@@ -172,6 +202,137 @@ async def validate_video(file: UploadFile = File(...)) -> VideoValidationRespons
                 os.remove(temp_path)
             except OSError:
                 pass
+
+
+@router.post("/upload-file", response_model=VideoUploadResponse, status_code=status.HTTP_201_CREATED, summary="Standalone video upload and validation endpoint")
+async def upload_video_file(
+    file: UploadFile = File(...),
+) -> VideoUploadResponse:
+    """Upload a raw video file, validate its binary integrity and OpenCV headers, store permanently, and return video_id."""
+    filename = Path(file.filename or "uploaded_video.mp4").name
+    ext = Path(filename).suffix.lower()
+
+    if ext not in ALLOWED_VIDEO_EXTENSIONS:
+        raise InvalidVideoError(
+            f"Unsupported video extension '{ext}'. Allowed formats: {sorted(ALLOWED_VIDEO_EXTENSIONS)}"
+        )
+
+    job_mgr = get_job_manager()
+    upload_dir = job_mgr.jobs_dir / "uploads"
+    upload_dir.mkdir(parents=True, exist_ok=True)
+
+    video_id = f"vid_{uuid.uuid4().hex[:10]}"
+    target_path = upload_dir / f"{video_id}_{filename}"
+
+    total_bytes = 0
+    header_bytes = b""
+    try:
+        with open(target_path, "wb") as f_out:
+            while chunk := await file.read(1024 * 1024):  # 1MB chunks
+                if len(header_bytes) < 128:
+                    header_bytes += chunk[: 128 - len(header_bytes)]
+                total_bytes += len(chunk)
+                if total_bytes > MAX_FILE_SIZE_BYTES:
+                    if target_path.exists():
+                        target_path.unlink(missing_ok=True)
+                    raise InvalidVideoError(
+                        f"Video file exceeds maximum allowed upload size of 100MB ({total_bytes} bytes)."
+                    )
+                f_out.write(chunk)
+
+        if total_bytes == 0:
+            if target_path.exists():
+                target_path.unlink(missing_ok=True)
+            raise InvalidVideoError("Uploaded video file is empty (0 bytes).")
+
+        # Validate magic bytes
+        if not _validate_video_magic_bytes(header_bytes):
+            if target_path.exists():
+                target_path.unlink(missing_ok=True)
+            raise InvalidVideoError(
+                f"Corrupt or invalid video file: '{filename}' binary header does not match a valid video container signature."
+            )
+
+        # Inspect OpenCV headers
+        metadata = _inspect_video_capture(target_path, filename, total_bytes)
+
+        # Register in job manager
+        job_mgr.register_uploaded_video(video_id, target_path, filename, metadata.model_dump())
+
+        stream_url = f"/api/v1/video/stream/{video_id}"
+        return VideoUploadResponse(
+            video_id=video_id,
+            filename=filename,
+            size_bytes=total_bytes,
+            format=ext.lstrip("."),
+            metadata=metadata,
+            stream_url=stream_url,
+            message="Video successfully uploaded, validated, and ready for processing.",
+        )
+    except Exception as exc:
+        if target_path.exists():
+            try:
+                target_path.unlink(missing_ok=True)
+            except OSError:
+                pass
+        if isinstance(exc, (InvalidVideoError, InvalidInputError)):
+            raise
+        raise InvalidVideoError(f"Video validation failed: {str(exc)}")
+
+
+@router.post("/start-processing", response_model=JobSubmissionResponse, status_code=status.HTTP_202_ACCEPTED, summary="Initiate background analysis pipeline on an uploaded video ID")
+def start_processing_job(req: StartProcessingRequest) -> JobSubmissionResponse:
+    """Dispatch background pipeline execution for a previously uploaded and validated video ID."""
+    job_mgr = get_job_manager()
+    video_info = job_mgr.get_uploaded_video(req.video_id)
+    if not video_info:
+        raise ResourceNotFoundError(f"Video ID '{req.video_id}' not found. Please upload the video first.")
+
+    vpath = Path(video_info["file_path"])
+    if not vpath.exists() or not vpath.is_file():
+        raise ResourceNotFoundError(f"Video file for '{req.video_id}' is missing from disk.")
+
+    job_rec = job_mgr.submit_job(
+        video_path=vpath,
+        filename=video_info["filename"],
+        max_frames=req.max_frames,
+        rotation=req.rotation,
+        analysis_mode=req.analysis_mode,
+        sample_fps=req.sample_fps,
+    )
+
+    return JobSubmissionResponse(
+        job_id=job_rec.job_id,
+        filename=job_rec.filename,
+        status=job_rec.status.value,
+        stage=job_rec.stage,
+        message=job_rec.message,
+        max_frames=req.max_frames or 0,
+        created_at=job_rec.created_at,
+        analysis_mode=req.analysis_mode,
+        sample_fps=req.sample_fps,
+    )
+
+
+@router.get("/stream/{video_id}")
+def stream_video_by_id(video_id: str, request: Request):
+    """Stream an uploaded raw video file by video_id with full HTTP 206 byte range support."""
+    job_mgr = get_job_manager()
+    video_info = job_mgr.get_uploaded_video(video_id)
+    if not video_info:
+        # Check if video_id is a job_id with source video
+        job_rec = job_mgr.get_job(video_id)
+        if job_rec and job_rec.video_path:
+            p = Path(job_rec.video_path)
+            if p.exists() and p.is_file():
+                return _stream_video_file(p, request)
+        raise ResourceNotFoundError(f"Uploaded video '{video_id}' not found on server.")
+
+    p = Path(video_info["file_path"])
+    if not p.exists() or not p.is_file():
+        raise ResourceNotFoundError(f"Video file for '{video_id}' is missing from server storage.")
+    return _stream_video_file(p, request)
+
 
 
 @router.post("/process", response_model=VideoProcessResponse)
@@ -765,6 +926,19 @@ def delete_video_job(
     if not success:
         raise ResourceNotFoundError(f"Job '{job_id}' could not be deleted or does not exist.")
     return {"job_id": job_id, "status": "DELETED", "message": "Job record and associated artifacts removed."}
+
+
+@router.post("/jobs/{job_id}/cancel")
+def cancel_video_job(job_id: str):
+    """Cancel an active or queued video processing job without deleting artifacts."""
+    job_mgr = get_job_manager()
+    success = job_mgr.cancel_job(job_id)
+    if not success:
+        job_rec = job_mgr.get_job(job_id)
+        if not job_rec:
+            raise ResourceNotFoundError(f"Job '{job_id}' not found.")
+        return {"job_id": job_id, "status": job_rec.status.value, "message": f"Job is in '{job_rec.status.value}' state."}
+    return {"job_id": job_id, "status": "CANCELLED", "message": "Cancellation request delivered."}
 
 
 @router.post("/jobs/clean-stale")

@@ -1,6 +1,8 @@
 import type {
   JobStatusResponse,
+  StartProcessingRequest,
   VideoPipelineRunResult,
+  VideoUploadResponse,
 } from '../types/api';
 
 const BACKEND_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
@@ -27,6 +29,42 @@ export async function getJobStatus(jobId: string): Promise<JobStatusResponse> {
 export async function getJobResults(jobId: string): Promise<VideoPipelineRunResult> {
   const res = await fetch(`${API_BASE}/video/jobs/${encodeURIComponent(jobId)}/results`);
   if (!res.ok) throw new Error(`Failed to get job results: ${res.statusText}`);
+  return res.json();
+}
+
+export async function uploadVideoFile(file: File): Promise<VideoUploadResponse> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const res = await fetch(`${API_BASE}/video/upload-file`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.detail || `Upload failed with status ${res.status}`);
+  }
+
+  return res.json();
+}
+
+export async function startProcessingVideo(
+  req: StartProcessingRequest
+): Promise<{ job_id: string; message: string; status: string }> {
+  const res = await fetch(`${API_BASE}/video/start-processing`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(req),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.detail || `Start processing failed with status ${res.status}`);
+  }
+
   return res.json();
 }
 
@@ -63,11 +101,17 @@ export async function submitVideoJob(
   return res.json();
 }
 
-export async function cancelJob(jobId: string): Promise<{ job_id: string; status: string }> {
-  const res = await fetch(`${API_BASE}/video/jobs/${encodeURIComponent(jobId)}`, {
-    method: 'DELETE',
+export async function cancelJob(jobId: string): Promise<{ job_id: string; status: string; message?: string }> {
+  const res = await fetch(`${API_BASE}/video/jobs/${encodeURIComponent(jobId)}/cancel`, {
+    method: 'POST',
   });
-  if (!res.ok) throw new Error(`Failed to cancel job: ${res.statusText}`);
+  if (!res.ok) {
+    const delRes = await fetch(`${API_BASE}/video/jobs/${encodeURIComponent(jobId)}`, {
+      method: 'DELETE',
+    });
+    if (!delRes.ok) throw new Error(`Failed to cancel job: ${delRes.statusText}`);
+    return delRes.json();
+  }
   return res.json();
 }
 
@@ -90,6 +134,14 @@ export async function cleanStaleJobs(): Promise<{ cleaned_count: number; message
 export function getSourceVideoUrl(jobId?: string | null): string {
   if (!jobId) return '';
   return `${API_BASE}/video/jobs/${encodeURIComponent(jobId)}/source-video`;
+}
+
+export function getVideoStreamUrl(videoIdOrJobId?: string | null): string {
+  if (!videoIdOrJobId) return '';
+  if (videoIdOrJobId.startsWith('vid_')) {
+    return `${API_BASE}/video/stream/${encodeURIComponent(videoIdOrJobId)}`;
+  }
+  return `${API_BASE}/video/jobs/${encodeURIComponent(videoIdOrJobId)}/source-video`;
 }
 
 export function getAnnotatedVideoUrl(jobId?: string | null): string {

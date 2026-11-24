@@ -9,7 +9,7 @@ import {
   Video,
 } from 'lucide-react';
 import { useJob } from '../context/JobContext';
-import { getSourceVideoUrl, getAnnotatedVideoUrl, getFrameImageUrl } from '../services/api';
+import { getSourceVideoUrl, getAnnotatedVideoUrl, getFrameImageUrl, getVideoStreamUrl } from '../services/api';
 
 interface VideoCanvasProps {
   showTrajectories?: boolean;
@@ -43,6 +43,7 @@ export const VideoCanvas: React.FC<VideoCanvasProps> = ({
 }) => {
   const {
     activeJobId,
+    activeJob,
     results,
     currentFrame,
     currentFrameIndex,
@@ -51,6 +52,8 @@ export const VideoCanvas: React.FC<VideoCanvasProps> = ({
     isVoiceMuted,
     videoRef,
     selectedTrackId,
+    stagedVideoSrc,
+    uploadedVideoId,
     setPlaybackMode,
     toggleVoiceMute,
     handleTimeUpdate,
@@ -71,12 +74,15 @@ export const VideoCanvas: React.FC<VideoCanvasProps> = ({
   useEffect(() => {
     setVideoError(false);
     setUseFallbackImage(false);
-  }, [activeJobId, playbackMode]);
+  }, [activeJobId, uploadedVideoId, playbackMode]);
 
   // Resolve media URLs
   const sourceVideoUrl = activeJobId ? getSourceVideoUrl(activeJobId) : '';
   const annotatedVideoUrl = activeJobId ? getAnnotatedVideoUrl(activeJobId) : '';
-  const activeVideoUrl = playbackMode === 'ORIGINAL_LIVE' ? sourceVideoUrl : annotatedVideoUrl;
+  const stagedUrl = uploadedVideoId ? getVideoStreamUrl(uploadedVideoId) : (stagedVideoSrc || '');
+  const activeVideoUrl = playbackMode === 'ORIGINAL_LIVE'
+    ? (sourceVideoUrl || stagedUrl)
+    : (annotatedVideoUrl || sourceVideoUrl || stagedUrl);
 
   const frame = currentFrame || (results?.frames && results.frames.length > 0 ? results.frames[0] : null);
 
@@ -345,8 +351,13 @@ export const VideoCanvas: React.FC<VideoCanvasProps> = ({
     setUseFallbackImage(true);
   };
 
-  // If no job or results loaded
-  if (!activeJobId || !results || !results.frames || results.frames.length === 0) {
+  // Fallback frame image url if video streaming fails
+  const fallbackImagePath = frame?.annotated_frame_path || frame?.raw_frame_path;
+  const fallbackImageUrl = fallbackImagePath && activeJobId ? getFrameImageUrl(activeJobId, fallbackImagePath) : '';
+
+  // If no job AND no staged video loaded
+  const hasStreamOrFile = Boolean(activeVideoUrl || fallbackImageUrl);
+  if (!hasStreamOrFile) {
     return (
       <div className="w-full aspect-video bg-slate-950/80 rounded-2xl border border-slate-800 flex flex-col items-center justify-center p-8 text-center text-slate-500 shadow-inner">
         <Film className="w-12 h-12 mb-3 text-slate-600 stroke-[1.5]" />
@@ -357,10 +368,6 @@ export const VideoCanvas: React.FC<VideoCanvasProps> = ({
       </div>
     );
   }
-
-  // Fallback frame image url if video streaming fails
-  const fallbackImagePath = frame?.annotated_frame_path || frame?.raw_frame_path;
-  const fallbackImageUrl = fallbackImagePath ? getFrameImageUrl(activeJobId, fallbackImagePath) : '';
 
   return (
     <div className="relative w-full aspect-video bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden shadow-2xl flex items-center justify-center group select-none">
@@ -406,6 +413,37 @@ export const VideoCanvas: React.FC<VideoCanvasProps> = ({
           ref={canvasRef}
           className="absolute inset-0 w-full h-full object-contain pointer-events-none"
         />
+      )}
+
+      {/* In-Flight Pipeline Processing Banner */}
+      {activeJob && (activeJob.status === 'PROCESSING' || activeJob.status === 'QUEUED') && (
+        <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px] flex flex-col items-center justify-center p-6 text-center pointer-events-none z-20 animate-in fade-in duration-200">
+          <div className="bg-slate-900/90 border border-cyan-500/40 rounded-2xl p-5 shadow-2xl max-w-md w-full space-y-3">
+            <div className="flex items-center justify-between text-xs font-mono">
+              <span className="text-cyan-400 font-bold flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+                PIPELINE EXECUTING
+              </span>
+              <span className="text-slate-300 font-bold">
+                {activeJob.progress_percentage?.toFixed(0) || activeJob.progress_pct?.toFixed(0) || 15}%
+              </span>
+            </div>
+            <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-300"
+                style={{
+                  width: `${Math.max(5, activeJob.progress_percentage || activeJob.progress_pct || 15)}%`,
+                }}
+              />
+            </div>
+            <p className="text-xs text-slate-300 font-mono">
+              Stage: <strong className="text-cyan-300">{activeJob.stage}</strong>
+            </p>
+            <p className="text-[11px] text-slate-400">
+              {activeJob.message || 'Extracting frames, executing YOLOv11 + ByteTrack and forecasting...'}
+            </p>
+          </div>
+        </div>
       )}
 
       {/* 3. Top HUD Telemetry Ribbon */}

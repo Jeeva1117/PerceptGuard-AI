@@ -35,6 +35,32 @@ export interface TimelineEvent {
   action_recommended?: string;
 }
 
+export interface VideoUploadResponse {
+  video_id: string;
+  filename: string;
+  size_bytes: number;
+  format: string;
+  metadata: {
+    filename: string;
+    width: number;
+    height: number;
+    fps: number;
+    frame_count: number;
+    duration_seconds: number;
+    size_bytes: number;
+  };
+  stream_url: string;
+  message: string;
+}
+
+export interface StartProcessingRequest {
+  video_id: string;
+  analysis_mode?: AnalysisMode;
+  rotation?: number;
+  sample_fps?: number;
+  max_frames?: number | null;
+}
+
 export interface VideoMetadata {
   filename: string;
   width: number;
