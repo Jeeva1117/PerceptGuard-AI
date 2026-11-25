@@ -23,6 +23,7 @@ from src.collision_risk.schemas import (
     CollisionRiskAssessment,
     CollisionRiskState,
     CollisionStreamSummary,
+    ConflictType,
     TrajectoryConflict,
     UncertaintyLevel,
 )
@@ -165,7 +166,8 @@ class CollisionRiskEngine:
 
         # Derive the 5 definitive product collision risk states
         has_vulnerable_conflict = any(
-            c.conflict_type in (ConflictType.PEDESTRIAN_CROSSING, ConflictType.CYCLIST_CONFLICT)
+            (c.conflict_type in (ConflictType.PEDESTRIAN_CROSSING, ConflictType.CYCLIST_CONFLICT))
+            or (getattr(c.conflict_type, "value", str(c.conflict_type)) in (ConflictType.PEDESTRIAN_CROSSING.value, ConflictType.CYCLIST_CONFLICT.value))
             for c in conflicts
         )
         if status in (AssessmentStatus.UNKNOWN_HIGH_UNCERTAINTY, AssessmentStatus.UNKNOWN_INSUFFICIENT_DATA) or is_unreliable:
@@ -240,7 +242,7 @@ class CollisionRiskEngine:
 
             total_conflicts += len(a.conflicting_pairs)
             for c in a.conflicting_pairs:
-                ct = c.conflict_type.value
+                ct = c.conflict_type.value if hasattr(c.conflict_type, "value") else str(c.conflict_type)
                 conflict_types[ct] = conflict_types.get(ct, 0) + 1
 
         return CollisionStreamSummary(

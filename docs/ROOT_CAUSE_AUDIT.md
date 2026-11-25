@@ -136,6 +136,67 @@ Each page maintained local playback or selection state rather than consuming syn
 
 ---
 
+## 5. Problem 5: Pipeline Crash on Trajectory Conflicts (`name 'ConflictType' is not defined`)
+
+### Root Cause
+During full-video processing of real road footage with interacting road users (such as session `job_6e50240c4fce`), the background processing pipeline halted with the error:
+```text
+Pipeline execution failed:
+name 'ConflictType' is not defined
+```
+
+### Affected Files
+- `src/collision_risk/collision_risk_engine.py`
+- `src/collision_risk/schemas.py`
+- `tests/collision_risk/test_conflict_type_regression.py`
+
+### Why It Happened
+1. In `src/collision_risk/collision_risk_engine.py`, the 5-state collision decision logic checks whether any predicted spatio-temporal conflict involves vulnerable road users (pedestrians or cyclists):
+   ```python
+   has_vulnerable_conflict = any(
+       c.conflict_type in (ConflictType.PEDESTRIAN_CROSSING, ConflictType.CYCLIST_CONFLICT)
+       for c in conflicts
+   )
+   ```
+2. While `ConflictType` was defined in `src/collision_risk/schemas.py` and exported in `src/collision_risk/__init__.py`, it was accidentally omitted from the `from src.collision_risk.schemas import (...)` block in `src/collision_risk/collision_risk_engine.py`.
+3. In purely synthetic empty road tests with 0 detected objects, `conflicts` was empty, so the generator inside `any(...)` never evaluated `ConflictType`. However, when processing uploaded road footage with actual vehicles, pedestrians, or bicycles, `conflicts` was non-empty, immediately triggering `NameError: name 'ConflictType' is not defined`.
+4. Furthermore, in `generate_stream_summary()`, `c.conflict_type.value` lacked fallback protection against string representations of conflict types.
+
+### Exact Repair
+1. **Explicit Import**:
+   - Added `ConflictType` to the schema imports in `src/collision_risk/collision_risk_engine.py`.
+2. **Defensive Enum & String Introspection**:
+   - Updated `has_vulnerable_conflict` in `src/collision_risk/collision_risk_engine.py` to handle both Enum instances and string representations:
+     ```python
+     has_vulnerable_conflict = any(
+         (c.conflict_type in (ConflictType.PEDESTRIAN_CROSSING, ConflictType.CYCLIST_CONFLICT))
+         or (getattr(c.conflict_type, "value", str(c.conflict_type)) in (ConflictType.PEDESTRIAN_CROSSING.value, ConflictType.CYCLIST_CONFLICT.value))
+         for c in conflicts
+     )
+     ```
+   - In `generate_stream_summary()`:
+     ```python
+     ct = c.conflict_type.value if hasattr(c.conflict_type, "value") else str(c.conflict_type)
+     ```
+   - In `src/collision_risk/schemas.py` (`TrajectoryConflict.to_dict()`):
+     ```python
+     "conflict_type": self.conflict_type.value if hasattr(self.conflict_type, "value") else str(self.conflict_type),
+     ```
+3. **Automated Regression Test**:
+   - Created `tests/collision_risk/test_conflict_type_regression.py` covering:
+     - Module-level import verification.
+     - `assess_frame()` execution with pedestrian crossing conflict (no `NameError`).
+     - `assess_frame()` execution with cyclist conflict.
+     - `to_dict()` and JSON serialization with both enum and string values.
+
+### Verification Test
+- `tests/collision_risk/test_conflict_type_regression.py` (4 tests) -> **PASS**
+- `tests/collision_risk/test_collision_risk.py` (18 tests) -> **PASS**
+- `tests/integration/test_end_to_end_scenarios_1_to_10.py` (10 scenarios) -> **PASS**
+- `scratch/test_live_workflow.py` (7 live checks) -> **PASS**
+
+---
+
 ## Conclusion
 
-All four primary failure modes have been thoroughly analyzed, resolved with production-grade engineering fixes, and verified via automated regression test suites.
+All five primary failure modes have been thoroughly analyzed, resolved with production-grade engineering fixes, and verified via automated regression test suites. The full video processing pipeline now reliably analyzes uploaded road footage from beginning to end without crashes.

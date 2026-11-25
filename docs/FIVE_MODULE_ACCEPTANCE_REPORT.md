@@ -68,15 +68,16 @@ PerceptGuard-AI functions as a unified perception, tracking, prediction, and ris
 ---
 
 ### Module 4: Collision & Road Risk Assessment
-- **Implementation**: `src/collision_risk/collision_risk_engine.py`, `src/collision_risk/pedestrian_awareness_engine.py`, `frontend/src/pages/CollisionRiskPage.tsx`.
+- **Implementation**: `src/collision_risk/collision_risk_engine.py`, `src/collision_risk/schemas.py`, `src/collision_risk/trajectory_conflict_analyzer.py`, `frontend/src/pages/CollisionRiskPage.tsx`.
 - **Capabilities**:
   - Spatio-temporal trajectory conflict analysis: verifies both spatial intersection and arrival time synchronicity ($\Delta t \le 0.5\text{s}$).
+  - Categorization into valid `ConflictType` enums: `REAR_END`, `CROSSING`, `HEAD_ON`, `MERGING`, `PEDESTRIAN_CROSSING`, `CYCLIST_CONFLICT`.
   - Positive closing velocity gate ($v_{\text{closing}} > 5.0\text{ px/s}$) eliminates false alarms on diverging vehicles.
-  - Time-to-Collision (TTC) calculation and discrete 4-state severity rating: `LOW`, `MODERATE`, `HIGH`, `CRITICAL`.
+  - Defensible Time-to-Collision (TTC) calculation and discrete 5-state product decision taxonomy: `NO COLLISION RISK`, `NEAR PASS`, `POTENTIAL COLLISION RISK`, `COLLISION OBSERVED`, `UNKNOWN`.
   - Road corridor boundaries and lane tracking.
-  - Specialized pedestrian awareness engine tracking curb, sidewalk, approaching, and crossing pedestrians.
+  - Fail-safe optical uncertainty withholding when visibility falls below $40\%$.
 - **Acceptance Status**: **ACCEPTED (PASS)**
-- **Automated Verification**: `test_regression_scenarios.py` (12 driving scenarios).
+- **Automated Verification**: `tests/collision_risk/test_conflict_type_regression.py` (4 tests), `tests/collision_risk/test_collision_risk.py` (18 tests), `tests/integration/test_end_to_end_scenarios_1_to_10.py` (10 scenarios).
 
 ---
 

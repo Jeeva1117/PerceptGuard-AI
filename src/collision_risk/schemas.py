@@ -83,7 +83,7 @@ class TrajectoryConflict:
             "track_b": self.track_b,
             "class_a": self.class_a,
             "class_b": self.class_b,
-            "conflict_type": self.conflict_type.value,
+            "conflict_type": self.conflict_type.value if hasattr(self.conflict_type, "value") else str(self.conflict_type),
             "time_to_conflict_seconds": round(self.time_to_conflict_seconds, 2),
             "horizon_label": self.horizon_label,
             "separation_pixels": round(self.separation_at_conflict_px, 1),

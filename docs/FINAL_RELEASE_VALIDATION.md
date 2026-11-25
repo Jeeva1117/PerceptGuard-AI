@@ -103,6 +103,8 @@ All test suites were executed directly against the codebase in the target Window
 
 | Test Suite | File Path | Total Tests | Passed | Failed | Status |
 | :--- | :--- | :---: | :---: | :---: | :--- |
+| **ConflictType Import & Conflict Regression** | `tests/collision_risk/test_conflict_type_regression.py` | 4 | 4 | 0 | **PASS** |
+| **Collision Risk Comprehensive Suite** | `tests/collision_risk/test_collision_risk.py` | 18 | 18 | 0 | **PASS** |
 | **Motorcycle & Road User Tracking** | `tests/tracking/test_motorcycle_and_road_users.py` | 7 | 7 | 0 | **PASS** |
 | **ByteTrack Engine & Association** | `tests/tracking/test_bytetrack_engine.py` | 18 | 18 | 0 | **PASS** |
 | **Upload & Processing Pipeline** | `tests/integration/test_upload_and_processing_pipeline.py` | 7 | 7 | 0 | **PASS** |
@@ -110,7 +112,7 @@ All test suites were executed directly against the codebase in the target Window
 | **FastAPI REST Endpoints** | `tests/api/test_video_endpoints.py` | 9 | 9 | 0 | **PASS** |
 | **10 End-to-End Driving Scenarios** | `tests/integration/test_end_to_end_scenarios_1_to_10.py` | 10 | 10 | 0 | **PASS** |
 | **Live Workflow (Upload -> Poll -> Results)** | `scratch/test_live_workflow.py` | 7 | 7 | 0 | **PASS** |
-| **Total Test Assertions** | — | **70** | **70** | **0** | **100% PASS** |
+| **Total Test Assertions** | — | **92** | **92** | **0** | **100% PASS** |
 
 ### Summary of 10 End-to-End Scenarios Audited:
 1. **Empty Clear Road:** Clear visibility, 0 objects -> `NO COLLISION RISK` (**PASS**)
