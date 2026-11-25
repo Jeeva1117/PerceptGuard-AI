@@ -64,6 +64,7 @@ jobs:
 
       - name: Validate Docker Compose & YAML Configuration
         run: |
+          python -m pip install pyyaml
           python -c "import yaml; yaml.safe_load(open('docker-compose.yml'))"
           echo "YAML validation: PASS"
 
