@@ -1,302 +1,204 @@
-# PerceptGuard AI: Predictive Object Detection Reliability System
+<div align="center">
+  <img src="frontend/public/brand/perceptguard-logo.svg"
+       alt="PerceptGuard-AI Logo"
+       width="520" />
 
-[![Python 3.10+](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue.svg)](https://www.python.org/)
-[![PyTorch](https://img.shields.io/badge/PyTorch-2.x%20(Pure%20CPU)-red.svg)](https://pytorch.org/)
-[![YOLO11](https://img.shields.io/badge/Ultralytics-YOLO11n-green.svg)](https://github.com/ultralytics/ultralytics)
-[![Tracking](https://img.shields.io/badge/Tracking-ByteTrack-orange.svg)](https://github.com/ifzhang/ByteTrack)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-teal.svg)](https://fastapi.tiangolo.com/)
-[![Streamlit](https://img.shields.io/badge/Streamlit-1.42+-red.svg)](https://streamlit.io/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+  <h1>PerceptGuard-AI</h1>
 
-> **"Anticipating Detection Failures Before They Happen."**
+  <p>
+    <strong>See the Road. Predict the Risk. Prevent the Collision.</strong>
+  </p>
 
-An enterprise-grade, edge-compatible autonomous driving perception reliability monitoring system that **forecasts future object detection failure ($IoU < 0.50$) across upcoming video horizons: H1 ($t+1$), H3 ($t+3$), and H5 ($t+5$).**
+  <p>
+    <em>An independent, visibility-aware predictive road safety computer vision research prototype.</em>
+  </p>
 
----
-
-## 1. Problem Statement
-
-In automated driving systems (ADS) and advanced driver-assistance systems (ADAS), camera-based perception pipelines rely on deep neural object detectors (e.g. YOLO, DETR). Standard systems naively assume the detector's **confidence score** ($P(\text{class} | \text{box})$) reflects real-world perception reliability:
-
-### Confidence $\neq$ Reliability
-1. **False Confidence:** Deep detectors frequently output high confidence (>85%) on severely drifted, vibrating, or partially occluded bounding boxes.
-2. **Sudden Dropouts:** When encountering lens glare, rapid vehicle roll, motion blur, or environmental degradation, detections drop precipitously with **zero advance warning**.
-3. **Reactive Safety Planners:** Downstream motion planners receive detections naively until track divergence occurs, leaving zero time budget for graceful fail-safe handoff or emergency braking.
-
-```
-+-----------------------------------------------------------------------------------+
-| Standard Perception:     Detector Confidence [0.92] ---> Drop to [0.0] (CRASH RISK)|
-| PerceptGuard-AI:         Predicts Failure Risk 100ms In Advance (SAFE HANDOFF)    |
-+-----------------------------------------------------------------------------------+
-```
+  <p>
+    <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue.svg" alt="Python Version" /></a>
+    <a href="https://pytorch.org/"><img src="https://img.shields.io/badge/PyTorch-2.x%20(Pure%20CPU)-red.svg" alt="PyTorch" /></a>
+    <a href="https://github.com/ultralytics/ultralytics"><img src="https://img.shields.io/badge/YOLO-11n-green.svg" alt="Ultralytics YOLO" /></a>
+    <a href="https://github.com/ifzhang/ByteTrack"><img src="https://img.shields.io/badge/Tracking-ByteTrack-orange.svg" alt="ByteTrack" /></a>
+    <a href="https://fastapi.tiangolo.com/"><img src="https://img.shields.io/badge/FastAPI-0.115+-teal.svg" alt="FastAPI" /></a>
+    <a href="https://react.dev/"><img src="https://img.shields.io/badge/Frontend-React%2019%20%2B%20Vite-cyan.svg" alt="React 19" /></a>
+    <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT License" /></a>
+  </p>
+</div>
 
 ---
 
-## 2. Solution & The Five Core Features
+## 1. Project Overview
 
-PerceptGuard AI organizes automotive safety intelligence into **exactly five primary modular features**:
+**PerceptGuard-AI** is an advanced automotive computer vision and deep learning prototype designed to analyze road videos, detect road users, track their spatial movement over time, predict their potential future trajectories, assess collision risks, and generate evidence-driven driver safety advisories.
+
+### Research Prototype Scope & Ethics
+- **Scope**: Designed specifically for uploaded road video analysis.
+- **Independence**: This is an independent research prototype developed for academic and engineering investigation. It is not Tesla technology, is not affiliated with Tesla or any automotive manufacturer, does not control vehicle steering or brakes, and is not safety-certified for live autonomous vehicle control.
+- **Advisory Gate**: All recommendations are non-actuating safety advisories. Operational safety remains the human driver's sole responsibility.
+
+---
+
+## 2. Exactly Five Primary Analysis Modules
+
+The application architecture organizes autonomous driving perception reliability into **exactly five connected primary modules**:
+
+```
++─────────────────────────────────────────────────────────────────────────────────────────+
+│                                  VIDEO INPUT WORKSPACE                                  │
+│                    Standardized Ingestion • 720p / 30 FPS • CPU Optimized               │
++─────────────────────────────────────────────────────────────────────────────────────────+
+                                             │
+      ┌──────────────────┬───────────────────┼───────────────────┬──────────────────┐
+      ▼                  ▼                   ▼                   ▼                  ▼
+┌───────────────┐ ┌───────────────┐ ┌───────────────┐ ┌───────────────┐ ┌───────────────┐
+│   MODULE 1    │ │   MODULE 2    │ │   MODULE 3    │ │   MODULE 4    │ │   MODULE 5    │
+│    Camera &   │ │     Object    │ │   Trajectory  │ │   Collision   │ │     Safety    │
+│    Weather    │ │   Detection   │ │   Prediction  │ │      Risk     │ │     Alerts    │
+│               │ │  & ByteTrack  │ │               │ │   Assessment  │ │   Advisories  │
+└───────────────┘ └───────────────┘ └───────────────┘ └───────────────┘ └───────────────┘
+```
 
 1. **Camera & Weather Intelligence (`src/camera_weather/`)**
-   - Real-time optical degradation analysis: Laplacian blur variance, Dark Channel Prior haze/fog estimation, directional Sobel precipitation patterns, and illumination/glare detection.
+   - Optical degradation analysis: Laplacian blur variance, Dark Channel Prior haze/fog estimation, directional Sobel precipitation patterns, and illumination/glare detection.
    - Temporal rolling tracking, degradation trend forecasting, and perception impact scoring ($P_{\text{impact}}$).
 
-2. **Object Detection & Multi-Object Tracking (`src/detection/` & `src/tracking/`)**
+2. **Object Detection & ByteTrack Tracking (`src/detection/` & `src/tracking/`)**
    - High-throughput edge perception with Ultralytics YOLO11n ($45.5\text{ ms/frame}$ pure CPU).
+   - Multi-class recognition: cars, motorcycles, bicycles, buses, trucks, and pedestrians.
    - ByteTrack Kalman filter state association preserving persistent track IDs across occlusions.
 
-3. **Object & Trajectory Prediction (`src/trajectory_prediction/`)**
-   - Pinhole camera metric ground-plane projection converting image coordinates to road meters.
+3. **Trajectory Prediction (`src/trajectory_prediction/`)**
+   - Pinhole camera metric ground-plane projection converting image pixels to road meters.
    - 6-DoF Kalman filter trajectory forecasting across $H_1$ ($1\text{s}$), $H_3$ ($3\text{s}$), and $H_5$ ($5\text{s}$) horizons with acceleration damping ($0.88^k$).
    - Multi-agent interaction modeling: closing speed, time-to-headway ($TTH$), and crossing trajectory detection.
 
-4. **Collision & Road Risk Assessment (`src/collision_risk/`)**
-   - First-order linear and second-order accelerated Time-to-Collision ($TTC$) calculation.
-   - Travel corridor angle gating ($> 65^\circ$ lateral crossings marked invalid for 1D longitudinal TTC).
+4. **Collision Risk Assessment (`src/collision_risk/`)**
+   - First-order linear and second-order accelerated Time-To-Collision ($TTC$) calculation.
+   - Travel corridor angle gating ($> 65^\circ$ lateral crossings marked invalid for longitudinal TTC).
    - Synchronous spatio-temporal conflict analysis across horizons $H_1, H_3, H_5$ eliminating false crossing alarms.
    - Multi-source uncertainty fusion ($U_{\text{weather}}, U_{\text{det}}, U_{\text{track}}$) triggering `UNKNOWN` when $U > 0.70$ or visibility $< 20\%$.
 
-5. **Early Warning & Vehicle Stop Recommendation (`src/safety_recommendation/`)**
-   - Final decision-support layer consuming outputs from Features 1–4.
+5. **Evidence-Driven Safety Alerts (`src/safety_recommendation/`)**
+   - Final decision-support layer consuming outputs from Modules 1–4.
    - 6 explainable recommendation states: `NORMAL`, `CAUTION`, `REDUCE SPEED`, `PREPARE TO STOP`, `STOP RECOMMENDED`, and `UNKNOWN`.
    - 4 warning priority tiers: `INFO`, `ADVISORY`, `WARNING`, and `CRITICAL`.
    - Temporal early warning monitoring: risk escalation detection, rapidly decreasing TTC alerts, and pedestrian corridor intrusion.
    - Warning priority arbitration, duplicate alert suppression window ($0.35\text{s}$), and 2-frame de-escalation hysteresis.
-   - **Advisory Prototype Safety Gate:** All recommendations are explicitly qualified as advisory ("when safe to do so") and must never be connected directly to vehicle brake actuators or CAN bus commands. Operational safety remains the driver's responsibility.
 
 ---
 
-## 3. Master Pipeline Architecture
+## 3. Technology Stack
 
-```
-[Video Input] (720p / 30fps)
-      │
-      ▼
-[Video Loading & Preprocessing] (OpenCV Standardized 1280x720 BGR)
-      │
-      ▼
-[YOLO11n Object Detection] (Ultralytics Pretrained CPU Weights, 45.5ms)
-      │
-      ▼
-[ByteTrack Multi-Object Tracking] (Kalman Kinematic State Association)
-      │
-      ▼
-[27-Feature Multi-Modal Extraction] (Visual, Motion, Detection Domains)
-      │
-      ▼
-[Temporal Sequence Builder] (10-Frame Sliding Windows, G=25)
-      │
-      ▼
-[Multi-Horizon LSTM Forecaster] (H1=t+1, H3=t+3, H5=t+5 Reliability)
-      │
-      ▼
-[Risk Assessment Engine] (S = 1.0 - R, 4 Operational Severity Tiers)
-      │
-      ▼
-[Early Warning Engine] (Suppression, Deduplication, Alerts)
-      │
-      ▼
-[FastAPI REST Backend] <──────> [Streamlit Operations Cockpit]
-      │                                     │
-      └──────────────────┬──────────────────┘
-                         ▼
-             [File-Based Persistence] (results.json & Annotated Frames)
-```
-
-For complete technical specifications, consult [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
-
----
-
-## 4. Technology Stack
-
-| Domain | Technologies |
+| Layer | Technologies |
 | :--- | :--- |
-| **Language & Runtime** | Python 3.10+ / 3.11 / 3.12 / 3.13 (Verified on Python 3.13.3) |
+| **Language & Runtime** | Python 3.10+ / 3.11 / 3.12 / 3.13 (Tested on Python 3.13.3) |
 | **Computer Vision** | OpenCV (`opencv-python`), Ultralytics YOLO11 (`ultralytics`) |
-| **Object Tracking** | ByteTrack (Kalman Filter + Two-Stage Association) |
+| **Multi-Object Tracking** | ByteTrack (Kalman Filter + Two-Stage Association) |
 | **Deep Learning** | PyTorch (Pure CPU-optimized execution, zero CUDA required) |
 | **Backend API** | FastAPI, Uvicorn, Starlette, Pydantic v2 |
-| **Frontend UI** | React 19 + TypeScript + Vite + Tailwind CSS (Primary Cockpit) & Streamlit (Legacy Inspector) |
-| **Hardware Target** | Intel Core i3 11th Gen, 8 GB RAM, Windows 11 AMD64 (Pure CPU) |
-| **Testing & CI/CD** | Pytest, AnyIO, GitHub Actions |
+| **Frontend UI** | React 19 + TypeScript + Vite + Tailwind CSS + Lucide Icons + Recharts |
+| **Hardware Target** | Intel Core i3 / i5 / i7, 8 GB RAM, Windows 11 AMD64 (Pure CPU) |
+| **Testing** | Pytest, FastAPI TestClient, Vitest / Oxlint |
 
 ---
 
-## 5. System Requirements & Prerequisites
+## 4. Local Development in VS Code (Windows 11)
 
-- **Processor:** Intel Core i3 (11th Gen or equivalent dual-core CPU with AVX2)
-- **Memory (RAM):** 8 GB RAM minimum (System consumes $\le 528\text{ MB}$ RSS during peak inference)
-- **Disk Storage:** 2 GB free disk space
-- **Operating System:** Windows 10/11 (64-bit), Ubuntu 20.04+, or macOS 12+
-- **GPU:** None required (100% pure CPU execution).
-
----
-
-## 6. Installation & Quickstart
+PerceptGuard-AI runs locally out-of-the-box on Windows 11 with zero external cloud dependencies or paid APIs.
 
 ### Step 1: Clone the Repository
-```bash
+```powershell
 git clone https://github.com/Jeeva1117/PerceptGuard-AI.git
 cd PerceptGuard-AI
 ```
 
-### Step 2: Create & Activate Virtual Environment
-On Windows (PowerShell):
+### Step 2: Configure Python Virtual Environment
 ```powershell
 python -m venv venv
 .\venv\Scripts\Activate.ps1
-```
-
-On Linux / macOS (Bash):
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
-
-### Step 3: Install Dependencies
-```bash
 pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### Step 4: Verify Environment & Checkpoints
-```bash
+### Step 3: Verify Environment and Model Weights
+```powershell
 python main.py --info
-python main.py --verify-env
 ```
+Ensure the two required model files are present:
+- `models/yolo/yolo11n.pt` ($5.35\text{ MB}$)
+- `models/forecasting/lstm/model.pt` ($101.1\text{ KB}$)
 
-Ensure model weights exist in `models/`:
-- `models/yolo/yolo11n.pt` ($5.6\text{ MB}$)
-- `models/forecasting/lstm/model.pt` ($103.5\text{ KB}$)
-
----
-
-## 7. Running the Application
-
-### 7.1 One-Command Startup (Windows 11)
-Launch both the FastAPI backend and Streamlit dashboard simultaneously with automated readiness checking:
+### Step 4: Install Frontend Dependencies
 ```powershell
-.\scripts\start_project.ps1
+cd frontend
+npm install
+cd ..
 ```
-To gracefully stop all running services and free ports 8000 & 8501:
+
+### Step 5: Start Backend and Frontend
+
+**Terminal 1 — FastAPI Backend (Port 8000):**
 ```powershell
-.\scripts\stop_project.ps1
+.\venv\Scripts\Activate.ps1
+uvicorn src.api.app:app --host 127.0.0.1 --port 8000 --reload
 ```
+- API Docs: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+- Health Probe: [http://127.0.0.1:8000/health/live](http://127.0.0.1:8000/health/live)
 
-### 7.2 Manual Component Startup
-You can also run backend and dashboard in dedicated terminal sessions:
-
-**Terminal 1 — FastAPI Backend:**
+**Terminal 2 — Vite React UI (Port 3000):**
 ```powershell
-# Using launcher script
-.\scripts\start_backend.ps1
-
-# Or direct invocation
-uvicorn src.api.app:app --host 127.0.0.1 --port 8000
+cd frontend
+npm run dev -- --host 127.0.0.1 --port 3000
 ```
-- API Documentation: `http://127.0.0.1:8000/docs`
-- Health Check: `http://127.0.0.1:8000/health/live`
+- Web Application: [http://127.0.0.1:3000](http://127.0.0.1:3000)
 
-**Terminal 2 — Streamlit Operations Dashboard:**
-```powershell
-# Using launcher script
-.\scripts\start_dashboard.ps1
+---
 
-# Or direct invocation
-streamlit run dashboard/app.py --server.port 8501
+## 5. End-to-End Workflow
+
+1. Open [http://127.0.0.1:3000](http://127.0.0.1:3000) in your browser.
+2. Click **Upload Video** and select an MP4 road video (or use reference videos from `outputs/day14_validation/clips/`).
+3. Set your preferred frame count or analysis mode (**Full Balanced**, **Full Detailed**, or **Quick Preview**).
+4. Click **Start Processing**. The pipeline will:
+   - Extract and validate frames with OpenCV.
+   - Run YOLO11n object detection.
+   - Associate tracks with ByteTrack.
+   - Forecast metric trajectories.
+   - Calculate Time-to-Collision ($TTC$) and spatial conflict.
+   - Generate safety recommendations.
+5. Scrub through the continuous video playback workspace while inspecting live metrics across all five connected modules.
+
+---
+
+## 6. Project Structure
+
 ```
-The dashboard opens automatically at `http://localhost:8501`.
-
-> [!NOTE]
-> If the backend server is not running, the dashboard automatically activates its **In-Process Fallback Mode**. All capabilities remain fully operational within the single process.
-
----
-
-## 8. Complete End-to-End Workflow
-
-1. Open `http://localhost:8501` and navigate to **`🎥 Video Processing`**.
-2. Upload a sample driving video (e.g. `datasets/raw/converted_026c7465-309f6d33.mp4` or a clip from `outputs/day14_validation/clips/`).
-3. Set **Max Frames** to `30` and click **"Submit & Run Full Pipeline"**.
-4. Observe the live 8-stage progress tracker until status reaches **COMPLETED**.
-5. Switch to **`📊 Overview`** to review high-level throughput and detection metrics.
-6. Switch to **`🎯 Detection & Tracking`** to scrub through annotated frames with persistent Kalman track IDs.
-7. Switch to **`🔬 Feature Analytics`** to inspect frame-by-frame Laplacian blur, brightness, contrast, and kinematics.
-8. Switch to **`⚠️ Risk Assessment`** to inspect failure risk $S = 1.0 - R$ across $H1, H3, H5$ horizons.
-9. Switch to **`🚨 Early Warning Alerts`** to review and resolve any incidents triggered ahead of failure dropouts.
-
-For detailed view instructions, consult [docs/USER_GUIDE.md](docs/USER_GUIDE.md).
-
----
-
-## 9. API Information
-
-The FastAPI backend exposes structured endpoints:
-- `GET /health` — Service health, uptime, and model availability.
-- `GET /api/v1/telemetry/risk-overview` — Current H1, H3, H5 risk scores and rolling statistics.
-- `GET /api/v1/telemetry/temporal-monitoring` — Historical risk trajectory time series.
-- `GET /api/v1/telemetry/detection-tracking` — YOLO11n + ByteTrack tracking telemetry.
-- `GET /api/v1/alerts` — Paginated early warning alert incidents.
-- `POST /api/v1/video/jobs` — Asynchronous video job submission.
-- `GET /api/v1/video/jobs/{job_id}/results` — Complete structured RFC 8259-compliant results.
-
-Consult [docs/API_REFERENCE.md](docs/API_REFERENCE.md) for full endpoint specifications.
-
----
-
-## 10. Automated Testing & Verification
-
-Execute the complete pytest suite across all subsystems:
-
-```bash
-pytest -v
+PerceptGuard-AI/
+├── config/                  # YAML configurations (YOLO, ByteTrack, Video, Forecasting)
+├── docker/                  # Dockerfile.backend and entrypoint.sh
+├── docs/                    # Architectural and module documentation
+├── frontend/                # React 19 / Vite SPA
+│   ├── public/
+│   │   ├── brand/           # Authentic PerceptGuard SVG logos and icons
+│   │   └── favicon.svg      # Crisp browser favicon
+│   └── src/                 # Components, context, pages, and services
+├── models/                  # YOLO11n and LSTM PyTorch model checkpoints
+├── outputs/                 # Persistent storage (jobs, uploads, validation clips)
+├── src/                     # Core backend python package
+│   ├── api/                 # FastAPI routers, job manager, and middleware
+│   ├── camera_weather/      # Module 1: Optical degradation & visibility
+│   ├── detection/           # Module 2A: Object detection
+│   ├── tracking/            # Module 2B: ByteTrack multi-object tracking
+│   ├── trajectory_prediction/# Module 3: Ground-plane trajectory forecasting
+│   ├── collision_risk/      # Module 4: Spatial conflict & TTC analysis
+│   └── safety_recommendation/# Module 5: Driver advisories & arbitration
+├── tests/                   # Subsystem test suites
+├── Dockerfile               # Production multi-stage Docker build
+├── render.yaml              # Render Blueprint deployment definition
+└── requirements.txt         # Core Python dependencies
 ```
 
-- **Frontend Tests:** 41 / 41 passed (**100%**)
-- **API Tests:** 32 / 32 passed (**100%**)
-- **Full Test Suite:** 1,624 / 1,624 passed (**100%**)
-
 ---
 
-## 11. Performance Benchmarks (Intel Core i3, 8 GB RAM)
-
-- **Pure CPU Execution:** Zero CUDA dependencies.
-- **Baseline Memory:** $362\text{ MB}$ RSS.
-- **Peak Video Inference Memory:** $528\text{ MB}$ RSS ($\le 6.6\%$ of system RAM).
-- **Video Processing Throughput:** $\approx 18.5\text{ FPS}$ on 720p 30fps driving video.
-- **YOLO11n CPU Inference:** $45.5\text{ ms/frame}$.
-- **LSTM Multi-Horizon Inference:** $1.8\text{ ms/sequence}$.
-- **API Probe Latency:** $2.4\text{ ms}$ on local loopback.
-- **UI Transition Latency:** $< 120\text{ ms}$.
-
-For detailed benchmarking evidence, consult [docs/MODEL_AND_ML_VALIDATION.md](docs/MODEL_AND_ML_VALIDATION.md).
-
----
-
-## 12. Known Limitations & Future Work
-
-- **Provisional Calibration Gate:** Failure risk thresholds ($[0.35, 0.65, 0.85]$) are designated as **`PROVISIONAL CALIBRATION`** pending multi-weather road testing (fog, blizzard, heavy rain).
-- **Sequential Video Queue:** Background video jobs execute sequentially via `ThreadPoolExecutor(max_workers=1)` to prevent edge CPU core thrashing.
-- **Future Improvements:**
-  - OpenVINO / ONNX Runtime quantization for 30+ FPS edge throughput.
-  - Multi-camera 360-degree surround sensor fusion.
-  - Closed-loop CAN-bus integration for automated fail-safe vehicle handoff.
-
-Consult [docs/LIMITATIONS.md](docs/LIMITATIONS.md) for full operational boundaries.
-
----
-
-## 13. Documentation Suite
-
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — Master system architecture and pipeline design.
-- [docs/INSTALLATION.md](docs/INSTALLATION.md) — Step-by-step setup, dependencies, and container deployment.
-- [docs/USER_GUIDE.md](docs/USER_GUIDE.md) — Operator manual for all 9 dashboard views.
-- [docs/API_REFERENCE.md](docs/API_REFERENCE.md) — FastAPI endpoints, schemas, and data contracts.
-- [docs/MODEL_AND_ML_VALIDATION.md](docs/MODEL_AND_ML_VALIDATION.md) — Machine learning validation and benchmarks.
-- [docs/LIMITATIONS.md](docs/LIMITATIONS.md) — Operational boundaries and calibration constraints.
-- [CONTRIBUTING.md](CONTRIBUTING.md) — Open source contribution guidelines.
-- [LICENSE](LICENSE) — MIT License.
-
----
-
-## 14. License
+## 7. License
 
 This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.

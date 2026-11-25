@@ -6,7 +6,6 @@ import {
   TrendingUp,
   AlertTriangle,
   OctagonAlert,
-  Shield,
   Cpu,
 } from 'lucide-react';
 import { cn } from '../utils/cn';
@@ -71,14 +70,18 @@ export const Sidebar: React.FC = () => {
     >
       {/* Brand Icon Header */}
       <div className="h-16 flex items-center justify-center border-b border-slate-800/80 relative group">
-        <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-cyan-600 via-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-950/40 cursor-default">
-          <Shield className="w-5 h-5 text-white" />
+        <div className="h-10 w-10 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-950/40 cursor-default overflow-hidden bg-slate-950 border border-cyan-500/30">
+          <img
+            src="/brand/perceptguard-icon.svg"
+            alt="PerceptGuard-AI Brand Icon"
+            className="w-8 h-8 object-contain"
+          />
         </div>
 
         {/* Floating Tooltip */}
         <div className="absolute left-full ml-3 hidden group-hover:flex flex-col px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-white shadow-2xl z-50 pointer-events-none whitespace-nowrap">
           <span className="font-bold tracking-wide">PerceptGuard AI</span>
-          <span className="text-[10px] text-slate-400 font-mono">v2.0 • Predictive Road Safety</span>
+          <span className="text-[10px] text-slate-400 font-mono">See the Road. Predict the Risk. Prevent the Collision.</span>
         </div>
       </div>
 
