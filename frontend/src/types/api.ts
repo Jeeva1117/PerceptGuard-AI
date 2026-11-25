@@ -328,6 +328,8 @@ export interface CollisionRiskData {
   assessment_id?: string;
   timestamp_seconds?: number;
   risk_state: CollisionRiskState;
+  collision_decision?: string;
+  decision_reason?: string;
   risk_score?: number | null;
   primary_contributing_factors?: string[];
   objects_involved?: Array<{ track_id: number; object_class: string }>;
@@ -522,6 +524,24 @@ export interface VideoPipelineRunResult {
   total_alerts: number;
   active_alerts: number;
   calibration_status: string;
+  final_summary?: {
+    status: string;
+    video_duration_seconds: number;
+    frames_processed: number;
+    visibility: string;
+    road_user_counts: {
+      car: number;
+      motorcycle: number;
+      bus: number;
+      truck: number;
+      bicycle: number;
+      pedestrian: number;
+    };
+    collision_risk: string;
+    reason: string;
+    primary_object?: string | null;
+    event_timestamp?: number | null;
+  };
   per_horizon_risk: Record<
     string,
     {

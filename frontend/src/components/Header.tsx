@@ -32,7 +32,7 @@ export const Header: React.FC = () => {
   const hasData = Boolean(results && results.frames && results.frames.length > 0);
   
   let drivingStatus: 'NORMAL' | 'CAUTION' | 'HAZARD' | 'UNKNOWN' = 'UNKNOWN';
-  let collisionStatus: 'NO COLLISION RISK DETECTED' | 'COLLISION RISK DETECTED' | 'UNKNOWN' = 'UNKNOWN';
+  let collisionStatus: string = results?.final_summary?.collision_risk || 'UNKNOWN';
   let riskLevel: 'LOW' | 'MODERATE' | 'HIGH' | 'CRITICAL' | 'UNKNOWN' = 'UNKNOWN';
 
   if (hasData && currentFrame) {
@@ -41,24 +41,30 @@ export const Header: React.FC = () => {
 
     riskLevel = (colRisk?.risk_state as any) || 'LOW';
 
-    const hasCollision = riskLevel === 'CRITICAL' || (colRisk?.conflicting_pairs && colRisk.conflicting_pairs.length > 0);
-    if (hasCollision || safety?.urgency_level === 'CRITICAL') {
-      collisionStatus = 'COLLISION RISK DETECTED';
+    if (results?.final_summary?.collision_risk) {
+      collisionStatus = results.final_summary.collision_risk;
+    } else if (colRisk?.collision_decision) {
+      collisionStatus = colRisk.collision_decision;
     } else {
-      collisionStatus = 'NO COLLISION RISK DETECTED';
+      const hasCollision = riskLevel === 'CRITICAL' || (colRisk?.conflicting_pairs && colRisk.conflicting_pairs.length > 0);
+      if (hasCollision || safety?.urgency_level === 'CRITICAL') {
+        collisionStatus = 'POTENTIAL COLLISION RISK';
+      } else {
+        collisionStatus = 'NO COLLISION RISK';
+      }
     }
 
     const recState: string = safety?.recommendation_state || 'NORMAL';
-    if (riskLevel === 'CRITICAL' || safety?.urgency_level === 'CRITICAL' || recState === 'STOP RECOMMENDED' || recState === 'HAZARD') {
+    if (riskLevel === 'CRITICAL' || safety?.urgency_level === 'CRITICAL' || recState === 'STOP RECOMMENDED' || recState === 'HAZARD' || collisionStatus === 'COLLISION OBSERVED') {
       drivingStatus = 'HAZARD';
-    } else if (riskLevel === 'HIGH' || riskLevel === 'MODERATE' || safety?.urgency_level === 'WARNING' || recState === 'CAUTION' || recState === 'WARNING' || recState === 'REDUCE SPEED' || recState === 'PREPARE TO STOP') {
+    } else if (riskLevel === 'HIGH' || riskLevel === 'MODERATE' || safety?.urgency_level === 'WARNING' || recState === 'CAUTION' || recState === 'WARNING' || recState === 'REDUCE SPEED' || recState === 'PREPARE TO STOP' || collisionStatus === 'POTENTIAL COLLISION RISK') {
       drivingStatus = 'CAUTION';
     } else {
       drivingStatus = 'NORMAL';
     }
   } else if (hasData) {
     drivingStatus = 'NORMAL';
-    collisionStatus = 'NO COLLISION RISK DETECTED';
+    collisionStatus = results?.final_summary?.collision_risk || 'NO COLLISION RISK';
     riskLevel = 'LOW';
   }
 
@@ -77,10 +83,17 @@ export const Header: React.FC = () => {
 
   const getCollisionBadgeColor = (s: string) => {
     switch (s) {
+      case 'NO COLLISION RISK':
       case 'NO COLLISION RISK DETECTED':
         return 'bg-emerald-500/15 text-emerald-400 border-emerald-500/40';
+      case 'NEAR PASS':
+        return 'bg-cyan-500/15 text-cyan-400 border-cyan-500/40';
+      case 'POTENTIAL COLLISION RISK':
       case 'COLLISION RISK DETECTED':
-        return 'bg-rose-500/20 text-rose-400 border-rose-500/50 animate-pulse';
+        return 'bg-amber-500/20 text-amber-400 border-amber-500/40 animate-pulse';
+      case 'COLLISION OBSERVED':
+        return 'bg-rose-500/25 text-rose-400 border-rose-500/50 animate-pulse';
+      case 'UNKNOWN':
       default:
         return 'bg-slate-800 text-slate-400 border-slate-700';
     }
@@ -246,6 +259,39 @@ export const Header: React.FC = () => {
           </button>
         </div>
       </header>
+
+      {/* Concise Master Analysis Result Banner */}
+      {results?.final_summary && (
+        <div className="bg-slate-950/95 border-b border-slate-800 px-6 py-2 flex flex-wrap items-center justify-between text-xs font-mono text-slate-300 gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="font-bold text-white flex items-center gap-1.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              VIDEO ANALYSIS COMPLETED
+            </span>
+            <span className="text-slate-600">|</span>
+            <span>
+              Duration: <strong className="text-white">{results.final_summary.video_duration_seconds.toFixed(1)}s</strong>
+            </span>
+            <span className="text-slate-600">|</span>
+            <span>
+              Road Users: Car: <strong className="text-white">{results.final_summary.road_user_counts.car}</strong>, Motorcycle: <strong className="text-white">{results.final_summary.road_user_counts.motorcycle}</strong>, Bus: <strong className="text-white">{results.final_summary.road_user_counts.bus}</strong>, Truck: <strong className="text-white">{results.final_summary.road_user_counts.truck}</strong>, Bicycle: <strong className="text-white">{results.final_summary.road_user_counts.bicycle}</strong>, Pedestrian: <strong className="text-white">{results.final_summary.road_user_counts.pedestrian}</strong>
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-slate-600">|</span>
+            <span>
+              Collision Risk:{' '}
+              <span className={`px-2 py-0.5 rounded text-[11px] font-bold border ${getCollisionBadgeColor(results.final_summary.collision_risk)}`}>
+                {results.final_summary.collision_risk}
+              </span>
+            </span>
+            <span className="text-slate-600">|</span>
+            <span className="text-slate-400 italic font-sans max-w-md truncate" title={results.final_summary.reason}>
+              Reason: {results.final_summary.reason}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Video Upload Modal */}
       <VideoUploadModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />

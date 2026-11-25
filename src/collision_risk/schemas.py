@@ -24,6 +24,15 @@ class CollisionRiskState(str, Enum):
     UNKNOWN = "UNKNOWN"
 
 
+class CollisionRiskDecision(str, Enum):
+    """The five definitive product collision risk states for PerceptGuard-AI."""
+    NO_COLLISION_RISK = "NO COLLISION RISK"
+    NEAR_PASS = "NEAR PASS"
+    POTENTIAL_COLLISION_RISK = "POTENTIAL COLLISION RISK"
+    COLLISION_OBSERVED = "COLLISION OBSERVED"
+    UNKNOWN = "UNKNOWN"
+
+
 class ConflictType(str, Enum):
     """Categorization of geometric trajectory convergence."""
     REAR_END = "REAR_END"
@@ -107,12 +116,16 @@ class CollisionRiskAssessment:
     detection_reliability: float = 1.0
     explanation: str = ""
     status: AssessmentStatus = AssessmentStatus.VALID
+    collision_decision: str = "NO COLLISION RISK"
+    decision_reason: str = "No credible predicted path conflict detected."
 
     def to_dict(self) -> Dict[str, Any]:
         return {
             "assessment_id": self.assessment_id,
             "timestamp_seconds": round(self.timestamp_seconds, 3),
             "risk_state": self.risk_state.value,
+            "collision_decision": self.collision_decision,
+            "decision_reason": self.decision_reason,
             "risk_score": round(self.risk_score, 3) if self.risk_score is not None else None,
             "primary_contributing_factors": self.primary_contributing_factors,
             "objects_involved": self.objects_involved,

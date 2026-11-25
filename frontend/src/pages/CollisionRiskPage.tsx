@@ -7,8 +7,6 @@ import {
   ArrowRight,
   Sparkles,
   Gauge,
-  CheckCircle2,
-  Info,
 } from 'lucide-react';
 import { useJob } from '../context/JobContext';
 import { VideoCanvas } from '../components/VideoCanvas';
@@ -23,10 +21,24 @@ export const CollisionRiskPage: React.FC<CollisionRiskPageProps> = ({ isEmbedded
 
   const colRisk = currentFrame?.collision_risk;
   const hasData = Boolean(colRisk);
+
+  // 5 exact product collision decisions:
+  // NO COLLISION RISK | NEAR PASS | POTENTIAL COLLISION RISK | COLLISION OBSERVED | UNKNOWN
+  const collisionResult =
+    results?.final_summary?.collision_risk ||
+    colRisk?.collision_decision ||
+    (hasData ? (colRisk?.risk_state === 'CRITICAL' ? 'COLLISION OBSERVED' : colRisk?.risk_state === 'HIGH' ? 'POTENTIAL COLLISION RISK' : 'NO COLLISION RISK') : 'UNKNOWN');
+
+  const collisionReason =
+    results?.final_summary?.reason ||
+    colRisk?.decision_reason ||
+    colRisk?.explanation ||
+    colRisk?.rationale ||
+    (hasData
+      ? 'Nominal clearance maintained; zero trajectory intersections with ego path.'
+      : 'Awaiting video stream telemetry.');
+
   const minTTC = colRisk?.min_ttc_seconds ?? null;
-  const riskState = colRisk?.risk_state ?? (hasData ? 'LOW' : 'UNKNOWN');
-  const riskScore = colRisk?.risk_score ?? colRisk?.fused_risk_score ?? null;
-  const explanation = colRisk?.explanation || colRisk?.rationale || (hasData ? 'Nominal clearance maintained; zero collision trajectory intersections.' : 'No active stream telemetry.');
   const conflictPairs = colRisk?.conflicting_pairs || [];
   const uncertaintyScore = colRisk?.uncertainty_score ?? colRisk?.perception_uncertainty_factor ?? 0.15;
   const uncertaintyLevel = colRisk?.uncertainty_level ?? 'LOW';
@@ -34,22 +46,21 @@ export const CollisionRiskPage: React.FC<CollisionRiskPageProps> = ({ isEmbedded
   const closestDistM = colRisk?.closest_distance_m ?? null;
   const closestDistPx = colRisk?.closest_distance_px ?? null;
   const relativeSpeedKmh = colRisk?.relative_speed_kmh ?? null;
-  const contributingFactors = colRisk?.primary_contributing_factors || [];
 
-  const getRiskStateBadge = (state?: string | null) => {
-    switch ((state || '').toUpperCase()) {
-      case 'CRITICAL':
-        return 'bg-red-500 text-white border-red-400 animate-pulse';
-      case 'HIGH':
-        return 'bg-orange-500 text-white border-orange-400';
-      case 'MODERATE':
-        return 'bg-amber-500 text-slate-950 border-amber-400';
-      case 'LOW':
-        return 'bg-emerald-500 text-slate-950 border-emerald-400';
+  const getResultBadge = (res: string) => {
+    switch (res.toUpperCase()) {
+      case 'COLLISION OBSERVED':
+        return 'bg-rose-500/20 text-rose-400 border-rose-500/50 animate-pulse';
+      case 'POTENTIAL COLLISION RISK':
+        return 'bg-amber-500/20 text-amber-400 border-amber-500/50 animate-pulse';
+      case 'NEAR PASS':
+        return 'bg-cyan-500/15 text-cyan-400 border-cyan-500/40';
+      case 'NO COLLISION RISK':
+      case 'NO COLLISION RISK DETECTED':
+        return 'bg-emerald-500/15 text-emerald-400 border-emerald-500/40';
       case 'UNKNOWN':
-        return 'bg-purple-950 text-purple-300 border-purple-500/80';
       default:
-        return 'bg-slate-700 text-slate-200 border-slate-600';
+        return 'bg-slate-800 text-slate-400 border-slate-700';
     }
   };
 
@@ -67,259 +78,119 @@ export const CollisionRiskPage: React.FC<CollisionRiskPageProps> = ({ isEmbedded
                 Collision & Road Risk Assessment
               </h2>
               <p className="text-xs text-slate-400">
-                Multi-factor trajectory convergence, mathematically validated Time-To-Collision (TTC), and uncertainty fusion
+                Evidence-driven multi-horizon path conflict detection and Time-To-Collision (TTC) assessment
               </p>
             </div>
           </div>
         </div>
 
-        {/* Stream Collision Summary */}
+        {/* Global Result Badge */}
         <div className="flex items-center gap-3">
           <span
-            className={`px-3 py-1 rounded-full text-xs font-bold font-mono border ${
-              riskState === 'UNKNOWN'
-                ? 'bg-purple-950 text-purple-300 border-purple-500/80'
-                : riskState === 'LOW'
-                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                : 'bg-red-500/10 text-red-400 border-red-500/30'
-            }`}
+            className={`px-3 py-1 rounded-full text-xs font-extrabold font-mono border ${getResultBadge(
+              collisionResult
+            )}`}
           >
-            {riskState === 'UNKNOWN'
-              ? 'UNKNOWN'
-              : riskState === 'LOW'
-              ? 'NO COLLISION RISK DETECTED'
-              : 'COLLISION RISK DETECTED'}
+            {collisionResult}
           </span>
-          {results?.collision_summary && (
-            <div className="flex items-center gap-3 text-xs bg-slate-900 border border-slate-800 rounded-xl px-4 py-2">
-              <div>
-                <span className="text-slate-500 block text-[10px] uppercase">Min Stream TTC</span>
-                <strong className="text-red-400 font-mono text-sm">
-                  {results.collision_summary.min_ttc_seconds !== null
-                    ? `${results.collision_summary.min_ttc_seconds}s`
-                    : 'N/A'}
-                </strong>
-              </div>
-              <div className="w-px h-6 bg-slate-800" />
-              <div>
-                <span className="text-slate-500 block text-[10px] uppercase">Critical Frames</span>
-                <strong className="text-red-400 font-mono text-sm">
-                  {results.collision_summary.critical_risk_frames}
-                </strong>
-              </div>
-              <div className="w-px h-6 bg-slate-800" />
-              <div>
-                <span className="text-slate-500 block text-[10px] uppercase">High Risk Frames</span>
-                <strong className="text-orange-400 font-mono text-sm">
-                  {results.collision_summary.high_risk_frames}
-                </strong>
-              </div>
-              {results.collision_summary.total_conflicts_detected !== undefined && (
-                <>
-                  <div className="w-px h-6 bg-slate-800" />
-                  <div>
-                    <span className="text-slate-500 block text-[10px] uppercase">Conflicts</span>
-                    <strong className="text-amber-400 font-mono text-sm">
-                      {results.collision_summary.total_conflicts_detected}
-                    </strong>
-                  </div>
-                </>
-              )}
-            </div>
-          )}
         </div>
       </div>
 
-      {/* Main Grid: Visual Feed & Playback Scrubber */}
-      <div className={isEmbedded ? "space-y-4" : "grid grid-cols-1 lg:grid-cols-12 gap-6"}>
-        {/* Left 7 Cols: Video Canvas & Scrubber */}
-        {!isEmbedded && (
-          <div className="lg:col-span-7 space-y-4">
-            <VideoCanvas highlightTrackId={closestTrack} />
-            <PlaybackControls />
+      {/* Mandatory Concise Collision Risk Assessment Card */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+          <span className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2">
+            <ShieldAlert className="w-4 h-4 text-cyan-400" />
+            COLLISION RISK ASSESSMENT
+          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-slate-500 uppercase font-bold">Result:</span>
+            <span className={`px-2.5 py-0.5 rounded text-xs font-extrabold font-mono border ${getResultBadge(collisionResult)}`}>
+              {collisionResult}
+            </span>
           </div>
-        )}
+        </div>
 
-        {/* Right 5 Cols: TTC & Fused Collision Risk Telemetry */}
-        <div className={isEmbedded ? "space-y-4" : "lg:col-span-5 space-y-4"}>
-          {/* Explainable Contributing Factors Card */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                <Info className="w-4 h-4 text-cyan-400" />
-                Explainable Contributing Factors & Rationale
-              </span>
-              <span className="text-[10px] font-mono text-slate-500">
-                Transparent Multi-Evidence Safety Engine
-              </span>
-            </div>
+        <div className="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-1.5">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
+            Evidence-Based Reason:
+          </span>
+          <p className="text-sm font-medium text-slate-200 leading-relaxed font-sans">
+            {collisionReason}
+          </p>
+        </div>
+      </div>
 
-            <div className="bg-slate-950/80 rounded-xl p-3.5 border border-slate-800 text-xs text-slate-200">
-              <p className="leading-relaxed font-sans">{explanation}</p>
-            </div>
+      {/* Video Canvas & Controls */}
+      {!isEmbedded && (
+        <div className="space-y-4">
+          <VideoCanvas highlightTrackId={closestTrack} />
+          <PlaybackControls />
+        </div>
+      )}
 
-            {contributingFactors.length > 0 && (
-              <div className="space-y-1.5 pt-1">
-                <span className="text-[10px] font-semibold uppercase text-slate-500 block">
-                  Contributing Factors:
-                </span>
-                <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-                  {contributingFactors.map((factor, idx) => (
-                    <li
-                      key={idx}
-                      className="flex items-start gap-2 bg-slate-950 p-2.5 rounded-lg border border-slate-800/80 text-slate-300"
-                    >
-                      <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 shrink-0 mt-0.5" />
-                      <span className="text-[11px] leading-tight">{factor}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+      {/* Telemetry Metrics Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* TTC */}
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-1">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+            <Clock className="w-3.5 h-3.5 text-cyan-400" />
+            Time-To-Collision (TTC)
+          </span>
+          <div className="text-2xl font-bold font-mono text-white">
+            {minTTC !== null ? `${minTTC.toFixed(1)}s` : '--'}
           </div>
+          <span className="text-[10px] text-slate-500">
+            {minTTC !== null
+              ? minTTC < 1.8
+                ? 'Critical immediate hazard'
+                : minTTC < 3.5
+                ? 'Elevated convergence'
+                : 'Safe headway buffer'
+              : 'Diverging / nominal motion'}
+          </span>
+        </div>
 
-          {/* TTC Primary Hazard Card */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg relative overflow-hidden space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                <Clock className="w-4 h-4 text-cyan-400" />
-                Time-To-Collision (TTC)
-              </span>
-              <span
-                className={`px-3 py-1 rounded-full text-xs font-extrabold font-mono tracking-wider border ${getRiskStateBadge(
-                  riskState
-                )}`}
-              >
-                {riskState} RISK
-              </span>
-            </div>
-
-            {/* TTC Gauge and Value */}
-            <div className="bg-slate-950 rounded-xl p-4 border border-slate-800">
-              <div className="flex items-baseline justify-between mb-1">
-                <div>
-                  <span className="text-4xl font-extrabold text-white font-mono tracking-tight">
-                    {minTTC !== null ? `${minTTC.toFixed(1)}s` : '--'}
-                  </span>
-                  <span className="text-xs text-slate-400 block mt-1">
-                    {minTTC !== null ? (
-                      minTTC < 1.8 ? (
-                        <span className="text-red-400 font-bold flex items-center gap-1">
-                          <ShieldAlert className="w-3.5 h-3.5" /> Immediate Collision Hazard
-                        </span>
-                      ) : minTTC < 3.5 ? (
-                        <span className="text-orange-400 font-semibold flex items-center gap-1">
-                          <AlertTriangle className="w-3.5 h-3.5" /> Elevated Trajectory Convergence
-                        </span>
-                      ) : (
-                        <span className="text-emerald-400 font-medium">Safe Headway Buffer</span>
-                      )
-                    ) : (
-                      <span className="text-slate-500 italic">
-                        TTC not applicable (diverging or lateral crossing motion)
-                      </span>
-                    )}
-                  </span>
-                </div>
-
-                {riskScore !== null ? (
-                  <div className="text-right">
-                    <span className="text-[10px] text-slate-500 uppercase block">Risk Index</span>
-                    <strong className="text-2xl font-mono text-cyan-400">
-                      {(riskScore * 100).toFixed(0)}%
-                    </strong>
-                  </div>
-                ) : (
-                  <div className="text-right">
-                    <span className="text-[10px] text-purple-400 uppercase block">Risk Score</span>
-                    <strong className="text-sm font-mono text-purple-300">WITHHELD</strong>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Separation & Critical Track Grid */}
-            <div className="grid grid-cols-2 gap-2.5">
-              <div className="bg-slate-950 rounded-xl p-3 border border-slate-800">
-                <span className="text-[10px] text-slate-500 block uppercase">Critical Agent</span>
-                <strong className="text-sm font-mono text-cyan-400">
-                  {closestTrack !== null ? `Track #${closestTrack}` : 'None'}
-                </strong>
-              </div>
-
-              <div className="bg-slate-950 rounded-xl p-3 border border-slate-800">
-                <span className="text-[10px] text-slate-500 block uppercase">Relative Speed</span>
-                <strong className="text-sm font-mono text-white flex items-center gap-1">
-                  <Gauge className="w-3.5 h-3.5 text-cyan-400" />
-                  {relativeSpeedKmh !== null ? `${relativeSpeedKmh.toFixed(1)} km/h` : '--'}
-                </strong>
-              </div>
-
-              <div className="bg-slate-950 rounded-xl p-3 border border-slate-800">
-                <span className="text-[10px] text-slate-500 block uppercase">Separation (Pixels)</span>
-                <strong className="text-sm font-mono text-slate-200">
-                  {closestDistPx !== null ? `${closestDistPx.toFixed(0)} px` : '--'}
-                </strong>
-              </div>
-
-              <div className="bg-slate-950 rounded-xl p-3 border border-slate-800">
-                <span className="text-[10px] text-slate-500 block uppercase">Ground Metric (Pinhole)</span>
-                <strong className="text-sm font-mono text-emerald-400">
-                  {closestDistM !== null ? `${closestDistM.toFixed(1)} m` : '--'}
-                </strong>
-              </div>
-            </div>
+        {/* Critical Agent */}
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-1">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+            <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
+            Critical Agent
+          </span>
+          <div className="text-2xl font-bold font-mono text-white">
+            {closestTrack !== null ? `#${closestTrack}` : 'None'}
           </div>
+          <span className="text-[10px] text-slate-500">
+            {relativeSpeedKmh !== null ? `Relative Speed: ${relativeSpeedKmh.toFixed(1)} km/h` : 'No relative hazard'}
+          </span>
+        </div>
 
-          {/* Perception & Environmental Uncertainty Card */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-cyan-400" />
-                Multi-Source Uncertainty Rating
-              </span>
-              <span
-                className={`text-[10px] font-mono px-2 py-0.5 rounded border uppercase font-bold ${
-                  uncertaintyLevel === 'CRITICAL'
-                    ? 'bg-red-950 text-red-400 border-red-800'
-                    : uncertaintyLevel === 'HIGH'
-                    ? 'bg-amber-950 text-amber-400 border-amber-800'
-                    : 'bg-emerald-950 text-emerald-400 border-emerald-800'
-                }`}
-              >
-                {uncertaintyLevel}
-              </span>
-            </div>
-
-            <div className="space-y-2 text-xs">
-              <div className="flex justify-between items-center text-slate-300">
-                <span>Fused Uncertainty Factor:</span>
-                <strong className="font-mono text-amber-400">
-                  {(uncertaintyScore * 100).toFixed(1)}%
-                </strong>
-              </div>
-              <div className="flex justify-between items-center text-slate-300">
-                <span>Camera Visibility Score:</span>
-                <strong className="font-mono text-cyan-400">
-                  {colRisk?.camera_visibility_score !== undefined
-                    ? `${colRisk.camera_visibility_score.toFixed(0)}%`
-                    : '--'}
-                </strong>
-              </div>
-              <div className="flex justify-between items-center text-slate-300">
-                <span>Detection Reliability:</span>
-                <strong className="font-mono text-emerald-400">
-                  {colRisk?.detection_reliability !== undefined
-                    ? `${(colRisk.detection_reliability * 100).toFixed(0)}%`
-                    : '--'}
-                </strong>
-              </div>
-            </div>
-
-            <p className="text-[11px] text-slate-500 pt-1 leading-relaxed">
-              When sensor visibility or tracking maturity falls below defensible thresholds, PerceptGuard AI automatically withholds confident scores and assigns an UNKNOWN state to avoid misleading drivers.
-            </p>
+        {/* Clearance Distance */}
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-1">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+            <Gauge className="w-3.5 h-3.5 text-emerald-400" />
+            Clearance Distance
+          </span>
+          <div className="text-2xl font-bold font-mono text-white">
+            {closestDistM !== null ? `${closestDistM.toFixed(1)}m` : closestDistPx !== null ? `${closestDistPx.toFixed(0)}px` : '--'}
           </div>
+          <span className="text-[10px] text-slate-500">
+            {closestDistPx !== null ? `Pixel separation: ${closestDistPx.toFixed(0)} px` : 'Clear corridor'}
+          </span>
+        </div>
+
+        {/* Multi-Source Uncertainty */}
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-1">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+            Perception Uncertainty
+          </span>
+          <div className="text-2xl font-bold font-mono text-white">
+            {(uncertaintyScore * 100).toFixed(0)}%
+          </div>
+          <span className="text-[10px] text-slate-500 uppercase font-mono">
+            Rating: {uncertaintyLevel}
+          </span>
         </div>
       </div>
 

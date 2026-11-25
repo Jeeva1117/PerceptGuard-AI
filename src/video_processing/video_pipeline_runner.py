@@ -135,6 +135,7 @@ class VideoPipelineRunResult:
     event_timeline: List[Dict[str, Any]] = field(default_factory=list)
     video_path: Optional[str] = None
     annotated_video_path: Optional[str] = None
+    final_summary: Dict[str, Any] = field(default_factory=dict)
     completed_at: str = field(
         default_factory=lambda: datetime.datetime.now(datetime.timezone.utc).isoformat()
     )
@@ -163,6 +164,7 @@ class VideoPipelineRunResult:
             "event_timeline": self.event_timeline,
             "video_path": self.video_path,
             "annotated_video_path": self.annotated_video_path,
+            "final_summary": self.final_summary,
             "completed_at": self.completed_at,
             "frames": [f.to_dict() for f in self.frames],
         }
@@ -1709,6 +1711,86 @@ class VideoPipelineRunner:
         # Build chronological event timeline
         event_timeline = build_event_timeline(processed_frames, duration_sec)
 
+        # ----------------------------------------------------------------------
+        # Synthesize Final Release Collision Risk Decision & Road User Counts
+        # ----------------------------------------------------------------------
+        unique_class_counts: Dict[str, int] = {
+            "car": 0,
+            "motorcycle": 0,
+            "bus": 0,
+            "truck": 0,
+            "bicycle": 0,
+            "pedestrian": 0,
+        }
+        for trk_id, (cls_id, cls_name) in getattr(tracker, "_track_classes", {}).items():
+            c_lower = cls_name.lower()
+            if c_lower in ("person", "pedestrian"):
+                unique_class_counts["pedestrian"] += 1
+            elif c_lower in unique_class_counts:
+                unique_class_counts[c_lower] += 1
+
+        all_decisions = [
+            f.collision_risk.get("collision_decision")
+            for f in processed_frames
+            if f.collision_risk and f.collision_risk.get("collision_decision")
+        ]
+        decision_reasons = [
+            f.collision_risk.get("decision_reason")
+            for f in processed_frames
+            if f.collision_risk and f.collision_risk.get("decision_reason")
+        ]
+
+        final_decision = "NO COLLISION RISK"
+        final_reason = "No credible predicted path conflict detected."
+        final_primary_object: Optional[str] = None
+        final_event_ts: Optional[float] = None
+
+        if "COLLISION OBSERVED" in all_decisions:
+            final_decision = "COLLISION OBSERVED"
+            idx = all_decisions.index("COLLISION OBSERVED")
+            final_reason = decision_reasons[idx]
+            final_event_ts = processed_frames[idx].timestamp_seconds
+        elif "POTENTIAL COLLISION RISK" in all_decisions:
+            final_decision = "POTENTIAL COLLISION RISK"
+            idx = all_decisions.index("POTENTIAL COLLISION RISK")
+            final_reason = decision_reasons[idx]
+            final_event_ts = processed_frames[idx].timestamp_seconds
+            c_data = processed_frames[idx].collision_risk
+            if c_data.get("closest_track_id"):
+                cid = c_data["closest_track_id"]
+                c_name = getattr(tracker, "_track_classes", {}).get(cid, (-1, "obstacle"))[1]
+                final_primary_object = f"{c_name.capitalize()} — ID {cid:02d}"
+        elif "NEAR PASS" in all_decisions:
+            final_decision = "NEAR PASS"
+            idx = all_decisions.index("NEAR PASS")
+            final_reason = decision_reasons[idx]
+            final_event_ts = processed_frames[idx].timestamp_seconds
+        elif "UNKNOWN" in all_decisions and len([d for d in all_decisions if d == "UNKNOWN"]) > len(all_decisions) * 0.5:
+            final_decision = "UNKNOWN"
+            final_reason = "Insufficient evidence to determine collision risk."
+
+        vis_conditions = [
+            f.weather_intelligence.get("primary_condition", "CLEAR")
+            for f in processed_frames
+            if f.weather_intelligence
+        ]
+        dominant_vis = "Clear"
+        if vis_conditions:
+            from collections import Counter
+            dominant_vis = Counter(vis_conditions).most_common(1)[0][0].capitalize()
+
+        final_summary = {
+            "status": "COMPLETED",
+            "video_duration_seconds": round(duration_sec, 2),
+            "frames_processed": len(processed_frames),
+            "visibility": dominant_vis,
+            "road_user_counts": unique_class_counts,
+            "collision_risk": final_decision,
+            "reason": final_reason,
+            "primary_object": final_primary_object,
+            "event_timestamp": final_event_ts,
+        }
+
         result = VideoPipelineRunResult(
             job_id=job_id,
             video_filename=vpath.name,
@@ -1741,6 +1823,7 @@ class VideoPipelineRunner:
             event_timeline=event_timeline,
             video_path=str(vpath.resolve()),
             annotated_video_path=annotated_video_path_str,
+            final_summary=final_summary,
         )
 
         # Atomic persistence of results.json

@@ -6,9 +6,7 @@ import {
   Bus,
   Bike,
   User,
-  Layers,
   Filter,
-  Sparkles,
 } from 'lucide-react';
 import { useJob } from '../context/JobContext';
 import { VideoCanvas } from '../components/VideoCanvas';
@@ -25,7 +23,7 @@ export const ObjectDetectionPage: React.FC<ObjectDetectionPageProps> = ({ isEmbe
   const setSelectedTrackId = setGlobalTrackId;
   const [filters, setFilters] = useState<FilterState>({
     ...DEFAULT_FILTER_STATE,
-    minConfidence: 0.25,
+    minConfidence: 0.20,
   });
 
   const rawTracks = currentFrame?.tracks || [];
@@ -35,31 +33,55 @@ export const ObjectDetectionPage: React.FC<ObjectDetectionPageProps> = ({ isEmbe
     if (filters.trackId.trim() !== '' && String(t.track_id) !== filters.trackId.trim()) return false;
     return true;
   });
-  const relScores = currentFrame?.predicted_reliability || {};
 
-  // Class breakdown counts
-  const classCounts: Record<string, number> = {};
-  tracks.forEach((t) => {
-    classCounts[t.class_name] = (classCounts[t.class_name] || 0) + 1;
-  });
+  // Road user unique counts from backend summary or computed across all frames
+  const summaryCounts = results?.final_summary?.road_user_counts;
+  const counts = {
+    car: summaryCounts?.car ?? 0,
+    motorcycle: summaryCounts?.motorcycle ?? 0,
+    bus: summaryCounts?.bus ?? 0,
+    truck: summaryCounts?.truck ?? 0,
+    bicycle: summaryCounts?.bicycle ?? 0,
+    pedestrian: summaryCounts?.pedestrian ?? 0,
+  };
+
+  // If no summary was generated, compute unique tracks from frames
+  if (!summaryCounts && results?.frames) {
+    const seenTracks = new Map<number, string>();
+    results.frames.forEach((f) => {
+      f.tracks?.forEach((t) => {
+        if (!seenTracks.has(t.track_id)) {
+          seenTracks.set(t.track_id, t.class_name.toLowerCase());
+        }
+      });
+    });
+    seenTracks.forEach((cls) => {
+      if (cls === 'car') counts.car += 1;
+      else if (cls === 'motorcycle') counts.motorcycle += 1;
+      else if (cls === 'bus') counts.bus += 1;
+      else if (cls === 'truck') counts.truck += 1;
+      else if (cls === 'bicycle') counts.bicycle += 1;
+      else if (cls === 'person' || cls === 'pedestrian') counts.pedestrian += 1;
+    });
+  }
 
   const getClassIcon = (cls?: string | null) => {
-    if (!cls) return <Crosshair className="w-3.5 h-3.5 text-cyan-400" />;
+    if (!cls) return <Crosshair className="w-4 h-4 text-cyan-400" />;
     switch (cls.toLowerCase()) {
       case 'car':
-        return <Car className="w-3.5 h-3.5 text-blue-400" />;
+        return <Car className="w-4 h-4 text-blue-400" />;
       case 'truck':
-        return <Truck className="w-3.5 h-3.5 text-amber-400" />;
+        return <Truck className="w-4 h-4 text-amber-400" />;
       case 'bus':
-        return <Bus className="w-3.5 h-3.5 text-emerald-400" />;
+        return <Bus className="w-4 h-4 text-emerald-400" />;
       case 'motorcycle':
       case 'bicycle':
-        return <Bike className="w-3.5 h-3.5 text-purple-400" />;
+        return <Bike className="w-4 h-4 text-purple-400" />;
       case 'person':
       case 'pedestrian':
-        return <User className="w-3.5 h-3.5 text-rose-400" />;
+        return <User className="w-4 h-4 text-rose-400" />;
       default:
-        return <Crosshair className="w-3.5 h-3.5 text-cyan-400" />;
+        return <Crosshair className="w-4 h-4 text-cyan-400" />;
     }
   };
 
@@ -77,7 +99,7 @@ export const ObjectDetectionPage: React.FC<ObjectDetectionPageProps> = ({ isEmbe
                 Object Detection & Multi-Object Tracking
               </h2>
               <p className="text-xs text-slate-400">
-                YOLO11n detector paired with ByteTrack motion continuity and LSTM reliability forecasting
+                YOLO11 object detection with ByteTrack persistent identity continuity across occlusions
               </p>
             </div>
           </div>
@@ -112,7 +134,82 @@ export const ObjectDetectionPage: React.FC<ObjectDetectionPageProps> = ({ isEmbe
         </div>
       </div>
 
-      {/* Multi-Dimensional Filter Bar */}
+      {/* Mandatory Concise Object Detection Breakdown: Detected Objects */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-3">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+          <span className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2">
+            <Crosshair className="w-4 h-4 text-cyan-400" />
+            OBJECT DETECTION — Detected Objects
+          </span>
+          <span className="text-xs font-mono text-slate-400">
+            Total Unique Road Users: <strong className="text-cyan-400">{results?.unique_tracks ?? Object.values(counts).reduce((a, b) => a + b, 0)}</strong>
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400">
+              <Car className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-[10px] uppercase font-bold text-slate-500 block">Car</span>
+              <strong className="text-lg font-mono text-white">{counts.car}</strong>
+            </div>
+          </div>
+
+          <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400">
+              <Bike className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-[10px] uppercase font-bold text-slate-500 block">Motorcycle</span>
+              <strong className="text-lg font-mono text-white">{counts.motorcycle}</strong>
+            </div>
+          </div>
+
+          <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
+              <Bus className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-[10px] uppercase font-bold text-slate-500 block">Bus</span>
+              <strong className="text-lg font-mono text-white">{counts.bus}</strong>
+            </div>
+          </div>
+
+          <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400">
+              <Truck className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-[10px] uppercase font-bold text-slate-500 block">Truck</span>
+              <strong className="text-lg font-mono text-white">{counts.truck}</strong>
+            </div>
+          </div>
+
+          <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-cyan-500/10 text-cyan-400">
+              <Bike className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-[10px] uppercase font-bold text-slate-500 block">Bicycle</span>
+              <strong className="text-lg font-mono text-white">{counts.bicycle}</strong>
+            </div>
+          </div>
+
+          <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-rose-500/10 text-rose-400">
+              <User className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-[10px] uppercase font-bold text-slate-500 block">Pedestrian</span>
+              <strong className="text-lg font-mono text-white">{counts.pedestrian}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Filter Bar */}
       <FilterBar
         filters={filters}
         onChange={setFilters}
@@ -122,210 +219,12 @@ export const ObjectDetectionPage: React.FC<ObjectDetectionPageProps> = ({ isEmbe
         showSeverityFilters={false}
       />
 
-      {/* Main Grid or Embedded View */}
-      {isEmbedded ? (
+      {/* Video Canvas & Controls */}
+      {!isEmbedded && (
         <div className="space-y-4">
-          {/* Reliability Forecasts Card (H1, H3, H5) */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-cyan-400" />
-                Anticipated Reliability Forecast
-              </span>
-              <span className="text-[10px] font-mono text-slate-500 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
-                LSTM CPU
-              </span>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                { horizon: 'H1 (+1 Frame)', key: 'h1', time: '+0.03s' },
-                { horizon: 'H3 (+3 Frames)', key: 'h3', time: '+0.10s' },
-                { horizon: 'H5 (+5 Frames)', key: 'h5', time: '+0.17s' },
-              ].map(({ horizon, key, time }) => {
-                const score = relScores[key] ?? 0.85;
-                const pct = Math.round(score * 100);
-                return (
-                  <div key={key} className="bg-slate-950/80 border border-slate-800/80 rounded-xl p-3 text-center">
-                    <span className="text-[10px] text-slate-500 block uppercase font-mono">{horizon} ({time})</span>
-                    <span className="text-2xl font-extrabold font-mono text-white block my-1">
-                      {pct}%
-                    </span>
-                    <span
-                      className={`text-[10px] font-medium px-2 py-0.5 rounded-full inline-block ${
-                        pct >= 80
-                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                          : pct >= 60
-                          ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                          : 'bg-red-500/10 text-red-400 border border-red-500/20'
-                      }`}
-                    >
-                      {pct >= 80 ? 'Reliable' : pct >= 60 ? 'Uncertain' : 'Failure Risk'}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Active Classes Breakdown Chips */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                <Layers className="w-4 h-4 text-cyan-400" />
-                Active Class Distribution
-              </span>
-              <span className="text-xs font-mono text-cyan-400 font-semibold">
-                {tracks.length} active tracks
-              </span>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              {Object.keys(classCounts).length === 0 ? (
-                <p className="text-xs text-slate-500 italic">No targets above confidence threshold in this frame.</p>
-              ) : (
-                Object.entries(classCounts).map(([cls, count]) => (
-                  <div
-                    key={cls}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-xs font-medium text-slate-200"
-                  >
-                    {getClassIcon(cls)}
-                    <span className="capitalize">{cls}</span>
-                    <span className="px-1.5 py-0.2 rounded bg-slate-800 text-cyan-400 font-mono text-[11px] font-bold">
-                      {count}
-                    </span>
-                  </div>
-                ))
-              )}
-            </div>
-
-            {/* Confidence Slider Filter */}
-            <div className="pt-2 border-t border-slate-800/80">
-              <div className="flex justify-between items-center text-xs mb-1.5">
-                <span className="text-slate-400 flex items-center gap-1">
-                  <Filter className="w-3.5 h-3.5 text-slate-500" />
-                  Min Confidence Filter:
-                </span>
-                <span className="font-mono text-cyan-400 font-bold">{Math.round(filters.minConfidence * 100)}%</span>
-              </div>
-              <input
-                type="range"
-                min="0.10"
-                max="0.85"
-                step="0.05"
-                value={filters.minConfidence}
-                onChange={(e) => setFilters((prev) => ({ ...prev, minConfidence: Number(e.target.value) }))}
-                className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
-              />
-            </div>
-          </div>
-        </div>
-      ) : (
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left 7 Cols: Video Canvas & Scrubber */}
-        <div className="lg:col-span-7 space-y-4">
           <VideoCanvas highlightTrackId={selectedTrackId} />
           <PlaybackControls />
         </div>
-
-        {/* Right 5 Cols: Object Breakdown & Reliability Forecasts */}
-        <div className="lg:col-span-5 space-y-4">
-          {/* Reliability Forecasts Card (H1, H3, H5) */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-cyan-400" />
-                Anticipated Reliability Forecast
-              </span>
-              <span className="text-[10px] font-mono text-slate-500 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
-                LSTM CPU
-              </span>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                { horizon: 'H1 (+1 Frame)', key: 'h1', time: '+0.03s' },
-                { horizon: 'H3 (+3 Frames)', key: 'h3', time: '+0.10s' },
-                { horizon: 'H5 (+5 Frames)', key: 'h5', time: '+0.17s' },
-              ].map(({ horizon, key, time }) => {
-                const score = relScores[key] ?? 0.85;
-                const pct = Math.round(score * 100);
-                return (
-                  <div key={key} className="bg-slate-950/80 border border-slate-800/80 rounded-xl p-3 text-center">
-                    <span className="text-[10px] text-slate-500 block uppercase font-mono">{horizon} ({time})</span>
-                    <span className="text-2xl font-extrabold font-mono text-white block my-1">
-                      {pct}%
-                    </span>
-                    <span
-                      className={`text-[10px] font-medium px-2 py-0.5 rounded-full inline-block ${
-                        pct >= 80
-                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                          : pct >= 60
-                          ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                          : 'bg-red-500/10 text-red-400 border border-red-500/20'
-                      }`}
-                    >
-                      {pct >= 80 ? 'Reliable' : pct >= 60 ? 'Uncertain' : 'Failure Risk'}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Active Classes Breakdown Chips */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                <Layers className="w-4 h-4 text-cyan-400" />
-                Active Class Distribution
-              </span>
-              <span className="text-xs font-mono text-cyan-400 font-semibold">
-                {tracks.length} active tracks
-              </span>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              {Object.keys(classCounts).length === 0 ? (
-                <p className="text-xs text-slate-500 italic">No targets above confidence threshold in this frame.</p>
-              ) : (
-                Object.entries(classCounts).map(([cls, count]) => (
-                  <div
-                    key={cls}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-xs font-medium text-slate-200"
-                  >
-                    {getClassIcon(cls)}
-                    <span className="capitalize">{cls}</span>
-                    <span className="px-1.5 py-0.2 rounded bg-slate-800 text-cyan-400 font-mono text-[11px] font-bold">
-                      {count}
-                    </span>
-                  </div>
-                ))
-              )}
-            </div>
-
-            {/* Confidence Slider Filter */}
-            <div className="pt-2 border-t border-slate-800/80">
-              <div className="flex justify-between items-center text-xs mb-1.5">
-                <span className="text-slate-400 flex items-center gap-1">
-                  <Filter className="w-3.5 h-3.5 text-slate-500" />
-                  Min Confidence Filter:
-                </span>
-                <span className="font-mono text-cyan-400 font-bold">{Math.round(filters.minConfidence * 100)}%</span>
-              </div>
-              <input
-                type="range"
-                min="0.10"
-                max="0.85"
-                step="0.05"
-                value={filters.minConfidence}
-                onChange={(e) => setFilters((prev) => ({ ...prev, minConfidence: Number(e.target.value) }))}
-                className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
       )}
 
       {/* Tracked Objects Table */}
@@ -333,11 +232,18 @@ export const ObjectDetectionPage: React.FC<ObjectDetectionPageProps> = ({ isEmbe
         <div className="flex items-center justify-between mb-4">
           <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
             <Crosshair className="w-4 h-4 text-cyan-400" />
-            Track Continuity Telemetry (Frame #{currentFrameIndex})
+            Tracked Objects Telemetry (Frame #{currentFrameIndex})
           </span>
-          <span className="text-xs font-mono text-slate-500">
-            ByteTrack Association Matrix
-          </span>
+          <div className="flex items-center gap-3 text-xs">
+            <div className="flex items-center gap-1 text-slate-400">
+              <Filter className="w-3.5 h-3.5 text-slate-500" />
+              <span>Min Conf:</span>
+              <span className="font-mono text-cyan-400 font-bold">{Math.round(filters.minConfidence * 100)}%</span>
+            </div>
+            <span className="text-xs font-mono text-slate-500">
+              {tracks.length} track(s) in frame
+            </span>
+          </div>
         </div>
 
         <div className="overflow-x-auto">

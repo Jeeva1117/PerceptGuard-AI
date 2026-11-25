@@ -163,6 +163,28 @@ class CollisionRiskEngine:
         if is_stale:
             status = AssessmentStatus.DEGRADED
 
+        # Derive the 5 definitive product collision risk states
+        has_vulnerable_conflict = any(
+            c.conflict_type in (ConflictType.PEDESTRIAN_CROSSING, ConflictType.CYCLIST_CONFLICT)
+            for c in conflicts
+        )
+        if status in (AssessmentStatus.UNKNOWN_HIGH_UNCERTAINTY, AssessmentStatus.UNKNOWN_INSUFFICIENT_DATA) or is_unreliable:
+            decision = "UNKNOWN"
+            decision_reason = "Insufficient evidence to determine collision risk."
+        elif smoothed_state == CollisionRiskState.CRITICAL and min_ttc is not None and min_ttc <= 0.3:
+            decision = "COLLISION OBSERVED"
+            decision_reason = "Visual evidence of vehicle contact observed."
+        elif smoothed_state in (CollisionRiskState.CRITICAL, CollisionRiskState.HIGH) or has_vulnerable_conflict:
+            decision = "POTENTIAL COLLISION RISK"
+            primary_actor = conflicts[0].class_a if conflicts else (objects_involved[0]["object_class"] if objects_involved else "obstacle")
+            decision_reason = f"Predicted path conflict with ego vehicle ({primary_actor})."
+        elif smoothed_state == CollisionRiskState.MODERATE or (closest_m is not None and closest_m < 25.0 and len(conflicts) == 0):
+            decision = "NEAR PASS"
+            decision_reason = "Road user passes nearby without a credible path conflict."
+        else:
+            decision = "NO COLLISION RISK"
+            decision_reason = "No credible predicted path conflict detected."
+
         assessment = CollisionRiskAssessment(
             assessment_id=assessment_id,
             timestamp_seconds=timestamp_seconds,
@@ -182,6 +204,8 @@ class CollisionRiskEngine:
             detection_reliability=round(1.0 - uncertainty_score * 0.5, 3),
             explanation=explanation,
             status=status,
+            collision_decision=decision,
+            decision_reason=decision_reason,
         )
 
         self._all_assessments.append(assessment)
