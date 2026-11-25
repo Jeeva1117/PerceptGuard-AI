@@ -1791,6 +1791,17 @@ class VideoPipelineRunner:
             "event_timestamp": final_event_ts,
         }
 
+        # Deduplicate alerts by alert_id to reflect actual unique alert instances generated
+        seen_alert_ids = set()
+        unique_alerts = []
+        for a in all_alerts:
+            aid = getattr(a, "alert_id", None) or id(a)
+            if aid not in seen_alert_ids:
+                seen_alert_ids.add(aid)
+                unique_alerts.append(a)
+
+        final_alerts_count = len(unique_alerts) if unique_alerts else len(event_timeline)
+
         result = VideoPipelineRunResult(
             job_id=job_id,
             video_filename=vpath.name,
@@ -1798,7 +1809,7 @@ class VideoPipelineRunner:
             frames_processed=len(processed_frames),
             total_detections=total_detections,
             unique_tracks=tracker.unique_track_count,
-            total_alerts=len(all_alerts),
+            total_alerts=final_alerts_count,
             active_alerts=len(early_warning_engine.get_active_alerts()),
             calibration_status="PROVISIONAL CALIBRATION",
             per_horizon_risk=per_h_risk,

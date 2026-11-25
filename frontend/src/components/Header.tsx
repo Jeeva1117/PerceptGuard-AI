@@ -260,8 +260,8 @@ export const Header: React.FC = () => {
         </div>
       </header>
 
-      {/* Concise Master Analysis Result Banner */}
-      {results?.final_summary && (
+      {/* Concise Master Analysis Result Banner (Only when analysis successfully completed) */}
+      {results?.final_summary && activeJob?.status !== 'FAILED' && activeJob?.status !== 'CANCELLED' && activeJob?.status !== 'PROCESSING' && (
         <div className="bg-slate-950/95 border-b border-slate-800 px-6 py-2 flex flex-wrap items-center justify-between text-xs font-mono text-slate-300 gap-3">
           <div className="flex flex-wrap items-center gap-3">
             <span className="font-bold text-white flex items-center gap-1.5">

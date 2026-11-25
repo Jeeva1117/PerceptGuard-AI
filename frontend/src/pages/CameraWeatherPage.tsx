@@ -2,20 +2,12 @@ import React from 'react';
 import {
   CloudSun,
   Gauge,
-  Droplets,
-  CloudFog,
-  Eye,
-  Moon,
-  SunMedium,
-  ShieldAlert,
-  CheckCircle2,
-  Clock,
   Film,
+  Activity,
 } from 'lucide-react';
 import { useJob } from '../context/JobContext';
 import { VideoCanvas } from '../components/VideoCanvas';
 import { PlaybackControls } from '../components/PlaybackControls';
-import { VideoUploadSection } from '../components/VideoUploadSection';
 
 export interface CameraWeatherPageProps {
   isEmbedded?: boolean;
@@ -27,528 +19,262 @@ export const CameraWeatherPage: React.FC<CameraWeatherPageProps> = ({ isEmbedded
     currentFrame,
     activeJob,
     videoProcessingState,
-    uploadedVideoId,
-    stagedVideoSrc,
+    uploadedVideoMetadata,
+    duration,
   } = useJob();
 
   const weather = currentFrame?.weather_intelligence;
-  const hasData = Boolean(weather);
   const visScore = weather?.visibility_score ?? null;
-  const visLevel =
-    weather?.visibility_level ??
-    (visScore != null
-      ? visScore >= 80
-        ? 'EXCELLENT'
-        : visScore >= 65
-        ? 'GOOD'
-        : visScore >= 45
-        ? 'DEGRADED'
-        : 'CRITICAL'
-      : 'UNKNOWN');
+  const primaryCondition = weather?.primary_condition || weather?.condition || 'CLEAR';
+  const camQuality = weather?.camera_quality_score ?? null;
+  const metrics = weather?.metrics;
+  const reasons = weather?.degradation_reasons || weather?.evidence || [];
 
-  // Standardized visibility category (Clear / Fog / Rain / Low Visibility / Unknown)
+  // Visibility category
   const visibilityCategory =
     results?.final_summary?.visibility ||
     (visScore == null
-      ? 'Unknown'
+      ? 'UNKNOWN'
       : visScore >= 75
-      ? 'Clear'
+      ? 'CLEAR'
       : visScore >= 50
-      ? 'Moderate'
-      : 'Low Visibility');
+      ? 'MODERATE'
+      : visScore >= 35
+      ? 'DEGRADED'
+      : 'LOW VISIBILITY');
 
-  const primaryCondition =
-    weather?.primary_condition ||
-    weather?.condition ||
-    (activeJob?.status === 'FAILED' ? 'UNAVAILABLE' : hasData ? 'CLEAR' : 'UNKNOWN');
-
-  const camQuality = weather?.camera_quality_score ?? null;
-  const confidence = weather?.confidence != null ? Math.round(weather.confidence * 100) : null;
-  const uncertainty = weather?.uncertainty != null ? Math.round(weather.uncertainty * 100) : null;
-
-  const degradationReasons: string[] = weather
-    ? Array.isArray(weather?.degradation_reasons)
-      ? weather.degradation_reasons
-      : Array.isArray(weather?.evidence)
-      ? weather.evidence
-      : typeof weather?.evidence === 'string'
-      ? [weather.evidence]
-      : typeof weather?.degradation_reasons === 'string'
-      ? [weather.degradation_reasons]
-      : ['Optical clarity and atmospheric transmission within nominal parameters.']
-    : activeJob?.status === 'FAILED'
-    ? ['Video processing pipeline execution failed. Review session logs.']
-    : ['Awaiting video stream telemetry ingestion.'];
-
-  const rain = weather?.rain;
-  const fog = weather?.fog;
-  const blur = weather?.blur;
-  const lighting = weather?.lighting;
-  const glare = weather?.glare;
-  const perceptionImpact = weather?.perception_impact;
+  // Stream metadata
+  const videoMeta = results?.video_metadata || uploadedVideoMetadata?.metadata;
+  const videoDuration =
+    results?.timeline_telemetry?.source_video_duration_sec ||
+    videoMeta?.duration_seconds ||
+    duration ||
+    null;
+  const videoFps = videoMeta?.fps || results?.timeline_telemetry?.source_fps || null;
+  const videoResolution =
+    videoMeta?.width && videoMeta?.height ? `${videoMeta.width}x${videoMeta.height}` : null;
+  const framesProcessedCount =
+    results?.frames_processed ??
+    activeJob?.frames_processed ??
+    (currentFrame ? currentFrame.frame_index + 1 : 0);
 
   const getConditionColor = (cond: string) => {
     switch (cond.toUpperCase()) {
+      case 'CLEAR':
+        return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
       case 'RAIN':
-        return 'text-blue-400 bg-blue-500/10 border-blue-500/30';
+        return 'bg-blue-500/10 text-blue-400 border-blue-500/30';
       case 'FOG':
-        return 'text-slate-300 bg-slate-500/10 border-slate-500/30';
-      case 'BLUR':
-        return 'text-amber-400 bg-amber-500/10 border-amber-500/30';
-      case 'LOW_LIGHT':
-      case 'LOW VISIBILITY':
-        return 'text-indigo-400 bg-indigo-500/10 border-indigo-500/30';
+        return 'bg-slate-500/10 text-slate-300 border-slate-500/30';
       case 'SUN_GLARE':
-        return 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30';
+        return 'bg-amber-500/10 text-amber-400 border-amber-500/30';
+      case 'LOW_LIGHT':
+        return 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30';
+      case 'BLUR':
       case 'OBSTRUCTION':
-        return 'text-red-400 bg-red-500/10 border-red-500/30';
+        return 'bg-rose-500/10 text-rose-400 border-rose-500/30';
       default:
-        return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30';
+        return 'bg-slate-800 text-slate-400 border-slate-700';
     }
   };
 
-  const videoDuration =
-    results?.final_summary?.video_duration_seconds ??
-    results?.video_metadata?.duration_seconds ??
-    null;
-
-  const framesProcessedCount =
-    results?.final_summary?.frames_processed ??
-    results?.frames_processed ??
-    results?.frames?.length ??
-    0;
 
   return (
-    <div className="space-y-6">
-      {/* Page Title & Module Scope */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-2 border-b border-slate-800">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-cyan-500/10 rounded-xl text-cyan-400">
-              <CloudSun className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-white tracking-tight">
-                Camera & Weather Intelligence
+    <div className="space-y-4 select-none">
+      {/* Module Title Header */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="p-2.5 bg-cyan-500/10 border border-cyan-500/20 rounded-xl text-cyan-400 shrink-0">
+            <CloudSun className="w-5 h-5" />
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <h2 className="text-sm font-bold text-white tracking-wide">
+                Camera & Weather
               </h2>
-              <p className="text-xs text-slate-400">
-                Continuous optical visibility scoring, atmospheric condition estimation, and camera perception validation
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Global Summary Badge */}
-        <div className="flex items-center gap-3">
-          <span
-            className={`px-3 py-1 rounded-full text-xs font-bold font-mono border ${
-              visScore == null
-                ? 'bg-slate-800 text-slate-400 border-slate-700'
-                : visScore >= 75
-                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                : visScore >= 50
-                ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-                : 'bg-red-500/10 text-red-400 border-red-500/30'
-            }`}
-          >
-            {visibilityCategory.toUpperCase()}
-          </span>
-        </div>
-      </div>
-
-      {/* Mandatory Concise Video Analysis Header Card */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-cyan-500/10 rounded-xl text-cyan-400">
-              <Film className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block">
-                VIDEO ANALYSIS
-              </span>
-              <span className="text-sm font-bold text-white flex items-center gap-1.5">
-                {activeJob?.status === 'COMPLETED' || videoProcessingState === 'COMPLETED' ? (
-                  <>
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    Video Processing Completed
-                  </>
-                ) : activeJob?.status === 'PROCESSING' || videoProcessingState === 'PROCESSING' ? (
-                  <>
-                    <Clock className="w-4 h-4 text-cyan-400 animate-spin" />
-                    Processing Video...
-                  </>
-                ) : videoProcessingState === 'UPLOADING' ? (
-                  <>
-                    <Clock className="w-4 h-4 text-cyan-400 animate-spin" />
-                    Uploading Video...
-                  </>
-                ) : videoProcessingState === 'VIDEO_READY' || uploadedVideoId || stagedVideoSrc ? (
-                  <>
-                    <Film className="w-4 h-4 text-cyan-400" />
-                    Video Ready for Processing
-                  </>
-                ) : activeJob?.status === 'FAILED' || videoProcessingState === 'PROCESSING_FAILED' ? (
-                  <>
-                    <ShieldAlert className="w-4 h-4 text-rose-400" />
-                    Video Processing Failed
-                  </>
-                ) : (
-                  'Ready for Video Upload'
-                )}
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-cyan-300 border border-slate-700">
+                MODULE 1
               </span>
             </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-6 text-xs font-mono">
-            <div>
-              <span className="text-slate-500 text-[10px] uppercase block">Duration</span>
-              <strong className="text-white text-sm">
-                {videoDuration != null ? `${videoDuration.toFixed(1)}s` : '--'}
-              </strong>
-            </div>
-            <div className="w-px h-6 bg-slate-800" />
-            <div>
-              <span className="text-slate-500 text-[10px] uppercase block">Frames Processed</span>
-              <strong className="text-cyan-400 text-sm">{framesProcessedCount}</strong>
-            </div>
-            <div className="w-px h-6 bg-slate-800" />
-            <div>
-              <span className="text-slate-500 text-[10px] uppercase block">Visibility</span>
-              <strong className="text-emerald-400 text-sm">{visibilityCategory}</strong>
-            </div>
-            {results?.weather_summary && (
-              <>
-                <div className="w-px h-6 bg-slate-800" />
-                <div>
-                  <span className="text-slate-500 text-[10px] uppercase block">Mean Score</span>
-                  <strong className="text-amber-400 text-sm">
-                    {results.weather_summary.mean_visibility_score}%
-                  </strong>
-                </div>
-              </>
-            )}
+            <p className="text-[11px] text-slate-400 truncate">
+              Optical visibility scoring & sensor health
+            </p>
           </div>
         </div>
+
+        <span
+          className={`px-2.5 py-1 rounded-full text-[10px] font-bold font-mono border shrink-0 ${
+            activeJob?.status === 'COMPLETED' || videoProcessingState === 'COMPLETED'
+              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+              : videoProcessingState === 'PROCESSING' || activeJob?.status === 'PROCESSING'
+              ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30 animate-pulse'
+              : 'bg-slate-800 text-slate-400 border-slate-700'
+          }`}
+        >
+          {activeJob?.status === 'COMPLETED' || videoProcessingState === 'COMPLETED'
+            ? 'ANALYZED'
+            : videoProcessingState === 'PROCESSING'
+            ? 'ANALYZING'
+            : 'READY'}
+        </span>
       </div>
 
-      {/* Primary Video Upload Section (if not embedded) */}
-      {!isEmbedded && <VideoUploadSection />}
-
-      {/* Failure Banner */}
-      {!isEmbedded && activeJob?.status === 'FAILED' && (
-        <div className="bg-rose-500/10 border border-rose-500/30 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-rose-500/20 text-rose-400 rounded-xl shrink-0">
-              <ShieldAlert className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="text-sm font-bold text-rose-300">Pipeline Execution Error</h4>
-              <p className="text-xs text-rose-400/80 font-mono mt-0.5">
-                {activeJob.error_message || activeJob.message || 'Processing was halted due to an unhandled pipeline error.'}
-              </p>
-            </div>
-          </div>
-          <span className="text-xs font-mono text-rose-400 bg-rose-950 px-3 py-1 rounded-lg border border-rose-800">
-            {activeJob.filename}
-          </span>
+      {/* Standalone Video Player (Only when viewed directly outside master workspace) */}
+      {!isEmbedded && (
+        <div className="space-y-3">
+          <VideoCanvas />
+          <PlaybackControls />
         </div>
       )}
 
-      {/* Video Player + Optical Visibility Panel */}
-      <div className={isEmbedded ? 'space-y-4' : 'grid grid-cols-1 lg:grid-cols-12 gap-6'}>
-        {!isEmbedded && (
-          <div className="lg:col-span-7 space-y-4">
-            <VideoCanvas />
-            <PlaybackControls />
+      {/* Video Stream & Processing Telemetry Card */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg space-y-3">
+        <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+            <Film className="w-3.5 h-3.5 text-cyan-400" />
+            Stream Telemetry
+          </span>
+          <span className="text-[11px] font-mono text-cyan-400">
+            {framesProcessedCount} frames processed
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+          <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800/80">
+            <span className="text-[10px] text-slate-500 uppercase block font-sans font-semibold">Duration</span>
+            <strong className="text-white text-xs block mt-0.5">
+              {videoDuration != null ? `${videoDuration.toFixed(1)}s` : 'NOT AVAILABLE'}
+            </strong>
           </div>
-        )}
-
-        <div className={isEmbedded ? 'space-y-4' : 'lg:col-span-5 space-y-4'}>
-          {/* Optical Visibility Index Card */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg relative overflow-hidden">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                <Gauge className="w-4 h-4 text-cyan-400" />
-                Optical Visibility Index
-              </span>
-              <span
-                className={`px-3 py-1 rounded-full text-xs font-bold border ${getConditionColor(
-                  primaryCondition
-                )}`}
-              >
-                {primaryCondition}
-              </span>
-            </div>
-
-            <div className="flex items-baseline justify-between mb-2">
-              <div className="flex items-baseline gap-3">
-                <span className="text-4xl font-extrabold text-white font-mono tracking-tight">
-                  {visScore != null ? `${visScore.toFixed(0)}%` : '--'}
-                </span>
-                <span
-                  className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${
-                    visLevel === 'EXCELLENT'
-                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                      : visLevel === 'GOOD'
-                      ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20'
-                      : visLevel === 'DEGRADED'
-                      ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                      : visLevel === 'CRITICAL'
-                      ? 'bg-red-500/10 text-red-400 border-red-500/20 animate-pulse'
-                      : 'bg-slate-800 text-slate-400 border-slate-700'
-                  }`}
-                >
-                  {visLevel}
-                </span>
-              </div>
-
-              <div className="text-right">
-                <span className="text-[10px] text-slate-500 uppercase block">Camera Quality</span>
-                <strong className="text-sm font-mono text-cyan-300">
-                  {camQuality != null ? `${camQuality.toFixed(0)} / 100` : '-- / 100'}
-                </strong>
-              </div>
-            </div>
-
-            {/* Visibility Gauge Bar */}
-            <div className="w-full bg-slate-950 h-2.5 rounded-full overflow-hidden border border-slate-800 mb-4">
-              <div
-                className={`h-full transition-all duration-300 rounded-full ${
-                  visScore != null && visScore >= 80
-                    ? 'bg-gradient-to-r from-emerald-500 to-cyan-500'
-                    : visScore != null && visScore >= 65
-                    ? 'bg-gradient-to-r from-cyan-500 to-blue-500'
-                    : visScore != null && visScore >= 45
-                    ? 'bg-gradient-to-r from-amber-500 to-yellow-500'
-                    : 'bg-gradient-to-r from-red-600 to-rose-500'
-                }`}
-                style={{ width: `${visScore != null ? Math.max(5, Math.min(100, visScore)) : 0}%` }}
-              />
-            </div>
-
-            {/* Confidence & Uncertainty Chips */}
-            <div className="grid grid-cols-2 gap-2 pb-3 mb-3 border-b border-slate-800/80 text-xs">
-              <div className="bg-slate-950 rounded-xl p-2.5 border border-slate-800">
-                <span className="text-[10px] text-slate-500 uppercase block">Confidence</span>
-                <strong className="text-xs font-mono text-emerald-400">
-                  {confidence != null ? `${confidence}%` : '--%'}
-                </strong>
-              </div>
-              <div className="bg-slate-950 rounded-xl p-2.5 border border-slate-800">
-                <span className="text-[10px] text-slate-500 uppercase block">Uncertainty</span>
-                <strong className="text-xs font-mono text-amber-400">
-                  {uncertainty != null ? `±${uncertainty}%` : '±--%'}
-                </strong>
-              </div>
-            </div>
-
-            {/* Explainable Diagnostics */}
-            <div className="space-y-1.5">
-              <span className="text-[11px] font-semibold uppercase text-slate-500">
-                Explainable Diagnostics
-              </span>
-              <div className="space-y-1 bg-slate-950/70 rounded-xl p-3 border border-slate-800 text-xs text-slate-300">
-                {degradationReasons.map((line, i) => (
-                  <p key={i} className="flex items-start gap-2">
-                    <span className="text-cyan-400 font-mono mt-0.5">•</span>
-                    <span>{line}</span>
-                  </p>
-                ))}
-              </div>
-            </div>
+          <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800/80">
+            <span className="text-[10px] text-slate-500 uppercase block font-sans font-semibold">Resolution</span>
+            <strong className="text-white text-xs block mt-0.5">
+              {videoResolution || 'NOT AVAILABLE'}
+            </strong>
           </div>
-
-          {/* Downstream Perception Impact Card */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                <ShieldAlert className="w-4 h-4 text-cyan-400" />
-                Downstream Perception Impact
-              </span>
-              <span className="text-[10px] font-mono text-cyan-400 bg-cyan-950 px-2 py-0.5 rounded border border-cyan-800/60">
-                Estimated Indicator
-              </span>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2 text-center">
-              <div className="bg-slate-950 rounded-xl p-2.5 border border-slate-800">
-                <span className="text-[10px] text-slate-500 uppercase block">Conf Penalty</span>
-                <strong className="text-sm font-mono text-rose-400">
-                  {hasData ? `-${((perceptionImpact?.expected_confidence_penalty ?? 0.05) * 100).toFixed(1)}%` : '--'}
-                </strong>
-              </div>
-              <div className="bg-slate-950 rounded-xl p-2.5 border border-slate-800">
-                <span className="text-[10px] text-slate-500 uppercase block">Boundary Risk</span>
-                <span
-                  className={`text-[11px] font-mono font-bold block mt-0.5 ${
-                    !hasData
-                      ? 'text-slate-500'
-                      : perceptionImpact?.boundary_degradation_risk === 'CRITICAL'
-                      ? 'text-red-400'
-                      : perceptionImpact?.boundary_degradation_risk === 'HIGH'
-                      ? 'text-orange-400'
-                      : perceptionImpact?.boundary_degradation_risk === 'MODERATE'
-                      ? 'text-amber-400'
-                      : 'text-emerald-400'
-                  }`}
-                >
-                  {hasData ? perceptionImpact?.boundary_degradation_risk ?? 'LOW' : 'UNKNOWN'}
-                </span>
-              </div>
-              <div className="bg-slate-950 rounded-xl p-2.5 border border-slate-800">
-                <span className="text-[10px] text-slate-500 uppercase block">Small Target Risk</span>
-                <span
-                  className={`text-[11px] font-mono font-bold block mt-0.5 ${
-                    !hasData
-                      ? 'text-slate-500'
-                      : perceptionImpact?.small_object_risk === 'CRITICAL'
-                      ? 'text-red-400'
-                      : perceptionImpact?.small_object_risk === 'HIGH'
-                      ? 'text-orange-400'
-                      : perceptionImpact?.small_object_risk === 'MODERATE'
-                      ? 'text-amber-400'
-                      : 'text-emerald-400'
-                  }`}
-                >
-                  {hasData ? perceptionImpact?.small_object_risk ?? 'LOW' : 'UNKNOWN'}
-                </span>
-              </div>
-            </div>
-
-            <div className="bg-slate-950/80 rounded-xl p-3 border border-slate-800 text-[11px] text-slate-300 flex items-start gap-2">
-              <span className="font-semibold text-cyan-400 uppercase tracking-wider shrink-0">Mode:</span>
-              <span>
-                <strong>{hasData ? perceptionImpact?.suggested_detection_sensitivity ?? 'NORMAL' : 'INACTIVE'}</strong> —{' '}
-                {hasData ? perceptionImpact?.rationale || 'Nominal optical conditions.' : 'No frame telemetry available.'}
-              </span>
-            </div>
+          <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800/80">
+            <span className="text-[10px] text-slate-500 uppercase block font-sans font-semibold">Frame Rate</span>
+            <strong className="text-white text-xs block mt-0.5">
+              {videoFps != null ? `${videoFps.toFixed(0)} FPS` : 'NOT AVAILABLE'}
+            </strong>
+          </div>
+          <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800/80">
+            <span className="text-[10px] text-slate-500 uppercase block font-sans font-semibold">Pipeline State</span>
+            <strong className="text-emerald-400 text-xs block mt-0.5">
+              {activeJob?.status || 'READY'}
+            </strong>
           </div>
         </div>
       </div>
 
-      {/* Multi-Condition Optical Breakdown (Rain, Fog, Blur, Illumination, Glare) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
-        {/* 1. Rain Analysis */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-md space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-              <Droplets className="w-3.5 h-3.5 text-blue-400" />
-              Precipitation
-            </span>
-            <span className="text-[10px] font-mono text-blue-400 font-bold">
-              {hasData && rain ? `${Math.round(rain.severity * 100)}%` : '--'}
-            </span>
-          </div>
-          <strong className="text-xs font-semibold text-white block truncate">
-            {hasData ? rain?.classification || 'No visible rain' : 'Telemetry Unavailable'}
-          </strong>
-          <div className="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden">
-            <div
-              className="bg-blue-500 h-full rounded-full transition-all"
-              style={{ width: `${hasData ? Math.max(4, (rain?.severity ?? 0.05) * 100) : 0}%` }}
-            />
-          </div>
-          <p className="text-[10px] text-slate-500 truncate">{hasData ? rain?.details || 'Lens clear' : 'No input'}</p>
+      {/* Optical Visibility & Atmospheric Condition Card */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg space-y-3">
+        <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+            <Gauge className="w-3.5 h-3.5 text-cyan-400" />
+            Optical Visibility
+          </span>
+          <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${getConditionColor(primaryCondition)}`}>
+            {primaryCondition}
+          </span>
         </div>
 
-        {/* 2. Fog Analysis */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-md space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-              <CloudFog className="w-3.5 h-3.5 text-slate-400" />
-              Fog & Haze
-            </span>
-            <span className="text-[10px] font-mono text-slate-300 font-bold">
-              {hasData && fog ? `${Math.round(fog.severity * 100)}%` : '--'}
-            </span>
+        <div className="flex items-baseline justify-between pt-1">
+          <div>
+            <span className="text-[10px] text-slate-500 uppercase block font-sans font-semibold">Visibility Index</span>
+            <div className="flex items-baseline gap-2 mt-0.5">
+              <span className="text-3xl font-extrabold text-white font-mono">
+                {visScore != null ? `${visScore.toFixed(0)}%` : 'NOT AVAILABLE'}
+              </span>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${getConditionColor(primaryCondition)}`}>
+                {visibilityCategory}
+              </span>
+            </div>
           </div>
-          <strong className="text-xs font-semibold text-white block truncate">
-            {hasData ? fog?.classification || 'Clear' : 'Telemetry Unavailable'}
-          </strong>
-          <div className="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden">
-            <div
-              className="bg-slate-400 h-full rounded-full transition-all"
-              style={{ width: `${hasData ? Math.max(4, (fog?.severity ?? 0.05) * 100) : 0}%` }}
-            />
+
+          <div className="text-right">
+            <span className="text-[10px] text-slate-500 uppercase block font-sans font-semibold">Camera Quality</span>
+            <strong className="text-sm font-mono text-cyan-300 block mt-0.5">
+              {camQuality != null ? `${camQuality.toFixed(0)} / 100` : 'NOT AVAILABLE'}
+            </strong>
           </div>
-          <p className="text-[10px] text-slate-500 truncate">{hasData ? fog?.details || 'Atmosphere clear' : 'No input'}</p>
         </div>
 
-        {/* 3. Blur Analysis */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-md space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-              <Eye className="w-3.5 h-3.5 text-amber-400" />
-              Camera Blur
-            </span>
-            <span className="text-[10px] font-mono text-amber-400 font-bold">
-              {hasData && blur ? `${Math.round(blur.severity * 100)}%` : '--'}
-            </span>
+        {/* Visibility Gauge Bar */}
+        <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-800">
+          <div
+            className={`h-full transition-all duration-300 rounded-full ${
+              visScore != null && visScore >= 75
+                ? 'bg-gradient-to-r from-emerald-500 to-cyan-400'
+                : visScore != null && visScore >= 50
+                ? 'bg-gradient-to-r from-amber-500 to-yellow-400'
+                : 'bg-gradient-to-r from-rose-500 to-red-600'
+            }`}
+            style={{ width: `${visScore != null ? Math.max(5, Math.min(100, visScore)) : 0}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Validated Physical Optical Metrics */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg space-y-3">
+        <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+            <Activity className="w-3.5 h-3.5 text-cyan-400" />
+            Sensor & Image Metrics
+          </span>
+          <span className="text-[10px] text-slate-500 font-mono">Physical Analysis</span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+          <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800/80">
+            <span className="text-[10px] text-slate-500 uppercase block font-sans font-semibold">Laplacian Blur</span>
+            <strong className="text-slate-200 text-xs block mt-0.5">
+              {metrics?.blur_laplacian != null ? metrics.blur_laplacian.toFixed(1) : 'NOT AVAILABLE'}
+            </strong>
           </div>
-          <strong className="text-xs font-semibold text-white block truncate">
-            {hasData ? blur?.classification || 'Sharp' : 'Telemetry Unavailable'}
-          </strong>
-          <div className="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden">
-            <div
-              className="bg-amber-500 h-full rounded-full transition-all"
-              style={{ width: `${hasData ? Math.max(4, (blur?.severity ?? 0.05) * 100) : 0}%` }}
-            />
+
+          <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800/80">
+            <span className="text-[10px] text-slate-500 uppercase block font-sans font-semibold">Mean Brightness</span>
+            <strong className="text-slate-200 text-xs block mt-0.5">
+              {metrics?.brightness != null ? `${metrics.brightness.toFixed(1)} / 255` : 'NOT AVAILABLE'}
+            </strong>
           </div>
-          <p className="text-[10px] text-slate-500 truncate">
-            Laplacian: {hasData ? blur?.laplacian_variance?.toFixed(1) ?? 'N/A' : '--'}
+
+          <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800/80">
+            <span className="text-[10px] text-slate-500 uppercase block font-sans font-semibold">Contrast</span>
+            <strong className="text-slate-200 text-xs block mt-0.5">
+              {metrics?.contrast != null ? metrics.contrast.toFixed(1) : 'NOT AVAILABLE'}
+            </strong>
+          </div>
+
+          <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800/80">
+            <span className="text-[10px] text-slate-500 uppercase block font-sans font-semibold">Glare Ratio</span>
+            <strong className="text-slate-200 text-xs block mt-0.5">
+              {metrics?.glare_ratio != null ? `${(metrics.glare_ratio * 100).toFixed(1)}%` : 'NOT AVAILABLE'}
+            </strong>
+          </div>
+        </div>
+      </div>
+
+      {/* Explainable Perception Diagnostics */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg space-y-2">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
+          Perception Evidence & Degradation:
+        </span>
+        {reasons && reasons.length > 0 ? (
+          <div className="space-y-1.5">
+            {reasons.map((r, i) => (
+              <div key={i} className="text-xs text-amber-300 bg-amber-950/30 border border-amber-800/40 rounded-lg p-2 flex items-start gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 shrink-0" />
+                <span>{r}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-slate-400 font-sans italic bg-slate-950 p-2.5 rounded-xl border border-slate-800/80">
+            Nominal optical clarity; zero atmospheric sensor attenuation detected.
           </p>
-        </div>
-
-        {/* 4. Low-Light Analysis */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-md space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-              <Moon className="w-3.5 h-3.5 text-indigo-400" />
-              Illumination
-            </span>
-            <span className="text-[10px] font-mono text-indigo-400 font-bold">
-              {hasData && lighting ? `${Math.round(lighting.severity * 100)}%` : '--'}
-            </span>
-          </div>
-          <strong className="text-xs font-semibold text-white block truncate">
-            {hasData ? lighting?.classification || 'Normal lighting' : 'Telemetry Unavailable'}
-          </strong>
-          <div className="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden">
-            <div
-              className="bg-indigo-500 h-full rounded-full transition-all"
-              style={{ width: `${hasData ? Math.max(4, (lighting?.severity ?? 0.05) * 100) : 0}%` }}
-            />
-          </div>
-          <p className="text-[10px] text-slate-500 truncate">
-            Luminance: {hasData ? lighting?.mean_luminance?.toFixed(1) ?? 'N/A' : '--'}
-          </p>
-        </div>
-
-        {/* 5. Sun Glare Analysis */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-md space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-              <SunMedium className="w-3.5 h-3.5 text-yellow-400" />
-              Glare / Exposure
-            </span>
-            <span className="text-[10px] font-mono text-yellow-400 font-bold">
-              {hasData && glare ? `${Math.round(glare.severity * 100)}%` : '--'}
-            </span>
-          </div>
-          <strong className="text-xs font-semibold text-white block truncate">
-            {hasData ? glare?.classification || 'Normal exposure' : 'Telemetry Unavailable'}
-          </strong>
-          <div className="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden">
-            <div
-              className="bg-yellow-500 h-full rounded-full transition-all"
-              style={{ width: `${hasData ? Math.max(4, (glare?.severity ?? 0.05) * 100) : 0}%` }}
-            />
-          </div>
-          <p className="text-[10px] text-slate-500 truncate">
-            Saturated: {hasData && glare ? `${(glare.saturated_pixel_ratio * 100).toFixed(1)}%` : '--'}
-          </p>
-        </div>
+        )}
       </div>
     </div>
   );

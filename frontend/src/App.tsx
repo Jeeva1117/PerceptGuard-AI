@@ -17,23 +17,24 @@ export const App: React.FC = () => {
       <BrowserRouter>
         <JobProvider>
           <div className="flex h-screen w-screen overflow-hidden bg-slate-950 text-slate-100 font-sans">
-            {/* Exactly Five Primary Sidebar Features */}
+            {/* Task 1: Compact Navigation Rail (~5% screen allocation) */}
             <Sidebar />
 
             {/* Right Main Application Area */}
             <div className="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
+              {/* Task 3: Preserved Production Top Bar */}
               <Header />
 
-              {/* Master Video-First Continuous Workspace */}
-              <main className="flex-1 overflow-y-auto p-4 lg:p-6 bg-slate-950/60">
-                <div className="max-w-[1720px] mx-auto grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
-                  {/* Left Column: Persistent Video, Scrubber & Interactive Timeline (Never Unmounts!) */}
-                  <div className="xl:col-span-7 space-y-4">
+              {/* Task 2: Large Video-First Production Workspace */}
+              <main className="flex-1 overflow-hidden p-3 lg:p-4 bg-slate-950">
+                <div className="h-full flex flex-col xl:flex-row gap-4 items-stretch overflow-hidden">
+                  {/* Center Column: LARGE VIDEO WORKSPACE (~70% screen allocation) */}
+                  <div className="flex-1 min-w-0 flex flex-col space-y-3 overflow-y-auto pr-1">
                     <PersistentVideoWorkspace />
                   </div>
 
-                  {/* Right Column: Active Module Specific Dynamic Telemetry */}
-                  <div className="xl:col-span-5 space-y-4">
+                  {/* Right Column: CONTEXT-AWARE MODULE DETAILS PANEL (~25% screen allocation) */}
+                  <aside className="w-full xl:w-[380px] 2xl:w-[420px] shrink-0 h-full overflow-y-auto pr-1">
                     <Routes>
                       <Route path="/" element={<Navigate to="/camera-weather" replace />} />
                       <Route
@@ -86,7 +87,7 @@ export const App: React.FC = () => {
                       />
                       <Route path="*" element={<Navigate to="/camera-weather" replace />} />
                     </Routes>
-                  </div>
+                  </aside>
                 </div>
               </main>
             </div>

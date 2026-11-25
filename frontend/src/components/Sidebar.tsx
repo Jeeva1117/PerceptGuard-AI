@@ -12,113 +12,116 @@ import {
 import { cn } from '../utils/cn';
 
 interface NavItem {
+  id: string;
   name: string;
+  shortName: string;
   path: string;
   icon: React.ComponentType<{ className?: string }>;
   description: string;
-  badge?: string;
 }
 
 const PRIMARY_NAV_ITEMS: NavItem[] = [
   {
+    id: 'camera-weather',
     name: 'Camera & Weather',
+    shortName: 'Weather',
     path: '/camera-weather',
     icon: CloudSun,
-    description: 'Optical visibility, rain, fog, glare & degradation',
+    description: 'Optical visibility, weather conditions & camera health',
   },
   {
+    id: 'object-detection',
     name: 'Object Detection',
+    shortName: 'Detection',
     path: '/object-detection',
     icon: Crosshair,
-    description: 'YOLO detection, ByteTrack & reliability forecasting',
+    description: 'Road user detection & ByteTrack continuous identities',
   },
   {
+    id: 'trajectory-prediction',
     name: 'Trajectory Prediction',
+    shortName: 'Trajectory',
     path: '/trajectory-prediction',
     icon: TrendingUp,
-    description: 'Multi-horizon future paths & kinematic telemetry',
+    description: 'Multi-horizon future path projection & kinematics',
   },
   {
+    id: 'collision-risk',
     name: 'Collision Risk',
+    shortName: 'Risk',
     path: '/collision-risk',
     icon: AlertTriangle,
-    description: 'Time-To-Collision (TTC) & perception uncertainty',
+    description: 'Time-To-Collision (TTC) & spatial corridor conflicts',
   },
   {
+    id: 'safety-alerts',
     name: 'Safety Alerts',
+    shortName: 'Alerts',
     path: '/safety-alerts',
     icon: OctagonAlert,
-    description: 'Actionable speed recommendations & early warnings',
-    badge: 'ADAS',
+    description: 'Evidence-based driver advisories & event timeline',
   },
 ];
 
 export const Sidebar: React.FC = () => {
   return (
-    <aside className="w-72 bg-slate-900 border-r border-slate-800 flex flex-col h-screen shrink-0 select-none">
-      {/* Brand Header */}
-      <div className="p-5 border-b border-slate-800/80 flex items-center gap-3">
-        <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-cyan-600 via-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-950/40">
+    <aside
+      className="w-16 lg:w-[68px] bg-slate-900 border-r border-slate-800 flex flex-col h-screen shrink-0 select-none z-30"
+      aria-label="Primary Navigation Rail"
+    >
+      {/* Brand Icon Header */}
+      <div className="h-16 flex items-center justify-center border-b border-slate-800/80 relative group">
+        <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-cyan-600 via-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-950/40 cursor-default">
           <Shield className="w-5 h-5 text-white" />
         </div>
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="font-bold text-white tracking-wide text-base">PerceptGuard AI</h1>
-            <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-cyan-950/80 border border-cyan-800/50 text-cyan-400">
-              v2.0
-            </span>
-          </div>
-          <p className="text-xs text-slate-400">Predictive Perception Reliability</p>
+
+        {/* Floating Tooltip */}
+        <div className="absolute left-full ml-3 hidden group-hover:flex flex-col px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-white shadow-2xl z-50 pointer-events-none whitespace-nowrap">
+          <span className="font-bold tracking-wide">PerceptGuard AI</span>
+          <span className="text-[10px] text-slate-400 font-mono">v2.0 • Predictive Road Safety</span>
         </div>
       </div>
 
-      {/* Navigation Links — Exactly Five Features */}
-      <nav className="flex-1 p-3 space-y-1.5 overflow-y-auto">
-        <div className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-          Primary ADAS Modules
-        </div>
+      {/* Navigation Rail — Exactly Five Primary Modules */}
+      <nav className="flex-1 py-4 flex flex-col items-center space-y-2 overflow-y-auto">
         {PRIMARY_NAV_ITEMS.map((item, idx) => {
           const Icon = item.icon;
           return (
             <NavLink
               key={item.path}
               to={item.path}
+              aria-label={item.name}
+              title={item.name}
               className={({ isActive }) =>
                 cn(
-                  'group flex items-start gap-3 px-3 py-2.5 rounded-lg transition-all duration-150',
+                  'group relative flex items-center justify-center w-11 h-11 rounded-xl transition-all duration-150 outline-none focus-visible:ring-2 focus-visible:ring-cyan-400',
                   isActive
-                    ? 'bg-cyan-500/10 border border-cyan-500/30 text-white shadow-sm shadow-cyan-950/20'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 border border-transparent'
+                    ? 'bg-cyan-500/15 border border-cyan-500/40 text-cyan-300 shadow-md shadow-cyan-950/40'
+                    : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/80 border border-transparent'
                 )
               }
             >
               {({ isActive }) => (
                 <>
-                  <div
-                    className={cn(
-                      'p-1.5 rounded-md mt-0.5 transition-colors',
-                      isActive
-                        ? 'bg-cyan-500 text-slate-950 font-bold'
-                        : 'bg-slate-800 text-slate-400 group-hover:text-slate-200 group-hover:bg-slate-700'
-                    )}
-                  >
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium tracking-tight">
-                        <span className="text-slate-500 mr-1.5 text-xs font-mono">{idx + 1}.</span>
-                        {item.name}
-                      </span>
-                      {item.badge && (
-                        <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-500/10 border border-amber-500/30 text-amber-400">
-                          {item.badge}
-                        </span>
-                      )}
+                  {/* Left Active Accent Indicator Bar */}
+                  {isActive && (
+                    <span
+                      className="absolute -left-2.5 lg:-left-3 top-2 bottom-2 w-1 bg-cyan-400 rounded-r shadow-[0_0_8px_rgba(34,211,238,0.8)]"
+                      aria-hidden="true"
+                    />
+                  )}
+
+                  <Icon className={cn('w-5 h-5 transition-transform duration-150 group-hover:scale-110', isActive ? 'text-cyan-400' : '')} />
+
+                  {/* Accessible Floating Tooltip On Hover */}
+                  <div className="absolute left-full ml-3 hidden group-hover:flex flex-col px-3 py-1.5 rounded-lg bg-slate-900/95 backdrop-blur-md border border-slate-700 text-xs text-white shadow-2xl z-50 pointer-events-none whitespace-nowrap">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-slate-500 font-mono font-bold">{idx + 1}.</span>
+                      <span className="font-bold text-white">{item.name}</span>
                     </div>
-                    <p className="text-[11px] text-slate-500 truncate group-hover:text-slate-400 transition-colors">
+                    <span className="text-[11px] text-slate-400 font-normal mt-0.5">
                       {item.description}
-                    </p>
+                    </span>
                   </div>
                 </>
               )}
@@ -127,21 +130,22 @@ export const Sidebar: React.FC = () => {
         })}
       </nav>
 
-      {/* Hardware & Runtime Footer */}
-      <div className="p-4 border-t border-slate-800/80 bg-slate-950/50">
-        <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
-          <span className="flex items-center gap-1.5 font-medium text-slate-300">
-            <Cpu className="w-3.5 h-3.5 text-cyan-400" />
-            Runtime Engine
-          </span>
-          <span className="text-[11px] text-emerald-400 font-mono flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            CPU Native
-          </span>
+      {/* Hardware & CPU Indicator Footer */}
+      <div className="py-3 flex flex-col items-center justify-center border-t border-slate-800/80 relative group cursor-default">
+        <div className="w-9 h-9 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-cyan-400 group-hover:border-cyan-500/40 transition-colors">
+          <Cpu className="w-4 h-4" />
         </div>
-        <div className="text-[11px] text-slate-500 space-y-0.5">
-          <p>YOLO11n + ByteTrack + LSTM</p>
-          <p>FastAPI Engine @ port 8000</p>
+        <span className="w-2 h-2 rounded-full bg-emerald-400 absolute bottom-3 right-3 border-2 border-slate-900" />
+
+        {/* Floating Tooltip */}
+        <div className="absolute left-full ml-3 bottom-2 hidden group-hover:flex flex-col px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-white shadow-2xl z-50 pointer-events-none whitespace-nowrap">
+          <span className="font-bold flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            CPU Native Execution
+          </span>
+          <span className="text-[10px] text-slate-400 font-mono mt-0.5">
+            FastAPI Pipeline • Intel i3/i5 Compatible
+          </span>
         </div>
       </div>
     </aside>

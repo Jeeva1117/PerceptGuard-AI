@@ -6,35 +6,30 @@ import {
   Bus,
   Bike,
   User,
-  Filter,
+  Clock,
+  Play,
+  Layers,
 } from 'lucide-react';
 import { useJob } from '../context/JobContext';
 import { VideoCanvas } from '../components/VideoCanvas';
 import { PlaybackControls } from '../components/PlaybackControls';
-import { FilterBar, DEFAULT_FILTER_STATE, type FilterState } from '../components/FilterBar';
 
 export interface ObjectDetectionPageProps {
   isEmbedded?: boolean;
 }
 
 export const ObjectDetectionPage: React.FC<ObjectDetectionPageProps> = ({ isEmbedded = false }) => {
-  const { results, currentFrame, currentFrameIndex, selectedTrackId: globalTrackId, setSelectedTrackId: setGlobalTrackId } = useJob();
-  const selectedTrackId = globalTrackId;
-  const setSelectedTrackId = setGlobalTrackId;
-  const [filters, setFilters] = useState<FilterState>({
-    ...DEFAULT_FILTER_STATE,
-    minConfidence: 0.20,
-  });
+  const {
+    results,
+    currentFrame,
+    selectedTrackId,
+    setSelectedTrackId,
+    seekToTimestamp,
+  } = useJob();
 
-  const rawTracks = currentFrame?.tracks || [];
-  const tracks = rawTracks.filter((t) => {
-    if (filters.minConfidence > 0 && t.confidence < filters.minConfidence) return false;
-    if (filters.objectClass !== 'ALL' && t.class_name.toLowerCase() !== filters.objectClass.toLowerCase()) return false;
-    if (filters.trackId.trim() !== '' && String(t.track_id) !== filters.trackId.trim()) return false;
-    return true;
-  });
+  const [classFilter, setClassFilter] = useState<string>('ALL');
 
-  // Road user unique counts from backend summary or computed across all frames
+  // Road-user unique counts from backend summary
   const summaryCounts = results?.final_summary?.road_user_counts;
   const counts = {
     car: summaryCounts?.car ?? 0,
@@ -45,302 +40,335 @@ export const ObjectDetectionPage: React.FC<ObjectDetectionPageProps> = ({ isEmbe
     pedestrian: summaryCounts?.pedestrian ?? 0,
   };
 
-  // If no summary was generated, compute unique tracks from frames
-  if (!summaryCounts && results?.frames) {
-    const seenTracks = new Map<number, string>();
+  // Active detections on current frame
+  const currentTracks = currentFrame?.tracks || [];
+  const filteredCurrentTracks = currentTracks.filter((t) => {
+    if (classFilter !== 'ALL' && t.class_name.toLowerCase() !== classFilter.toLowerCase()) {
+      return false;
+    }
+    return true;
+  });
+
+  // Extract all unique tracks observed across the video
+  const allUniqueTracks = React.useMemo(() => {
+    if (!results?.frames) return [];
+    const map = new Map<number, {
+      track_id: number;
+      class_name: string;
+      first_seen_ts: number;
+      first_seen_frame: number;
+      max_confidence: number;
+      speed_kmh?: number;
+    }>();
+
     results.frames.forEach((f) => {
-      f.tracks?.forEach((t) => {
-        if (!seenTracks.has(t.track_id)) {
-          seenTracks.set(t.track_id, t.class_name.toLowerCase());
+      f.tracks?.forEach((t: any) => {
+        if (!map.has(t.track_id)) {
+          map.set(t.track_id, {
+            track_id: t.track_id,
+            class_name: t.class_name,
+            first_seen_ts: f.timestamp_seconds,
+            first_seen_frame: f.frame_index,
+            max_confidence: t.confidence,
+            speed_kmh: t.speed_kmh,
+          });
+        } else {
+          const existing = map.get(t.track_id)!;
+          if (t.confidence > existing.max_confidence) {
+            existing.max_confidence = t.confidence;
+          }
+          if (t.speed_kmh && (!existing.speed_kmh || t.speed_kmh > existing.speed_kmh)) {
+            existing.speed_kmh = t.speed_kmh;
+          }
         }
       });
     });
-    seenTracks.forEach((cls) => {
-      if (cls === 'car') counts.car += 1;
-      else if (cls === 'motorcycle') counts.motorcycle += 1;
-      else if (cls === 'bus') counts.bus += 1;
-      else if (cls === 'truck') counts.truck += 1;
-      else if (cls === 'bicycle') counts.bicycle += 1;
-      else if (cls === 'person' || cls === 'pedestrian') counts.pedestrian += 1;
-    });
-  }
+
+    return Array.from(map.values()).sort((a, b) => a.track_id - b.track_id);
+  }, [results?.frames]);
 
   const getClassIcon = (cls?: string | null) => {
-    if (!cls) return <Crosshair className="w-4 h-4 text-cyan-400" />;
+    if (!cls) return <Crosshair className="w-3.5 h-3.5 text-cyan-400" />;
     switch (cls.toLowerCase()) {
       case 'car':
-        return <Car className="w-4 h-4 text-blue-400" />;
+        return <Car className="w-3.5 h-3.5 text-blue-400" />;
       case 'truck':
-        return <Truck className="w-4 h-4 text-amber-400" />;
+        return <Truck className="w-3.5 h-3.5 text-amber-400" />;
       case 'bus':
-        return <Bus className="w-4 h-4 text-emerald-400" />;
+        return <Bus className="w-3.5 h-3.5 text-emerald-400" />;
       case 'motorcycle':
+        return <Bike className="w-3.5 h-3.5 text-purple-400" />;
       case 'bicycle':
-        return <Bike className="w-4 h-4 text-purple-400" />;
+        return <Bike className="w-3.5 h-3.5 text-cyan-400" />;
       case 'person':
       case 'pedestrian':
-        return <User className="w-4 h-4 text-rose-400" />;
+        return <User className="w-3.5 h-3.5 text-rose-400" />;
       default:
-        return <Crosshair className="w-4 h-4 text-cyan-400" />;
+        return <Crosshair className="w-3.5 h-3.5 text-cyan-400" />;
     }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Page Title & Module Scope */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-2 border-b border-slate-800">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-cyan-500/10 rounded-xl text-cyan-400">
-              <Crosshair className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-white tracking-tight">
-                Object Detection & Multi-Object Tracking
+    <div className="space-y-4 select-none">
+      {/* Module Title Header */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="p-2.5 bg-cyan-500/10 border border-cyan-500/20 rounded-xl text-cyan-400 shrink-0">
+            <Crosshair className="w-5 h-5" />
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <h2 className="text-sm font-bold text-white tracking-wide">
+                Object Detection
               </h2>
-              <p className="text-xs text-slate-400">
-                YOLO11 object detection with ByteTrack persistent identity continuity across occlusions
-              </p>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-cyan-300 border border-slate-700">
+                MODULE 2
+              </span>
             </div>
+            <p className="text-[11px] text-slate-400 truncate">
+              YOLO11 road-user perception & ByteTrack tracking
+            </p>
           </div>
         </div>
 
-        {/* Global Detections / Tracks Telemetry */}
-        <div className="flex items-center gap-3">
-          <span
-            className={`px-3 py-1 rounded-full text-xs font-bold font-mono border ${
-              tracks.length > 0
-                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                : results
-                ? 'bg-slate-800 text-slate-300 border-slate-700'
-                : 'bg-purple-950 text-purple-300 border-purple-500/80'
-            }`}
-          >
-            {tracks.length > 0 ? 'DETECTED' : results ? 'NOT DETECTED' : 'UNKNOWN'}
-          </span>
-          {results && (
-            <div className="flex items-center gap-3 text-xs bg-slate-900 border border-slate-800 rounded-xl px-4 py-2">
-              <div>
-                <span className="text-slate-500 block text-[10px] uppercase">Unique Tracks</span>
-                <strong className="text-cyan-400 font-mono text-sm">{results.unique_tracks}</strong>
-              </div>
-              <div className="w-px h-6 bg-slate-800" />
-              <div>
-                <span className="text-slate-500 block text-[10px] uppercase">Total Detections</span>
-                <strong className="text-slate-200 font-mono text-sm">{results.total_detections}</strong>
-              </div>
-            </div>
-          )}
-        </div>
+        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold font-mono bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 shrink-0">
+          {results?.unique_tracks ?? allUniqueTracks.length} TRACKS
+        </span>
       </div>
 
-      {/* Mandatory Concise Object Detection Breakdown: Detected Objects */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-3">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-          <span className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2">
-            <Crosshair className="w-4 h-4 text-cyan-400" />
-            OBJECT DETECTION — Detected Objects
-          </span>
-          <span className="text-xs font-mono text-slate-400">
-            Total Unique Road Users: <strong className="text-cyan-400">{results?.unique_tracks ?? Object.values(counts).reduce((a, b) => a + b, 0)}</strong>
-          </span>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400">
-              <Car className="w-4 h-4" />
-            </div>
-            <div>
-              <span className="text-[10px] uppercase font-bold text-slate-500 block">Car</span>
-              <strong className="text-lg font-mono text-white">{counts.car}</strong>
-            </div>
-          </div>
-
-          <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400">
-              <Bike className="w-4 h-4" />
-            </div>
-            <div>
-              <span className="text-[10px] uppercase font-bold text-slate-500 block">Motorcycle</span>
-              <strong className="text-lg font-mono text-white">{counts.motorcycle}</strong>
-            </div>
-          </div>
-
-          <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
-              <Bus className="w-4 h-4" />
-            </div>
-            <div>
-              <span className="text-[10px] uppercase font-bold text-slate-500 block">Bus</span>
-              <strong className="text-lg font-mono text-white">{counts.bus}</strong>
-            </div>
-          </div>
-
-          <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400">
-              <Truck className="w-4 h-4" />
-            </div>
-            <div>
-              <span className="text-[10px] uppercase font-bold text-slate-500 block">Truck</span>
-              <strong className="text-lg font-mono text-white">{counts.truck}</strong>
-            </div>
-          </div>
-
-          <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-cyan-500/10 text-cyan-400">
-              <Bike className="w-4 h-4" />
-            </div>
-            <div>
-              <span className="text-[10px] uppercase font-bold text-slate-500 block">Bicycle</span>
-              <strong className="text-lg font-mono text-white">{counts.bicycle}</strong>
-            </div>
-          </div>
-
-          <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-rose-500/10 text-rose-400">
-              <User className="w-4 h-4" />
-            </div>
-            <div>
-              <span className="text-[10px] uppercase font-bold text-slate-500 block">Pedestrian</span>
-              <strong className="text-lg font-mono text-white">{counts.pedestrian}</strong>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Filter Bar */}
-      <FilterBar
-        filters={filters}
-        onChange={setFilters}
-        showWeatherFilters={false}
-        showEventTypeFilters={false}
-        showObjectFilters={true}
-        showSeverityFilters={false}
-      />
-
-      {/* Video Canvas & Controls */}
+      {/* Standalone Video Player (Only outside master workspace) */}
       {!isEmbedded && (
-        <div className="space-y-4">
-          <VideoCanvas highlightTrackId={selectedTrackId} />
+        <div className="space-y-3">
+          <VideoCanvas />
           <PlaybackControls />
         </div>
       )}
 
-      {/* Tracked Objects Table */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg">
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-            <Crosshair className="w-4 h-4 text-cyan-400" />
-            Tracked Objects Telemetry (Frame #{currentFrameIndex})
+      {/* Six Supported Road-User Classes Distribution */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg space-y-3">
+        <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+            <Layers className="w-3.5 h-3.5 text-cyan-400" />
+            Detected Road Users
           </span>
-          <div className="flex items-center gap-3 text-xs">
-            <div className="flex items-center gap-1 text-slate-400">
-              <Filter className="w-3.5 h-3.5 text-slate-500" />
-              <span>Min Conf:</span>
-              <span className="font-mono text-cyan-400 font-bold">{Math.round(filters.minConfidence * 100)}%</span>
+          <span className="text-[10px] font-mono text-slate-400">
+            Total: {results?.unique_tracks ?? Object.values(counts).reduce((a, b) => a + b, 0)}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2">
+          <button
+            type="button"
+            onClick={() => setClassFilter(classFilter === 'car' ? 'ALL' : 'car')}
+            className={`p-2 rounded-xl border text-left transition-all ${
+              classFilter === 'car'
+                ? 'bg-blue-950/40 border-blue-500 ring-1 ring-blue-500'
+                : 'bg-slate-950 border-slate-800/80 hover:border-slate-700'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold text-slate-400 uppercase">Car</span>
+              <Car className="w-3.5 h-3.5 text-blue-400" />
             </div>
-            <span className="text-xs font-mono text-slate-500">
-              {tracks.length} track(s) in frame
-            </span>
+            <strong className="text-sm font-mono text-white block mt-0.5">{counts.car}</strong>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setClassFilter(classFilter === 'motorcycle' ? 'ALL' : 'motorcycle')}
+            className={`p-2 rounded-xl border text-left transition-all ${
+              classFilter === 'motorcycle'
+                ? 'bg-purple-950/40 border-purple-500 ring-1 ring-purple-500'
+                : 'bg-slate-950 border-slate-800/80 hover:border-slate-700'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold text-slate-400 uppercase">Motorcycle</span>
+              <Bike className="w-3.5 h-3.5 text-purple-400" />
+            </div>
+            <strong className="text-sm font-mono text-white block mt-0.5">{counts.motorcycle}</strong>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setClassFilter(classFilter === 'bus' ? 'ALL' : 'bus')}
+            className={`p-2 rounded-xl border text-left transition-all ${
+              classFilter === 'bus'
+                ? 'bg-emerald-950/40 border-emerald-500 ring-1 ring-emerald-500'
+                : 'bg-slate-950 border-slate-800/80 hover:border-slate-700'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold text-slate-400 uppercase">Bus</span>
+              <Bus className="w-3.5 h-3.5 text-emerald-400" />
+            </div>
+            <strong className="text-sm font-mono text-white block mt-0.5">{counts.bus}</strong>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setClassFilter(classFilter === 'truck' ? 'ALL' : 'truck')}
+            className={`p-2 rounded-xl border text-left transition-all ${
+              classFilter === 'truck'
+                ? 'bg-amber-950/40 border-amber-500 ring-1 ring-amber-500'
+                : 'bg-slate-950 border-slate-800/80 hover:border-slate-700'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold text-slate-400 uppercase">Truck</span>
+              <Truck className="w-3.5 h-3.5 text-amber-400" />
+            </div>
+            <strong className="text-sm font-mono text-white block mt-0.5">{counts.truck}</strong>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setClassFilter(classFilter === 'bicycle' ? 'ALL' : 'bicycle')}
+            className={`p-2 rounded-xl border text-left transition-all ${
+              classFilter === 'bicycle'
+                ? 'bg-cyan-950/40 border-cyan-500 ring-1 ring-cyan-500'
+                : 'bg-slate-950 border-slate-800/80 hover:border-slate-700'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold text-slate-400 uppercase">Bicycle</span>
+              <Bike className="w-3.5 h-3.5 text-cyan-400" />
+            </div>
+            <strong className="text-sm font-mono text-white block mt-0.5">{counts.bicycle}</strong>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setClassFilter(classFilter === 'pedestrian' || classFilter === 'person' ? 'ALL' : 'pedestrian')}
+            className={`p-2 rounded-xl border text-left transition-all ${
+              classFilter === 'pedestrian' || classFilter === 'person'
+                ? 'bg-rose-950/40 border-rose-500 ring-1 ring-rose-500'
+                : 'bg-slate-950 border-slate-800/80 hover:border-slate-700'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold text-slate-400 uppercase">Pedestrian</span>
+              <User className="w-3.5 h-3.5 text-rose-400" />
+            </div>
+            <strong className="text-sm font-mono text-white block mt-0.5">{counts.pedestrian}</strong>
+          </button>
+        </div>
+      </div>
+
+      {/* Active Detections on Current Timestamp */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg space-y-3">
+        <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+            <Clock className="w-3.5 h-3.5 text-cyan-400" />
+            Active Detections (Current Frame)
+          </span>
+          <span className="text-[11px] font-mono text-slate-400">
+            {filteredCurrentTracks.length} visible
+          </span>
+        </div>
+
+        {filteredCurrentTracks.length === 0 ? (
+          <div className="py-6 text-center text-slate-500 text-xs italic bg-slate-950/60 rounded-xl border border-slate-800/80">
+            No road users detected on current frame timestamp.
           </div>
+        ) : (
+          <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+            {filteredCurrentTracks.map((t) => {
+              const isSelected = selectedTrackId === t.track_id;
+              return (
+                <div
+                  key={t.track_id}
+                  onClick={() => setSelectedTrackId(isSelected ? null : t.track_id)}
+                  className={`p-2.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-2 ${
+                    isSelected
+                      ? 'bg-cyan-950/40 border-cyan-500 ring-1 ring-cyan-500 shadow-md'
+                      : 'bg-slate-950 border-slate-800 hover:border-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="p-1.5 rounded-lg bg-slate-900 border border-slate-800 shrink-0">
+                      {getClassIcon(t.class_name)}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-white">
+                        <span>#{t.track_id}</span>
+                        <span className="capitalize font-sans font-medium text-slate-300">
+                          {t.class_name}
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-slate-400 font-mono mt-0.5">
+                        Conf: {(t.confidence * 100).toFixed(0)}%
+                        {(t as any).speed_kmh != null && ` • ${(t as any).speed_kmh.toFixed(1)} km/h`}
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedTrackId(isSelected ? null : t.track_id);
+                    }}
+                    className={`px-2 py-1 rounded-lg text-[10px] font-mono font-bold transition-colors shrink-0 ${
+                      isSelected
+                        ? 'bg-cyan-500 text-slate-950'
+                        : 'bg-slate-800 text-slate-300 hover:text-white'
+                    }`}
+                  >
+                    {isSelected ? 'Focused' : 'Focus'}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Historical Track Log with Instant Seek */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg space-y-3">
+        <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+            <Play className="w-3.5 h-3.5 text-cyan-400" />
+            Track History (Click to Seek)
+          </span>
+          <span className="text-[10px] font-mono text-slate-400">
+            {allUniqueTracks.length} unique tracks
+          </span>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-950 text-slate-400 uppercase font-mono text-[10px] border-b border-slate-800">
-              <tr>
-                <th className="py-2.5 px-3">Track ID</th>
-                <th className="py-2.5 px-3">Class</th>
-                <th className="py-2.5 px-3">Confidence</th>
-                <th className="py-2.5 px-3">Lifecycle State</th>
-                <th className="py-2.5 px-3">BBox Coordinates (x1, y1, x2, y2)</th>
-                <th className="py-2.5 px-3">Centroid (cx, cy)</th>
-                <th className="py-2.5 px-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/60 font-mono">
-              {tracks.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="py-6 text-center text-slate-500 italic">
-                    No active tracks meeting filter criteria in this frame.
-                  </td>
-                </tr>
-              ) : (
-                tracks.map((t) => {
-                  const [x1, y1, x2, y2] = t.bbox_xyxy;
-                  const cx = Math.round((x1 + x2) / 2);
-                  const cy = Math.round((y1 + y2) / 2);
-                  const isSelected = selectedTrackId === t.track_id;
-                  const lifecycle = t.track_lifecycle || 'CONFIRMED';
+        {allUniqueTracks.length === 0 ? (
+          <div className="py-6 text-center text-slate-500 text-xs italic bg-slate-950/60 rounded-xl border border-slate-800/80">
+            Awaiting completed video analysis to index track registry.
+          </div>
+        ) : (
+          <div className="space-y-1.5 max-h-60 overflow-y-auto pr-1 font-mono text-xs">
+            {allUniqueTracks.map((ut) => (
+              <div
+                key={ut.track_id}
+                onClick={() => {
+                  seekToTimestamp(ut.first_seen_ts);
+                  setSelectedTrackId(ut.track_id);
+                }}
+                className="p-2 rounded-xl bg-slate-950 border border-slate-800 hover:border-cyan-500/50 hover:bg-slate-800/40 transition-colors cursor-pointer flex items-center justify-between gap-2"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                  <strong className="text-white">#{ut.track_id}</strong>
+                  <span className="capitalize font-sans text-slate-300 text-[11px]">
+                    {ut.class_name}
+                  </span>
+                </div>
 
-                  return (
-                    <tr
-                      key={t.track_id}
-                      onClick={() =>
-                        setSelectedTrackId(isSelected ? null : t.track_id)
-                      }
-                      className={`cursor-pointer transition-colors ${
-                        isSelected
-                          ? 'bg-cyan-950/40 text-cyan-300'
-                          : 'hover:bg-slate-800/40 text-slate-300'
-                      }`}
-                    >
-                      <td className="py-2.5 px-3 font-bold text-white flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-cyan-400" />#{t.track_id}
-                      </td>
-                      <td className="py-2.5 px-3 capitalize font-sans flex items-center gap-1.5">
-                        {getClassIcon(t.class_name)}
-                        {t.class_name}
-                      </td>
-                      <td className="py-2.5 px-3">
-                        <span className="px-2 py-0.5 rounded bg-slate-950 border border-slate-800 text-slate-200">
-                          {(t.confidence * 100).toFixed(1)}%
-                        </span>
-                      </td>
-                      <td className="py-2.5 px-3">
-                        <span
-                          className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
-                            lifecycle === 'CONFIRMED'
-                              ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
-                              : lifecycle === 'TENTATIVE'
-                              ? 'bg-amber-500/15 text-amber-400 border-amber-500/30'
-                              : lifecycle === 'REIDENTIFIED'
-                              ? 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30'
-                              : 'bg-slate-800 text-slate-400 border-slate-700'
-                          }`}
-                        >
-                          {lifecycle}
-                        </span>
-                      </td>
-                      <td className="py-2.5 px-3 text-slate-400">
-                        [{x1.toFixed(0)}, {y1.toFixed(0)}, {x2.toFixed(0)}, {y2.toFixed(0)}]
-                      </td>
-                      <td className="py-2.5 px-3 text-cyan-400">
-                        ({cx}, {cy})
-                      </td>
-                      <td className="py-2.5 px-3 text-right">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedTrackId(isSelected ? null : t.track_id);
-                          }}
-                          className={`px-2.5 py-1 rounded text-[11px] font-sans font-medium transition-colors ${
-                            isSelected
-                              ? 'bg-cyan-600 text-white'
-                              : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
-                          }`}
-                        >
-                          {isSelected ? 'Focused' : 'Inspect'}
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                <div className="flex items-center gap-2 text-[10px] text-slate-400">
+                  <span>@ {ut.first_seen_ts.toFixed(1)}s</span>
+                  <span className="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 text-cyan-300">
+                    Seek
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
