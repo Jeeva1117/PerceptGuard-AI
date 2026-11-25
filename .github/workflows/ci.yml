@@ -143,6 +143,20 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build React Frontend
+        run: |
+          cd frontend
+          npm ci || npm install
+          npm run build
+          cd ..
+
       - name: Run Frontend Automated Test Suite
         run: |
           pytest tests/frontend/ -v --tb=short
