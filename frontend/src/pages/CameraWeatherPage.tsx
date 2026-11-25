@@ -22,7 +22,14 @@ export interface CameraWeatherPageProps {
 }
 
 export const CameraWeatherPage: React.FC<CameraWeatherPageProps> = ({ isEmbedded = false }) => {
-  const { results, currentFrame, activeJob } = useJob();
+  const {
+    results,
+    currentFrame,
+    activeJob,
+    videoProcessingState,
+    uploadedVideoId,
+    stagedVideoSrc,
+  } = useJob();
 
   const weather = currentFrame?.weather_intelligence;
   const hasData = Boolean(weather);
@@ -161,23 +168,33 @@ export const CameraWeatherPage: React.FC<CameraWeatherPageProps> = ({ isEmbedded
                 VIDEO ANALYSIS
               </span>
               <span className="text-sm font-bold text-white flex items-center gap-1.5">
-                {activeJob?.status === 'COMPLETED' ? (
+                {activeJob?.status === 'COMPLETED' || videoProcessingState === 'COMPLETED' ? (
                   <>
                     <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                     Video Processing Completed
                   </>
-                ) : activeJob?.status === 'PROCESSING' ? (
+                ) : activeJob?.status === 'PROCESSING' || videoProcessingState === 'PROCESSING' ? (
                   <>
                     <Clock className="w-4 h-4 text-cyan-400 animate-spin" />
                     Processing Video...
                   </>
-                ) : activeJob?.status === 'FAILED' ? (
+                ) : videoProcessingState === 'UPLOADING' ? (
+                  <>
+                    <Clock className="w-4 h-4 text-cyan-400 animate-spin" />
+                    Uploading Video...
+                  </>
+                ) : videoProcessingState === 'VIDEO_READY' || uploadedVideoId || stagedVideoSrc ? (
+                  <>
+                    <Film className="w-4 h-4 text-cyan-400" />
+                    Video Ready for Processing
+                  </>
+                ) : activeJob?.status === 'FAILED' || videoProcessingState === 'PROCESSING_FAILED' ? (
                   <>
                     <ShieldAlert className="w-4 h-4 text-rose-400" />
                     Video Processing Failed
                   </>
                 ) : (
-                  'Ready for Upload'
+                  'Ready for Video Upload'
                 )}
               </span>
             </div>

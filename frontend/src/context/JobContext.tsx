@@ -11,17 +11,60 @@ import type {
   VideoPipelineRunResult,
   FrameProcessingDetail,
   VideoUploadResponse,
+  AnalysisMode,
 } from '../types/api';
-import { listJobs, getJobResults, fetchHealth, deleteJob, cleanStaleJobs } from '../services/api';
+import {
+  listJobs,
+  getJobResults,
+  fetchHealth,
+  deleteJob,
+  cleanStaleJobs,
+  uploadVideoFile,
+  startProcessingVideo,
+  getJobStatus,
+  cancelJob,
+  getVideoStreamUrl,
+} from '../services/api';
 import { useVoiceAlerts } from '../hooks/useVoiceAlerts';
 
+export type VideoProcessingState =
+  | 'NO_VIDEO'
+  | 'UPLOADING'
+  | 'VIDEO_READY'
+  | 'PROCESSING'
+  | 'COMPLETED'
+  | 'UPLOAD_FAILED'
+  | 'PROCESSING_FAILED'
+  | 'CANCELLED';
+
+export interface StartProcessingOptions {
+  analysisMode?: AnalysisMode;
+  rotation?: 0 | 90 | 180 | 270;
+  sampleFps?: number;
+  maxFrames?: number | null;
+}
+
 interface JobContextType {
+  // Job & Results Telemetry
   jobs: JobStatusResponse[];
   activeJobId: string | null;
   activeJob: JobStatusResponse | null;
   results: VideoPipelineRunResult | null;
   currentFrameIndex: number;
   currentFrame: FrameProcessingDetail | null;
+
+  // Unified Video & Processing State Machine
+  videoProcessingState: VideoProcessingState;
+  uploadProgressPct: number;
+  processingProgressPct: number;
+  statusMessage: string;
+  errorMessage: string | null;
+  uploadedFile: File | null;
+  analysisMode: AnalysisMode;
+  rotation: 0 | 90 | 180 | 270;
+  sampleFps: number;
+
+  // Video Media & Playback State
   isPlaying: boolean;
   playbackSpeed: number;
   currentTime: number;
@@ -36,6 +79,16 @@ interface JobContextType {
   stagedVideoSrc: string | null;
   uploadedVideoId: string | null;
   uploadedVideoMetadata: VideoUploadResponse | null;
+
+  // Operations & State Mutators
+  setAnalysisMode: (mode: AnalysisMode) => void;
+  setRotation: (rotation: 0 | 90 | 180 | 270) => void;
+  setSampleFps: (fps: number) => void;
+  uploadFile: (file: File) => Promise<void>;
+  startProcessing: (options?: StartProcessingOptions) => Promise<void>;
+  cancelProcessing: () => Promise<void>;
+  retryProcessing: () => Promise<void>;
+  resetForNewVideo: () => void;
   setSelectedTrackId: (id: number | null) => void;
   setStagedVideo: (src: string | null, videoId?: string | null, metadata?: VideoUploadResponse | null) => void;
   clearStagedVideo: () => void;
@@ -87,6 +140,21 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
   const [results, setResults] = useState<VideoPipelineRunResult | null>(null);
   const [currentFrameIndex, setCurrentFrameIndex] = useState<number>(0);
+
+  // Unified State Machine
+  const [videoProcessingState, setVideoProcessingState] = useState<VideoProcessingState>('NO_VIDEO');
+  const [uploadProgressPct, setUploadProgressPct] = useState<number>(0);
+  const [processingProgressPct, setProcessingProgressPct] = useState<number>(0);
+  const [statusMessage, setStatusMessage] = useState<string>('');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+
+  // Analysis Configuration
+  const [analysisMode, setAnalysisMode] = useState<AnalysisMode>('FULL_BALANCED');
+  const [rotation, setRotation] = useState<0 | 90 | 180 | 270>(0);
+  const [sampleFps, setSampleFps] = useState<number>(2.0);
+
+  // Media Player State
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [playbackSpeed, setPlaybackSpeedState] = useState<number>(1);
   const [currentTime, setCurrentTime] = useState<number>(0);
@@ -102,6 +170,7 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const prevJobIdRef = useRef<string | null>(null);
+  const pollTimerRef = useRef<number | null>(null);
 
   const { isVoiceMuted, toggleVoiceMute, triggerVoiceAlert } = useVoiceAlerts();
 
@@ -110,7 +179,11 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const setStagedVideo = useCallback((src: string | null, videoId?: string | null, metadata?: VideoUploadResponse | null) => {
     setStagedVideoSrc(src);
-    if (videoId !== undefined) setUploadedVideoId(videoId);
+    if (videoId !== undefined && videoId !== null) {
+      setUploadedVideoId(videoId);
+      setVideoProcessingState('VIDEO_READY');
+      setStatusMessage('Video staged on server. Ready for processing.');
+    }
     if (metadata !== undefined) setUploadedVideoMetadata(metadata);
   }, []);
 
@@ -120,7 +193,7 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setUploadedVideoMetadata(null);
   }, []);
 
-  // Check health periodically
+  // Check backend health periodically
   useEffect(() => {
     const checkHealth = async () => {
       try {
@@ -135,31 +208,7 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return () => clearInterval(interval);
   }, []);
 
-  // Clear active job back to clean upload state
-  const clearActiveJob = useCallback(() => {
-    setActiveJobId(null);
-    prevJobIdRef.current = null;
-    setResults(null);
-    setError(null);
-    setIsPlaying(false);
-    setCurrentFrameIndex(0);
-    setCurrentTime(0);
-    setDuration(0);
-    setSelectedTrackId(null);
-    setStagedVideoSrc(null);
-    setUploadedVideoId(null);
-    setUploadedVideoMetadata(null);
-    if (videoRef.current) {
-      try {
-        videoRef.current.pause();
-        videoRef.current.currentTime = 0;
-      } catch {
-        // ignore
-      }
-    }
-  }, []);
-
-  // Fetch job list without automatically forcing a historical job on initial boot
+  // Fetch job list
   const refreshJobs = useCallback(async () => {
     try {
       setError(null);
@@ -177,7 +226,99 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     refreshJobs();
   }, [refreshJobs]);
 
+  // Stop polling helper
+  const stopPolling = useCallback(() => {
+    if (pollTimerRef.current !== null) {
+      clearInterval(pollTimerRef.current);
+      pollTimerRef.current = null;
+    }
+  }, []);
+
+  // Polling loop for active job
+  const startJobPolling = useCallback((jobId: string) => {
+    stopPolling();
+    const timer = window.setInterval(async () => {
+      try {
+        const stat = await getJobStatus(jobId);
+        if (stat.status === 'PROCESSING') {
+          const pct = stat.progress_pct ?? stat.progress_percentage ?? 25;
+          setProcessingProgressPct(Math.max(10, Math.min(95, pct)));
+          setStatusMessage(stat.message || `Processing frame ${stat.frames_processed || 0}...`);
+        } else if (stat.status === 'COMPLETED') {
+          stopPolling();
+          setProcessingProgressPct(100);
+          setStatusMessage('Analysis completed successfully.');
+          setVideoProcessingState('COMPLETED');
+          // Load full results
+          try {
+            const data = await getJobResults(jobId);
+            setResults(data);
+            if (data.timeline_telemetry?.source_video_duration_sec) {
+              setDuration(data.timeline_telemetry.source_video_duration_sec);
+            } else if (data.video_metadata?.duration_seconds) {
+              setDuration(data.video_metadata.duration_seconds);
+            }
+          } catch (e: any) {
+            console.error('Failed to load completed job results:', e);
+          }
+          refreshJobs();
+        } else if (stat.status === 'FAILED') {
+          stopPolling();
+          setVideoProcessingState('PROCESSING_FAILED');
+          setErrorMessage(stat.error_message || stat.message || 'Pipeline execution failed.');
+          setStatusMessage('Processing failed.');
+          refreshJobs();
+        } else if (stat.status === 'CANCELLED') {
+          stopPolling();
+          setVideoProcessingState('CANCELLED');
+          setStatusMessage('Processing was cancelled.');
+          refreshJobs();
+        }
+      } catch (err: any) {
+        console.warn('Job polling error:', err);
+      }
+    }, 1000);
+    pollTimerRef.current = timer;
+  }, [stopPolling, refreshJobs]);
+
+  // Clean active job back to clean upload state
+  const clearActiveJob = useCallback(() => {
+    stopPolling();
+    setActiveJobId(null);
+    prevJobIdRef.current = null;
+    setResults(null);
+    setError(null);
+    setIsPlaying(false);
+    setCurrentFrameIndex(0);
+    setCurrentTime(0);
+    setDuration(0);
+    setSelectedTrackId(null);
+    setStagedVideoSrc(null);
+    setUploadedVideoId(null);
+    setUploadedVideoMetadata(null);
+    setUploadedFile(null);
+    setVideoProcessingState('NO_VIDEO');
+    setStatusMessage('');
+    setErrorMessage(null);
+    setUploadProgressPct(0);
+    setProcessingProgressPct(0);
+    if (videoRef.current) {
+      try {
+        videoRef.current.pause();
+        videoRef.current.currentTime = 0;
+      } catch {
+        // ignore
+      }
+    }
+  }, [stopPolling]);
+
+  const resetForNewVideo = useCallback(() => {
+    clearActiveJob();
+  }, [clearActiveJob]);
+
+  // Select a historical job or reset
   const selectJob = useCallback(async (jobId: string) => {
+    stopPolling();
     if (!jobId) {
       clearActiveJob();
       return;
@@ -192,30 +333,150 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCurrentTime(0);
 
     try {
-      const data = await getJobResults(jobId);
-      if (!data || !data.frames || data.frames.length === 0 || (data as any).results === null) {
-        setResults(null);
-        if ((data as any).status === 'FAILED') {
-          setError((data as any).message || 'Video pipeline execution failed.');
-        }
-      } else {
+      const stat = await getJobStatus(jobId);
+      if (stat.status === 'COMPLETED') {
+        const data = await getJobResults(jobId);
         setResults(data);
+        setVideoProcessingState('COMPLETED');
+        setStatusMessage(`Restored completed session: ${stat.filename || jobId}`);
         if (data.timeline_telemetry?.source_video_duration_sec) {
           setDuration(data.timeline_telemetry.source_video_duration_sec);
         } else if (data.video_metadata?.duration_seconds) {
           setDuration(data.video_metadata.duration_seconds);
-        } else if (data.frames.length > 0) {
-          const lastTs = data.frames[data.frames.length - 1].timestamp_seconds || 0;
-          setDuration(lastTs);
         }
+      } else if (stat.status === 'PROCESSING' || stat.status === 'QUEUED') {
+        setVideoProcessingState('PROCESSING');
+        setStatusMessage(stat.message || 'Processing in progress...');
+        startJobPolling(jobId);
+      } else if (stat.status === 'FAILED') {
+        setVideoProcessingState('PROCESSING_FAILED');
+        setErrorMessage(stat.error_message || stat.message || 'Pipeline execution failed.');
+        setStatusMessage('Historical job failed.');
+      } else if (stat.status === 'CANCELLED') {
+        setVideoProcessingState('CANCELLED');
+        setStatusMessage('Job was cancelled.');
       }
     } catch (err: any) {
       setResults(null);
       setError(`Failed to load job telemetry: ${err.message || err}`);
+      setVideoProcessingState('PROCESSING_FAILED');
     } finally {
       setIsLoading(false);
     }
-  }, [clearActiveJob]);
+  }, [stopPolling, clearActiveJob, startJobPolling]);
+
+  // File Upload Action
+  const uploadFile = useCallback(async (file: File) => {
+    stopPolling();
+    clearActiveJob();
+
+    // 1. Validate extension
+    const ext = '.' + file.name.split('.').pop()?.toLowerCase();
+    const allowed = ['.mp4', '.avi', '.mov', '.mkv', '.webm'];
+    if (!allowed.includes(ext)) {
+      setVideoProcessingState('UPLOAD_FAILED');
+      setErrorMessage(`Unsupported video extension '${ext}'. Supported formats: ${allowed.join(', ')}`);
+      return;
+    }
+
+    // 2. Validate size
+    if (file.size === 0) {
+      setVideoProcessingState('UPLOAD_FAILED');
+      setErrorMessage('Selected video file is empty (0 bytes).');
+      return;
+    }
+    if (file.size > 100 * 1024 * 1024) {
+      setVideoProcessingState('UPLOAD_FAILED');
+      setErrorMessage(`File size (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds 100 MB limit.`);
+      return;
+    }
+
+    setUploadedFile(file);
+    setVideoProcessingState('UPLOADING');
+    setUploadProgressPct(25);
+    setStatusMessage(`Uploading '${file.name}' to server storage...`);
+    setErrorMessage(null);
+
+    // Staged local preview immediately
+    const localUrl = URL.createObjectURL(file);
+    setStagedVideoSrc(localUrl);
+
+    try {
+      const resp = await uploadVideoFile(file);
+      setUploadProgressPct(100);
+      setUploadedVideoId(resp.video_id);
+      setUploadedVideoMetadata(resp);
+      const serverStreamUrl = getVideoStreamUrl(resp.video_id);
+      setStagedVideoSrc(serverStreamUrl);
+      if (resp.metadata?.duration_seconds) {
+        setDuration(resp.metadata.duration_seconds);
+      }
+      setVideoProcessingState('VIDEO_READY');
+      setStatusMessage(`Video '${file.name}' verified on server. Ready for processing.`);
+    } catch (err: any) {
+      setVideoProcessingState('UPLOAD_FAILED');
+      setErrorMessage(err.message || 'Server rejected video file upload.');
+      setStatusMessage('Upload failed. Please check file format and try again.');
+    }
+  }, [stopPolling, clearActiveJob]);
+
+  // Start Processing Action
+  const startProcessing = useCallback(async (options?: StartProcessingOptions) => {
+    const targetVideoId = uploadedVideoId || activeJob?.filename;
+    if (!targetVideoId) {
+      setErrorMessage('No valid video staged. Please upload a video first.');
+      return;
+    }
+
+    const mode = options?.analysisMode || analysisMode;
+    const rot = options?.rotation !== undefined ? options.rotation : rotation;
+    const fps = options?.sampleFps !== undefined ? options.sampleFps : sampleFps;
+    const maxFr = options?.maxFrames !== undefined ? options.maxFrames : (mode === 'QUICK_PREVIEW' ? 30 : null);
+
+    setVideoProcessingState('PROCESSING');
+    setProcessingProgressPct(5);
+    setStatusMessage('Initiating perception pipeline (YOLO11 + ByteTrack + Trajectory + Collision Risk)...');
+    setErrorMessage(null);
+
+    try {
+      const resp = await startProcessingVideo({
+        video_id: targetVideoId,
+        analysis_mode: mode,
+        rotation: rot,
+        sample_fps: fps,
+        max_frames: maxFr,
+      });
+
+      setActiveJobId(resp.job_id);
+      setStatusMessage('Pipeline executing across video timeline...');
+      setProcessingProgressPct(10);
+      await refreshJobs();
+      startJobPolling(resp.job_id);
+    } catch (err: any) {
+      setVideoProcessingState('PROCESSING_FAILED');
+      setErrorMessage(err.message || 'Failed to dispatch video processing job.');
+      setStatusMessage('Processing failed to start.');
+    }
+  }, [uploadedVideoId, activeJob, analysisMode, rotation, sampleFps, refreshJobs, startJobPolling]);
+
+  // Retry Processing Action (reuses staged video!)
+  const retryProcessing = useCallback(async () => {
+    return startProcessing();
+  }, [startProcessing]);
+
+  // Cancel Processing Action
+  const cancelProcessing = useCallback(async () => {
+    if (!activeJobId) return;
+    try {
+      await cancelJob(activeJobId);
+      stopPolling();
+      setVideoProcessingState('CANCELLED');
+      setStatusMessage('Processing cancelled by user.');
+      await refreshJobs();
+    } catch (err: any) {
+      console.warn('Cancel error:', err);
+    }
+  }, [activeJobId, stopPolling, refreshJobs]);
 
   const deleteJobById = useCallback(async (jobId: string) => {
     try {
@@ -399,6 +660,23 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         results,
         currentFrameIndex,
         currentFrame,
+        videoProcessingState,
+        uploadProgressPct,
+        processingProgressPct,
+        statusMessage,
+        errorMessage,
+        uploadedFile,
+        analysisMode,
+        rotation,
+        sampleFps,
+        setAnalysisMode,
+        setRotation,
+        setSampleFps,
+        uploadFile,
+        startProcessing,
+        cancelProcessing,
+        retryProcessing,
+        resetForNewVideo,
         isPlaying,
         playbackSpeed,
         currentTime,

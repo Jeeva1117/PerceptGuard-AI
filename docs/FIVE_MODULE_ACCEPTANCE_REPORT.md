@@ -109,3 +109,19 @@ PerceptGuard-AI functions as a unified perception, tracking, prediction, and ris
 | **5** | Safety Alerts & Stop Advisory | Actionable vehicle recommendations & evidence chains | **ACCEPTED** |
 
 **Zero 6th sidebar modules or superfluous navigation items exist in the codebase.**
+
+---
+
+## 4. UI State Machine & Pipeline Stabilization Addendum
+
+### 4.1 Root Cause & Resolution of "Start Processing" Button State
+- **Root Cause**: In `PersistentVideoWorkspace.tsx`, `<VideoUploadSection />` (which contained the only Start Processing action) was conditionally unmounted and concealed inside a collapsed drawer whenever `hasVideoLoaded` evaluated to `true`. When a video was staged or uploaded, the entire action bar disappeared, leaving the user with only the video canvas and no way to trigger processing.
+- **Permanent Solution**: Replaced the collapsed drawer with a permanent, un-collapsible, unified **Video Control & Processing Action Bar** in `PersistentVideoWorkspace.tsx` that remains mounted and visible above the `VideoCanvas` across all five modules.
+- **State Machine Integration**: Centralized `VideoProcessingState` (`NO_VIDEO`, `UPLOADING`, `VIDEO_READY`, `PROCESSING`, `COMPLETED`, `UPLOAD_FAILED`, `PROCESSING_FAILED`, `CANCELLED`) within `JobContext.tsx`.
+- **Status Display Fix**: In `CameraWeatherPage.tsx`, updated the status badge to accurately show `Video Ready for Processing` when a video is loaded instead of misleading `Ready for Upload`.
+
+### 4.2 Backend `ConflictType` Resolution & Regression Verification
+- **Issue**: `NameError: name 'ConflictType' is not defined` occurred in `src/collision_risk/collision_risk_engine.py` during job execution.
+- **Fix**: Explicitly imported `ConflictType` into `src/collision_risk/collision_risk_engine.py` with safe enum and string introspection.
+- **Automated Verification**: `tests/collision_risk/test_conflict_type_regression.py` (4/4 passed) and `tests/integration/test_end_to_end_scenarios_1_to_10.py` (10/10 passed).
+

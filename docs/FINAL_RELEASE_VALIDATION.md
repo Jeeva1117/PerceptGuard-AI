@@ -133,3 +133,5 @@ All test suites were executed directly against the codebase in the target Window
 - **FastAPI Backend Server:** Running on `http://127.0.0.1:8000` (PID verified, OpenAPI docs at `/docs`)
 - **Vite React Frontend:** Running on `http://127.0.0.1:3000` (Production build verified, responsive UI)
 - **Local Video Pipeline:** Fully operational end-to-end with synchronous playback scrubbing, live telemetry, and zero unhandled exceptions.
+- **UI State Machine & Button Predictability:** The Start Processing action bar is permanently mounted above `VideoCanvas` across all five modules, eliminating disappearing UI states and ensuring immediate visibility upon video upload or stage. Status reporting across `CameraWeatherPage` properly reflects `Video Ready for Processing` rather than premature `Ready for Upload`.
+
