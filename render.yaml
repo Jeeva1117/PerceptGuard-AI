@@ -1,0 +1,59 @@
+# ==============================================================================
+# PerceptGuard AI — Render Infrastructure as Code (Blueprint Specification)
+# Decoupled Architecture:
+#   1. Backend Web Service (FastAPI Docker Container with Persistent Disk)
+#   2. Frontend Static Site (Vite/React SPA Client with API Rewrites)
+# ==============================================================================
+
+services:
+  # ----------------------------------------------------------------------------
+  # Backend API Service: FastAPI Computer Vision & Predictive Reliability Engine
+  # ----------------------------------------------------------------------------
+  - type: web
+    name: perceptguard-backend
+    runtime: docker
+    dockerfilePath: Dockerfile
+    plan: standard
+    region: oregon
+    branch: main
+    healthCheckPath: /health/live
+    disk:
+      name: perceptguard-data
+      mountPath: /app/outputs
+      sizeGB: 10
+    envVars:
+      - key: APP__ENVIRONMENT
+        value: production
+      - key: APP__DEBUG
+        value: "false"
+      - key: LOG_LEVEL
+        value: INFO
+      - key: DEVICE
+        value: cpu
+      - key: OUTPUTS_DIR
+        value: /app/outputs
+      - key: PERCEPTGUARD_STORAGE_DIR
+        value: /app/outputs
+      - key: CORS_ORIGINS
+        value: "http://localhost:3000,http://127.0.0.1:3000"
+      - key: FRONTEND_URL
+        sync: false
+
+  # ----------------------------------------------------------------------------
+  # Frontend UI: React / Vite SPA Client
+  # ----------------------------------------------------------------------------
+  - type: web
+    name: perceptguard-frontend
+    runtime: static
+    buildCommand: npm --prefix frontend install && npm --prefix frontend run build
+    staticPublishPath: frontend/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: perceptguard-backend
+          property: host

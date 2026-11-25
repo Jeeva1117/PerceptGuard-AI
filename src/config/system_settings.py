@@ -382,8 +382,9 @@ class SystemSettings:
             log_level=log_level_val,
         )
 
-        # APIConfig
-        api_port_val = _parse_int(source_env.get("API_PORT", source_env.get("PORT", "8000")), "API port")
+        # APIConfig (prioritize runtime PaaS $PORT from Render, then API_PORT, fallback to 8000)
+        port_env = source_env.get("PORT") or source_env.get("API_PORT") or "8000"
+        api_port_val = _parse_int(port_env, "API port")
         api_reload_raw = source_env.get("API_RELOAD")
         api_reload_val = _parse_bool(api_reload_raw, "API_RELOAD") if api_reload_raw is not None else False
         cors_raw = source_env.get("CORS_ORIGINS")
@@ -398,6 +399,19 @@ class SystemSettings:
                 "http://localhost:8501",
                 "http://127.0.0.1:8501",
             ]
+
+        # Ingest external frontend or Render URL if specified
+        frontend_url = source_env.get("FRONTEND_URL")
+        if frontend_url and frontend_url.strip():
+            f_url = frontend_url.strip().rstrip("/")
+            if f_url not in cors_list:
+                cors_list.append(f_url)
+
+        render_url = source_env.get("RENDER_EXTERNAL_URL")
+        if render_url and render_url.strip():
+            r_url = render_url.strip().rstrip("/")
+            if r_url not in cors_list:
+                cors_list.append(r_url)
 
         api_cfg = APIConfig(
             host=source_env.get("API_HOST", source_env.get("HOST", "0.0.0.0")),
@@ -504,6 +518,12 @@ class SystemSettings:
         )
 
         # Assemble and validate
+        outputs_dir_env = source_env.get("PERCEPTGUARD_STORAGE_DIR") or source_env.get("OUTPUTS_DIR")
+        outputs_dir_path = Path(outputs_dir_env).resolve() if outputs_dir_env else (BASE_DIR / "outputs")
+
+        models_dir_env = source_env.get("PERCEPTGUARD_MODELS_DIR") or source_env.get("MODELS_DIR")
+        models_dir_path = Path(models_dir_env).resolve() if models_dir_env else (BASE_DIR / "models")
+
         return cls(
             app=app_cfg,
             api=api_cfg,
@@ -512,6 +532,8 @@ class SystemSettings:
             model=model_cfg,
             video_processing=video_cfg,
             dashboard=dash_cfg,
+            outputs_dir=outputs_dir_path,
+            models_dir=models_dir_path,
         )
 
 

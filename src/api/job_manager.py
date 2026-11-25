@@ -13,6 +13,7 @@ import datetime
 from enum import Enum
 import json
 import logging
+import os
 from pathlib import Path
 import shutil
 import threading
@@ -86,9 +87,24 @@ class JobManager:
     def __init__(self, base_dir: Optional[Path] = None, max_workers: int = 1):
         if getattr(self, "_initialized", False):
             return
-        self.base_dir = Path(base_dir).resolve() if base_dir else Path.cwd()
-        self.jobs_dir = self.base_dir / "outputs" / "jobs"
+        # Support persistent storage mount (Render Persistent Disk or custom path)
+        storage_env = os.environ.get("PERCEPTGUARD_STORAGE_DIR") or os.environ.get("OUTPUTS_DIR")
+        if storage_env:
+            p = Path(storage_env).resolve()
+            self.jobs_dir = p / "jobs" if p.name != "jobs" else p
+            self.base_dir = self.jobs_dir.parent
+        else:
+            try:
+                from src.config.system_settings import get_settings
+                settings = get_settings()
+                self.jobs_dir = settings.outputs_dir / "jobs"
+                self.base_dir = settings.base_dir
+            except Exception:
+                self.base_dir = Path(base_dir).resolve() if base_dir else Path.cwd()
+                self.jobs_dir = self.base_dir / "outputs" / "jobs"
+
         self.jobs_dir.mkdir(parents=True, exist_ok=True)
+        (self.jobs_dir / "uploads").mkdir(parents=True, exist_ok=True)
 
         self._jobs: Dict[str, JobRecord] = {}
         self._uploaded_videos: Dict[str, Dict[str, Any]] = {}

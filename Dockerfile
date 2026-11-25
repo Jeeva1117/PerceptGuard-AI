@@ -57,11 +57,19 @@ WORKDIR /app
 # Copy virtual environment from builder stage
 COPY --from=builder /opt/venv /opt/venv
 
-# Copy application source code and verified artifacts
+# Copy application configuration, model weights, and source code
+COPY --chown=appuser:appgroup config/ config/
+COPY --chown=appuser:appgroup models/ models/
 COPY --chown=appuser:appgroup src/ src/
 COPY --chown=appuser:appgroup dashboard/ dashboard/
 COPY --chown=appuser:appgroup experiments/ experiments/
 COPY --chown=appuser:appgroup main.py .
+
+# Copy entrypoint script and ensure Unix line endings
+COPY --chown=appuser:appgroup docker/entrypoint.sh /app/entrypoint.sh
+RUN tr -d '\r' < /app/entrypoint.sh > /app/entrypoint_clean.sh && \
+    mv /app/entrypoint_clean.sh /app/entrypoint.sh && \
+    chmod +x /app/entrypoint.sh
 
 # Create required operational directories with non-root ownership
 RUN mkdir -p /app/models /app/datasets /app/outputs /app/logs && \
@@ -70,12 +78,13 @@ RUN mkdir -p /app/models /app/datasets /app/outputs /app/logs && \
 # Switch to non-root execution
 USER appuser
 
-# Expose backend REST API port
+# Expose backend REST API default port
 EXPOSE 8000
 
-# Container liveness health check
+# Container liveness health check dynamically probing $PORT
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-    CMD curl -f http://localhost:8000/health/live || exit 1
+    CMD curl -f "http://127.0.0.1:${PORT:-8000}/health/live" || exit 1
 
-# Production start command using Uvicorn ASGI server
-CMD ["uvicorn", "src.api.app:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+# Production entrypoint dynamically binding to Render's $PORT
+ENTRYPOINT ["/app/entrypoint.sh"]
+CMD []

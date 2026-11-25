@@ -106,17 +106,18 @@ def create_app(settings: Optional[SystemSettings] = None) -> FastAPI:
     app.add_middleware(RequestLoggingMiddleware)
 
     # 3. Register CORS middleware
-    cors_origins = resolved_settings.api.cors_origins or [
+    cors_origins = list(resolved_settings.api.cors_origins or [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "http://localhost:5173",
         "http://127.0.0.1:5173",
         "http://localhost:8501",
         "http://127.0.0.1:8501",
-    ]
+    ])
     app.add_middleware(
         CORSMiddleware,
         allow_origins=cors_origins,
+        allow_origin_regex=r"^https?://([a-zA-Z0-9-]+\.)*onrender\.com$",
         allow_credentials=True,
         allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allow_headers=["*"],

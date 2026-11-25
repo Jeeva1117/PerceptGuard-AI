@@ -816,6 +816,9 @@ class VideoPipelineRunner:
             weights_path = self.project_root / "models" / "yolo" / "yolo11n.pt"
             if not weights_path.exists():
                 weights_path = Path.cwd() / "models" / "yolo" / "yolo11n.pt"
+            if not weights_path.exists() and (os.environ.get("PERCEPTGUARD_MODELS_DIR") or os.environ.get("MODELS_DIR")):
+                m_dir = Path(os.environ.get("PERCEPTGUARD_MODELS_DIR") or os.environ.get("MODELS_DIR"))
+                weights_path = m_dir / "yolo" / "yolo11n.pt"
             loader = YOLOModelLoader(weights_path=weights_path, project_root=Path.cwd())
             self._yolo_model = loader.load_model()
             logger.info(f"Loaded YOLO model from {weights_path}")
@@ -825,6 +828,9 @@ class VideoPipelineRunner:
             primary_ckpt = self.project_root / "models" / "forecasting" / "lstm" / "model.pt"
             if not primary_ckpt.exists():
                 primary_ckpt = Path.cwd() / "models" / "forecasting" / "lstm" / "model.pt"
+            if not primary_ckpt.exists() and (os.environ.get("PERCEPTGUARD_MODELS_DIR") or os.environ.get("MODELS_DIR")):
+                m_dir = Path(os.environ.get("PERCEPTGUARD_MODELS_DIR") or os.environ.get("MODELS_DIR"))
+                primary_ckpt = m_dir / "forecasting" / "lstm" / "model.pt"
 
             fallback_ckpt = (
                 Path.cwd()
