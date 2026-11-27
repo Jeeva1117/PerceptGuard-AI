@@ -867,7 +867,7 @@ class VideoPipelineRunner:
         output_dir: Union[str, Path],
         max_frames: Optional[int] = None,
         rotation: int = 0,
-        analysis_mode: str = "FULL_BALANCED",
+        analysis_mode: Optional[str] = None,
         sample_fps: Optional[float] = None,
         progress_callback: Optional[Callable[[str, float, str], None]] = None,
         is_cancelled_callback: Optional[Callable[[], bool]] = None,

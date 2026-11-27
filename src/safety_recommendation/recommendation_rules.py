@@ -320,8 +320,8 @@ class RecommendationRulesEngine:
         # ----------------------------------------------------------------------
         has_caution_condition = (
             (vis_score < 65.0 and vis_cond != "CLEAR")
-            or uncertainty_score >= 0.40
-            or detection_reliability < 0.60
+            or uncertainty_score >= 0.30
+            or detection_reliability < 0.70
             or (risk_state == "MODERATE")
         )
 
@@ -329,7 +329,7 @@ class RecommendationRulesEngine:
             if vis_score < 65.0 and vis_cond != "CLEAR":
                 reason = f"Environmental optical degradation detected ({vis_cond}, {vis_score:.0f}% visibility); safe separation maintained."
                 action = "Pay increased attention; adverse atmospheric/camera conditions present."
-            elif uncertainty_score >= 0.40:
+            elif uncertainty_score >= 0.30:
                 reason = f"Elevated perception uncertainty ({uncertainty_score*100:.0f}%); monitor road environment."
                 action = "Pay increased attention; perception confidence fluctuating."
             else:
@@ -368,7 +368,7 @@ class RecommendationRulesEngine:
             risk_level=risk_state,
             objects_involved=[],
             recommended_action="Maintain nominal speed and road vigilance.",
-            primary_reason="Driving conditions normal: Road users following nominal trajectories; zero trajectory conflicts detected.",
+            primary_reason="Driving conditions normal: Nominal road clearance maintained; road users following nominal trajectories with zero trajectory conflicts detected.",
             supporting_evidence=supporting_evidence,
             prediction_horizon="N/A",
             min_ttc_seconds=None,
